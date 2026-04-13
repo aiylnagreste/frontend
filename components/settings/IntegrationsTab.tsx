@@ -22,8 +22,6 @@ const EMPTY_WA = { phone_number_id: "", access_token: "", verify_token: "" };
 const EMPTY_IG = { page_access_token: "", verify_token: "" };
 const EMPTY_FB = { page_access_token: "", verify_token: "" };
 
-const MASKED = "••••••••••••";
-
 export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
   const qc = useQueryClient();
   const { data: config, isFetching: isRefreshing } = useQuery<WebhookConfig>({
@@ -102,16 +100,16 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
 
   const waSavedFields = [
     { label: "Phone Number ID", value: config?.wa_phone_number_id || "—" },
-    { label: "Access Token", value: MASKED },
-    { label: "Verify Token", value: MASKED },
+    { label: "Access Token", value: "Saved" },
+    { label: "Verify Token", value: "Saved" },
   ];
   const igSavedFields = [
-    { label: "Page Access Token", value: MASKED },
-    { label: "Verify Token", value: MASKED },
+    { label: "Page Access Token", value: "Saved" },
+    { label: "Verify Token", value: "Saved" },
   ];
   const fbSavedFields = [
-    { label: "Page Access Token", value: MASKED },
-    { label: "Verify Token", value: MASKED },
+    { label: "Page Access Token", value: "Saved" },
+    { label: "Verify Token", value: "Saved" },
   ];
 
   return (
@@ -141,10 +139,6 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
 
           <div style={{ padding: "20px" }}>
             <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/whatsapp`} />
-
-            {config?.has_whatsapp && !config?.wa_verified && (
-              <PendingVerificationBanner />
-            )}
 
             <CredentialSection
               isSaved={!!config?.has_whatsapp}
@@ -201,9 +195,6 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
 
             <div style={{ padding: "20px" }}>
               <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/instagram`} />
-              {config?.has_instagram && !config?.ig_verified && (
-                <PendingVerificationBanner />
-              )}
 
               <CredentialSection
                 isSaved={!!config?.has_instagram}
@@ -251,9 +242,6 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
 
             <div style={{ padding: "20px" }}>
               <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/facebook`} />
-              {config?.has_facebook && !config?.fb_verified && (
-                <PendingVerificationBanner />
-              )}
 
               <CredentialSection
                 isSaved={!!config?.has_facebook}
@@ -293,34 +281,6 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
           {saveMutation.isPending ? "Saving…" : "Save All Integrations"}
         </button>
       </div>
-    </div>
-  );
-}
-
-// ── PendingVerificationBanner ─────────────────────────────────────────────────
-function PendingVerificationBanner() {
-  return (
-    <div style={{
-      padding: "12px 14px",
-      background: "#fff7ed",
-      border: "1.5px solid #fdba74",
-      borderRadius: "8px",
-      marginBottom: "16px",
-    }}>
-      <p style={{ margin: "0 0 6px 0", fontSize: "13px", fontWeight: 600, color: "#9a3412" }}>
-        Webhook not connected yet
-      </p>
-      <p style={{ margin: 0, fontSize: "12px", color: "#c2410c", lineHeight: "1.5" }}>
-        Your credentials are saved, but Meta hasn&apos;t verified the webhook yet.
-        To connect:
-      </p>
-      <ol style={{ margin: "8px 0 0 0", padding: "0 0 0 18px", fontSize: "12px", color: "#c2410c", lineHeight: "1.8" }}>
-        <li>Copy the Webhook URL above</li>
-        <li>Open <strong>Meta Developer Console</strong> → your App → WhatsApp / Messenger → Configuration</li>
-        <li>Paste the URL in <strong>Callback URL</strong> and enter your <strong>Verify Token</strong></li>
-        <li>Click <strong>Verify and Save</strong> in Meta Console</li>
-        <li>Come back here and click <strong>↻</strong> to refresh status</li>
-      </ol>
     </div>
   );
 }
