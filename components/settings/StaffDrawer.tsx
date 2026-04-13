@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { QK, fetchBranches, fetchRoles } from "@/lib/queries";
 import { ModalShell } from "@/components/ui/ModalShell";
 import type { Staff, Branch, Role } from "@/lib/types";
+import { validateName, validatePhone } from "@/lib/validation";
 
 interface StaffDrawerProps {
   open: boolean;
@@ -63,8 +64,11 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
-    if (!form.name.trim()) errs.name = "Full name is required";
+    const nameErr = validateName(form.name);
+    if (nameErr) errs.name = nameErr === "This field is required" ? "Full name is required" : nameErr;
     if (!form.role) errs.role = "Role is required";
+    const phoneErr = validatePhone(form.phone);
+    if (phoneErr) errs.phone = phoneErr;
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -131,8 +135,12 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             placeholder="+92 300 1234567"
-            style={inputStyle}
+            style={{
+              ...inputStyle,
+              borderColor: errors.phone ? "#DC2626" : "#E8E3E0",
+            }}
           />
+          {errors.phone && <span style={errorStyle}>{errors.phone}</span>}
         </div>
 
         {/* Role */}

@@ -7,6 +7,11 @@ const SUPER_PROTECTED = ["/super-admin/dashboard"];
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Legacy Express path — redirect to Next.js dashboard
+  if (pathname === "/salon-admin/dashboard" || pathname.startsWith("/salon-admin/dashboard/")) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
   // Already-authenticated users must not reach login pages
   if (pathname === "/login") {
     const tenantToken = req.cookies.get("tenantToken");
@@ -49,6 +54,8 @@ export const config = {
     "/",
     "/login",
     "/super-admin/login",
+    "/salon-admin/dashboard",
+    "/salon-admin/dashboard/:path*",
     "/dashboard/:path*",
     "/bookings/:path*",
     "/clients/:path*",

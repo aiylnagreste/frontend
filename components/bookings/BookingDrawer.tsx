@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { QK, fetchBranches, fetchStaff, fetchServices, fetchTimings, fetchBookings } from "@/lib/queries";
 import { ModalShell } from "@/components/ui/ModalShell";
 import type { Booking, Branch, Staff, Service, SalonTimings } from "@/lib/types";
+import { validateName, validatePhoneRequired } from "@/lib/validation";
 
 interface BookingDrawerProps {
     open: boolean;
@@ -212,8 +213,10 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
 
     function validate(): boolean {
         const errs: Record<string, string> = {};
-        if (!form.customer_name.trim()) errs.customer_name = "Customer name is required";
-        if (!form.phone.trim()) errs.phone = "Phone number is required";
+        const nameErr = validateName(form.customer_name);
+        if (nameErr) errs.customer_name = nameErr === "This field is required" ? "Customer name is required" : nameErr;
+        const phoneErr = validatePhoneRequired(form.phone);
+        if (phoneErr) errs.phone = phoneErr;
         if (!form.service) errs.service = "Service is required";
         if (!form.branch) errs.branch = "Branch is required";
         if (!form.date) errs.date = "Date is required";

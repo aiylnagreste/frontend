@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useState } from "react";
+import { validateName, validateEmail, validatePhoneRequired } from "@/lib/validation";
 
 interface ResetRequest {
   tenantId: string;
@@ -371,15 +372,30 @@ export default function SuperDashboardPage() {
 
 function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [form, setForm] = useState({ salon_name: "", owner_name: "", email: "", phone: "", password: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  function set(key: string, value: string) { setForm(f => ({ ...f, [key]: value })); }
+  function set(key: string, value: string) {
+    setForm(f => ({ ...f, [key]: value }));
+    setErrors(prev => ({ ...prev, [key]: "" }));
+  }
+
+  function validateForm(): boolean {
+    const errs: Record<string, string> = {};
+    const salonErr = validateName(form.salon_name);
+    if (salonErr) errs.salon_name = salonErr === "This field is required" ? "Salon name is required" : salonErr;
+    const ownerErr = validateName(form.owner_name);
+    if (ownerErr) errs.owner_name = ownerErr === "This field is required" ? "Owner name is required" : ownerErr;
+    const emailErr = validateEmail(form.email);
+    if (emailErr) errs.email = emailErr;
+    const phoneErr = validatePhoneRequired(form.phone);
+    if (phoneErr) errs.phone = phoneErr;
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
 
   async function handleCreate() {
-    if (!form.salon_name || !form.owner_name || !form.email || !form.phone) {
-      toast.error("All fields except password are required.");
-      return;
-    }
+    if (!validateForm()) return;
     setLoading(true);
     try {
       await api.post("/super-admin/api/tenants", form);
@@ -391,6 +407,8 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
       setLoading(false);
     }
   }
+
+  const modalInputStyle = { width: "100%", padding: "10px 14px", border: "1.5px solid #e2e8f0", borderRadius: "12px", fontSize: "13px", outline: "none", boxSizing: "border-box" as const };
 
   return (
     <div
@@ -414,8 +432,13 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
               placeholder={f.placeholder}
               value={form[f.id as keyof typeof form]}
               onChange={(e) => set(f.id, e.target.value)}
-              style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #e2e8f0", borderRadius: "12px", fontSize: "13px", outline: "none" }}
+              style={{ ...modalInputStyle, borderColor: errors[f.id] ? "#DC2626" : "#e2e8f0" }}
             />
+            {errors[f.id] && (
+              <span style={{ display: "block", fontSize: "11px", color: "#DC2626", marginTop: "4px" }}>
+                {errors[f.id]}
+              </span>
+            )}
           </div>
         ))}
 

@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { ModalShell } from "@/components/ui/ModalShell";
 import type { Branch } from "@/lib/types";
+import { validateName, validatePhone, validateUrl, validateFreeText } from "@/lib/validation";
 
 interface BranchDrawerProps {
   open: boolean;
@@ -47,7 +48,14 @@ export function BranchDrawer({ open, onClose, editing }: BranchDrawerProps) {
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
-    if (!form.name.trim()) errs.name = "Branch name is required";
+    const nameErr = validateName(form.name);
+    if (nameErr) errs.name = nameErr === "This field is required" ? "Branch name is required" : nameErr;
+    const phoneErr = validatePhone(form.phone);
+    if (phoneErr) errs.phone = phoneErr;
+    const urlErr = validateUrl(form.map_link);
+    if (urlErr) errs.map_link = urlErr;
+    const addrErr = validateFreeText(form.address);
+    if (addrErr) errs.address = addrErr;
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -136,10 +144,16 @@ export function BranchDrawer({ open, onClose, editing }: BranchDrawerProps) {
             onChange={(e) => setForm({ ...form, address: e.target.value })}
             placeholder="Full address"
             rows={3}
-            style={{ ...inputStyle, fontFamily: "inherit", resize: "vertical" }}
-            onFocus={(e) => e.target.style.borderColor = "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = "#E8E3E0"}
+            style={{
+              ...inputStyle,
+              fontFamily: "inherit",
+              resize: "vertical",
+              borderColor: errors.address ? "#DC2626" : "#E8E3E0",
+            }}
+            onFocus={(e) => e.target.style.borderColor = errors.address ? "#DC2626" : "#B5484B"}
+            onBlur={(e) => e.target.style.borderColor = errors.address ? "#DC2626" : "#E8E3E0"}
           />
+          {errors.address && <span style={errorStyle}>{errors.address}</span>}
         </div>
 
         {/* Map Link */}
@@ -148,14 +162,18 @@ export function BranchDrawer({ open, onClose, editing }: BranchDrawerProps) {
             Map Link (Google Maps URL)
           </label>
           <input
-            type="url"
+            type="text"
             value={form.map_link}
             onChange={(e) => setForm({ ...form, map_link: e.target.value })}
             placeholder="https://maps.google.com/..."
-            style={inputStyle}
-            onFocus={(e) => e.target.style.borderColor = "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = "#E8E3E0"}
+            style={{
+              ...inputStyle,
+              borderColor: errors.map_link ? "#DC2626" : "#E8E3E0",
+            }}
+            onFocus={(e) => e.target.style.borderColor = errors.map_link ? "#DC2626" : "#B5484B"}
+            onBlur={(e) => e.target.style.borderColor = errors.map_link ? "#DC2626" : "#E8E3E0"}
           />
+          {errors.map_link && <span style={errorStyle}>{errors.map_link}</span>}
         </div>
 
         {/* Phone */}
@@ -168,10 +186,14 @@ export function BranchDrawer({ open, onClose, editing }: BranchDrawerProps) {
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             placeholder="+92 300 1234567"
-            style={inputStyle}
-            onFocus={(e) => e.target.style.borderColor = "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = "#E8E3E0"}
+            style={{
+              ...inputStyle,
+              borderColor: errors.phone ? "#DC2626" : "#E8E3E0",
+            }}
+            onFocus={(e) => e.target.style.borderColor = errors.phone ? "#DC2626" : "#B5484B"}
+            onBlur={(e) => e.target.style.borderColor = errors.phone ? "#DC2626" : "#E8E3E0"}
           />
+          {errors.phone && <span style={errorStyle}>{errors.phone}</span>}
         </div>
 
         {/* Actions */}
