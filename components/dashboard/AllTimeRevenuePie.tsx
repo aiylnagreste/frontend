@@ -20,7 +20,7 @@ export default function AllTimeRevenuePie() {
 
   const { data, isLoading } = useQuery<AnalyticsResponse>({
     queryKey: QK.analytics({ period: "day", status: "confirmed,completed", tz }),
-    queryFn: () => fetchAnalytics({ period: "day", status: "confirmed,completed", tz }),
+    queryFn: () => fetchAnalytics({ period: "day", status: "completed", tz }),
     staleTime: 0,
     refetchInterval: 60_000,
   });
