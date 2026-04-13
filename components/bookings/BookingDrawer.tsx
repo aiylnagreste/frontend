@@ -39,19 +39,19 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
     const isLimitedEdit = editMode === 'limited' && editing !== null;
 
     // Fetch data for dropdowns
-    const { data: branches = [] } = useQuery<Branch[]>({
+    const { data: branches = [], isSuccess: branchesReady } = useQuery<Branch[]>({
         queryKey: QK.branches(),
         queryFn: fetchBranches,
         enabled: open,
     });
 
-    const { data: staff = [] } = useQuery<Staff[]>({
+    const { data: staff = [], isSuccess: staffReady } = useQuery<Staff[]>({
         queryKey: QK.staff(),
         queryFn: fetchStaff,
         enabled: open,
     });
 
-    const { data: services = [] } = useQuery<Service[]>({
+    const { data: services = [], isSuccess: servicesReady } = useQuery<Service[]>({
         queryKey: QK.services(),
         queryFn: fetchServices,
         enabled: open,
@@ -133,10 +133,10 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
             (!editing || b.id !== editing.id) // Exclude current booking when editing
         );
 
-        const serviceProviderRoles = ['stylist', 'beautician', 'therapist', 'makeup artist', 'hair stylist', 'nail technician', 'spa therapist'];
+        const nonServiceRoles = ['admin', 'manager', 'receptionist'];
         const availableStaff = staff.filter(s =>
             s.status === 'active' &&
-            serviceProviderRoles.includes((s.role || '').toLowerCase()) &&
+            !nonServiceRoles.includes((s.role || '').toLowerCase()) &&
             (s.branch_name === form.branch || s.branch_id === null)
         );
 
@@ -187,7 +187,7 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
             return;
         }
 
-        if (!form.branch || !form.date || !form.service || !timings || !allBookings.length) {
+        if (!form.branch || !form.date || !form.service || !timings) {
             setAvailableSlots([]);
             return;
         }
@@ -209,7 +209,7 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
             setSlotsLoading(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [form.branch, form.date, form.service, timings, allBookings, isLimitedEdit]);
+    }, [form.branch, form.date, form.service, timings, allBookings, staffReady, branchesReady, servicesReady, isLimitedEdit]);
 
     function validate(): boolean {
         const errs: Record<string, string> = {};
