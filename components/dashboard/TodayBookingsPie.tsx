@@ -54,7 +54,7 @@ export default function TodayBookingsPie() {
           />
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={chartData}
@@ -84,7 +84,7 @@ export default function TodayBookingsPie() {
             </ResponsiveContainer>
 
             {/* Bookings per branch table */}
-            <div style={{ marginTop: "12px" }}>
+            <div style={{ marginTop: "16px" }}>
               <div
                 style={{
                   fontSize: "11px",

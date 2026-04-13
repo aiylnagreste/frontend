@@ -62,8 +62,8 @@ export default function AllTimeRevenuePie() {
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
+                  innerRadius={45}
+                  outerRadius={70}
                   paddingAngle={3}
                   dataKey="value"
                 >
