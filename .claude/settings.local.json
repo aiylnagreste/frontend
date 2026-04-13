@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/vs self code/salon-bot/src/**)",
+      "Read(//d/vs self code/salon-bot/**)",
+      "Bash(python -c \"import sys; open\\('.graphify_python', 'w'\\).write\\(sys.executable\\)\")",
+      "Bash(python -c ':*)",
+      "Bash(ls graphify-out/)",
+      "Bash(ls graphify-out/.graphify_chunk_01.json)",
+      "Bash(rm -f .graphify_cached.json .graphify_uncached.txt .graphify_semantic_new.json)",
+      "Bash(mkdir -p graphify-out)",
+      "Bash(python -c \"import sys; print\\(sys.stdin.read\\(\\).encode\\('ascii','replace'\\).decode\\(\\)\\)\")",
+      "Bash(rm -f .graphify_detect.json .graphify_extract.json .graphify_ast.json .graphify_semantic.json .graphify_analysis.json .graphify_labels.json .graphify_python)",
+      "Bash(rm -f graphify-out/.needs_update)",
+      "Bash(python -m graphify claude install)",
+      "Bash(npx tsc:*)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(git -C \"d:/vs self code/frontend\" add \"app/\\(dashboard\\)/staff/page.tsx\")",
+      "Bash(git -C \"d:/vs self code/frontend\" commit -m \"feat: add date range filter state and inputs to staff page\")",
+      "Bash(git -C 'd:/vs self code/frontend' commit -m ':*)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(git -C \"d:/vs self code/frontend\" commit -m \"feat: unify staff page date filter to Today/Week/Month buttons, 2-col branch grid\")",
+      "Bash(git -C \"d:/vs self code/frontend\" commit -m \"feat: filter staff cards to confirmed/completed only, add most-requested chart per branch\")",
+      "Bash(xargs grep:*)",
+      "Bash(git -C \"d:/vs self code/salon-bot\" add src/index.js)",
+      "Bash(git -C \"d:/vs self code/salon-bot\" commit -m \"fix: admin panel bookings never set staffRequested=1, PUT preserves existing value\")",
+      "Bash(git -C \"d:/vs self code/frontend\" commit -m \"fix: set staleTime=0 for bookings on staff page so chart always shows fresh data\")",
+      "Bash(git -C \"d:/vs self code/frontend\" add \"app/\\(dashboard\\)/reports/page.tsx\" \"app/\\(dashboard\\)/staff/page.tsx\")",
+      "Bash(git -C \"d:/vs self code/frontend\" commit -m \"feat: add custom date range filter to reports, match staff buttons to bookings style\")",
+      "Bash(git -C \"d:/vs self code/frontend\" add \"app/\\(dashboard\\)/reports/page.tsx\")",
+      "Bash(git -C \"d:/vs self code/frontend\" commit -m \"fix: convert reports date range to dropdown popover instead of inline row\")"
+    ],
+    "additionalDirectories": [
+      "d:\\vs self code\\salon-bot\\src",
+      "d:\\vs self code\\salon-bot"
+    ]
+  }
+}
