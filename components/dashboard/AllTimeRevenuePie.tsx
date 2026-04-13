@@ -79,7 +79,7 @@ export default function AllTimeRevenuePie() {
                   iconType="circle"
                   iconSize={10}
                   formatter={(v) => (
-                    <span style={{ fontSize: "11px", color: "var(--color-ink)" }}>{v}</span>
+                    <span style={{ fontSize: "12px", color: "var(--color-ink)" }}>{v}</span>
                   )}
                 />
               </PieChart>
