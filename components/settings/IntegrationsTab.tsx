@@ -10,8 +10,8 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 
 function ConnectionBadge({ hasToken, verified }: { hasToken: boolean; verified: boolean }) {
-  if (verified) return <Badge status="active" label="Active" />;
-  if (hasToken) return <Badge status="pending" label="Token saved" />;
+  if (verified) return <Badge status="active" label="Connected" />;
+  if (hasToken) return <Badge status="pending" label="Not connected" />;
   return <Badge status="inactive" label="Not configured" />;
 }
 
@@ -27,11 +27,15 @@ const MASKED = "••••••••••••";
 
 export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
   const qc = useQueryClient();
-  const { data: config } = useQuery<WebhookConfig>({
+  const { data: config, isFetching: isRefreshing } = useQuery<WebhookConfig>({
     queryKey: QK.webhookConfig(),
     queryFn: fetchWebhookConfig,
     staleTime: 5 * 60_000,
   });
+
+  function refreshStatus() {
+    qc.invalidateQueries({ queryKey: QK.webhookConfig() });
+  }
 
   const [wa, setWa] = useState(EMPTY_WA);
   const [ig, setIg] = useState(EMPTY_IG);
@@ -126,11 +130,22 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
               <span style={{ fontSize: "20px" }}>💬</span>
               <h4 style={{ fontWeight: 600, margin: 0 }}>WhatsApp</h4>
             </div>
-            <ConnectionBadge hasToken={!!config?.has_whatsapp} verified={!!config?.wa_verified} />
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <ConnectionBadge hasToken={!!config?.has_whatsapp} verified={!!config?.wa_verified} />
+              {config?.has_whatsapp && !config?.wa_verified && (
+                <button onClick={refreshStatus} disabled={isRefreshing} style={refreshBtn} title="Refresh connection status">
+                  {isRefreshing ? "…" : "↻"}
+                </button>
+              )}
+            </div>
           </div>
 
           <div style={{ padding: "20px" }}>
             <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/whatsapp`} />
+
+            {config?.has_whatsapp && !config?.wa_verified && (
+              <PendingVerificationBanner />
+            )}
 
             <CredentialSection
               isSaved={!!config?.has_whatsapp}
@@ -175,11 +190,21 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
                 <span style={{ fontSize: "20px" }}>📸</span>
                 <h4 style={{ fontWeight: 600, margin: 0 }}>Instagram</h4>
               </div>
-              <ConnectionBadge hasToken={!!config?.has_instagram} verified={!!config?.ig_verified} />
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <ConnectionBadge hasToken={!!config?.has_instagram} verified={!!config?.ig_verified} />
+                {config?.has_instagram && !config?.ig_verified && (
+                  <button onClick={refreshStatus} disabled={isRefreshing} style={refreshBtn} title="Refresh connection status">
+                    {isRefreshing ? "…" : "↻"}
+                  </button>
+                )}
+              </div>
             </div>
 
             <div style={{ padding: "20px" }}>
               <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/instagram`} />
+              {config?.has_instagram && !config?.ig_verified && (
+                <PendingVerificationBanner />
+              )}
 
               <CredentialSection
                 isSaved={!!config?.has_instagram}
@@ -215,11 +240,21 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
                 <span style={{ fontSize: "20px" }}>👍</span>
                 <h4 style={{ fontWeight: 600, margin: 0 }}>Facebook Messenger</h4>
               </div>
-              <ConnectionBadge hasToken={!!config?.has_facebook} verified={!!config?.fb_verified} />
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <ConnectionBadge hasToken={!!config?.has_facebook} verified={!!config?.fb_verified} />
+                {config?.has_facebook && !config?.fb_verified && (
+                  <button onClick={refreshStatus} disabled={isRefreshing} style={refreshBtn} title="Refresh connection status">
+                    {isRefreshing ? "…" : "↻"}
+                  </button>
+                )}
+              </div>
             </div>
 
             <div style={{ padding: "20px" }}>
               <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/facebook`} />
+              {config?.has_facebook && !config?.fb_verified && (
+                <PendingVerificationBanner />
+              )}
 
               <CredentialSection
                 isSaved={!!config?.has_facebook}
@@ -259,6 +294,34 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
           {saveMutation.isPending ? "Saving…" : "Save All Integrations"}
         </button>
       </div>
+    </div>
+  );
+}
+
+// ── PendingVerificationBanner ─────────────────────────────────────────────────
+function PendingVerificationBanner() {
+  return (
+    <div style={{
+      padding: "12px 14px",
+      background: "#fff7ed",
+      border: "1.5px solid #fdba74",
+      borderRadius: "8px",
+      marginBottom: "16px",
+    }}>
+      <p style={{ margin: "0 0 6px 0", fontSize: "13px", fontWeight: 600, color: "#9a3412" }}>
+        Webhook not connected yet
+      </p>
+      <p style={{ margin: 0, fontSize: "12px", color: "#c2410c", lineHeight: "1.5" }}>
+        Your credentials are saved, but Meta hasn&apos;t verified the webhook yet.
+        To connect:
+      </p>
+      <ol style={{ margin: "8px 0 0 0", padding: "0 0 0 18px", fontSize: "12px", color: "#c2410c", lineHeight: "1.8" }}>
+        <li>Copy the Webhook URL above</li>
+        <li>Open <strong>Meta Developer Console</strong> → your App → WhatsApp / Messenger → Configuration</li>
+        <li>Paste the URL in <strong>Callback URL</strong> and enter your <strong>Verify Token</strong></li>
+        <li>Click <strong>Verify and Save</strong> in Meta Console</li>
+        <li>Come back here and click <strong>↻</strong> to refresh status</li>
+      </ol>
     </div>
   );
 }
@@ -512,4 +575,16 @@ const cancelBtn: React.CSSProperties = {
   fontSize: "12px",
   fontWeight: 500,
   cursor: "pointer",
+};
+
+const refreshBtn: React.CSSProperties = {
+  padding: "3px 8px",
+  background: "transparent",
+  color: "#d97706",
+  border: "1px solid #fde047",
+  borderRadius: "6px",
+  fontSize: "14px",
+  fontWeight: 700,
+  cursor: "pointer",
+  lineHeight: 1,
 };
