@@ -126,6 +126,13 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
         const openMinutes = openH * 60 + openM;
         const closeMinutes = closeH * 60 + closeM;
 
+        // For today, skip slots that are already in the past
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const isToday = date === todayStr;
+        const nowMinutes = isToday
+            ? new Date().getHours() * 60 + new Date().getMinutes()
+            : -1;
+
         const dateBookings = allBookings.filter(b =>
             b.date === date &&
             b.status === 'confirmed' &&
@@ -142,7 +149,10 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
 
         if (availableStaff.length === 0) return slots;
 
-        let currentSlot = openMinutes;
+        // Start from the next 30-min boundary after now when booking today
+        let currentSlot = isToday
+            ? Math.max(openMinutes, Math.ceil((nowMinutes + 1) / 30) * 30)
+            : openMinutes;
 
         while (currentSlot + durationMinutes <= closeMinutes) {
             const hours = Math.floor(currentSlot / 60);
@@ -220,7 +230,19 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
         if (!form.service) errs.service = "Service is required";
         if (!form.branch) errs.branch = "Branch is required";
         if (!form.date) errs.date = "Date is required";
-        if (!form.time) errs.time = "Time is required";
+        if (!form.time) {
+            errs.time = "Time is required";
+        } else {
+            const todayStr = new Date().toISOString().slice(0, 10);
+            if (form.date === todayStr) {
+                const now = new Date();
+                const nowMins = now.getHours() * 60 + now.getMinutes();
+                const [th, tm] = form.time.split(':').map(Number);
+                if (th * 60 + tm <= nowMins) {
+                    errs.time = "Past time cannot be selected";
+                }
+            }
+        }
         setErrors(errs);
         return Object.keys(errs).length === 0;
     }
