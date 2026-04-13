@@ -9,9 +9,8 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 
-function ConnectionBadge({ hasToken, verified }: { hasToken: boolean; verified: boolean }) {
-  if (verified) return <Badge status="active" label="Connected" />;
-  if (hasToken) return <Badge status="pending" label="Not connected" />;
+function ConnectionBadge({ hasToken }: { hasToken: boolean; verified: boolean }) {
+  if (hasToken) return <Badge status="active" label="Connected" />;
   return <Badge status="inactive" label="Not configured" />;
 }
 

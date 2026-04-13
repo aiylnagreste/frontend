@@ -28,7 +28,8 @@
       "Bash(git -C \"d:/vs self code/frontend\" add \"app/\\(dashboard\\)/reports/page.tsx\" \"app/\\(dashboard\\)/staff/page.tsx\")",
       "Bash(git -C \"d:/vs self code/frontend\" commit -m \"feat: add custom date range filter to reports, match staff buttons to bookings style\")",
       "Bash(git -C \"d:/vs self code/frontend\" add \"app/\\(dashboard\\)/reports/page.tsx\")",
-      "Bash(git -C \"d:/vs self code/frontend\" commit -m \"fix: convert reports date range to dropdown popover instead of inline row\")"
+      "Bash(git -C \"d:/vs self code/frontend\" commit -m \"fix: convert reports date range to dropdown popover instead of inline row\")",
+      "Read(//d/vs self code/**)"
     ],
     "additionalDirectories": [
       "d:\\vs self code\\salon-bot\\src",
