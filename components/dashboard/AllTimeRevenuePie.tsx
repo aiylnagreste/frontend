@@ -41,9 +41,6 @@ export default function AllTimeRevenuePie() {
     <Card>
       <CardHeader>
         <span style={{ fontWeight: 600, fontSize: "14px" }}>💰 Today's Revenue</span>
-        <span style={{ fontSize: "12px", color: "var(--color-sub)" }}>
-          Completed · by branch
-        </span>
       </CardHeader>
       <CardContent>
         {isLoading ? (
