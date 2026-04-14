@@ -17,14 +17,16 @@ export default function TodayBookingsPie() {
   const today = getTodayStr();
 
   const { data: bookings = [], isLoading } = useQuery<Booking[]>({
-    queryKey: QK.bookings({ date: today }),
+    queryKey: QK.bookings({ date: today  }),
     queryFn: () => fetchBookings({ date: today }),
     staleTime: 0,
     refetchInterval: 30_000,
   });
 
   // Count by branch — all statuses from the API (no client-side status filter)
-  const byBranch = bookings.reduce<Record<string, number>>((acc, b) => {
+  const byBranch = bookings
+  .filter(b => b.status === "confirmed" || b.status === "completed")
+  .reduce<Record<string, number>>((acc, b) => {
     acc[b.branch] = (acc[b.branch] ?? 0) + 1;
     return acc;
   }, {});
@@ -33,7 +35,7 @@ export default function TodayBookingsPie() {
     .sort((a, b) => b[1] - a[1])
     .map(([name, value]) => ({ name, value }));
 
-  const total = bookings.length;
+  const total = bookings.filter(b => b.status === "confirmed" || b.status === "completed").length;
 
   return (
     <Card>

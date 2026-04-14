@@ -3,9 +3,10 @@
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchBranches, QK } from "@/lib/queries";
-import type { Branch } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { fetchBranches, fetchStaff, QK } from "@/lib/queries";
+import type { Branch, Staff } from "@/lib/types";
+import { BranchDrawer } from "@/components/settings/BranchDrawer";
+import { StaffDrawer } from "@/components/settings/StaffDrawer";
 
 const s = {
   sidebar: {
@@ -117,9 +118,18 @@ export default function Sidebar() {
     pathname.startsWith("/bookings"),
   );
 
+  const [showBranchDrawer, setShowBranchDrawer] = useState(false);
+  const [showStaffDrawer, setShowStaffDrawer] = useState(false);
+
   const { data: branches = [] } = useQuery<Branch[]>({
     queryKey: QK.branches(),
     queryFn: fetchBranches,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: staff = [] } = useQuery<Staff[]>({
+    queryKey: QK.staff(),
+    queryFn: fetchStaff,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -127,6 +137,20 @@ export default function Sidebar() {
 
   function navigate(href: string) {
     window.location.href = href;
+  }
+
+  function handleBookingsClick() {
+    if (branches.length === 0) {
+      setShowBranchDrawer(true);
+    } else {
+      setBookingsOpen((o) => !o);
+    }
+  }
+
+  function handleBranchSaved() {
+    if (staff.length === 0) {
+      setShowStaffDrawer(true);
+    }
   }
 
   return (
@@ -156,7 +180,7 @@ export default function Sidebar() {
         {/* Bookings with branch sub-menu */}
         <button
           style={s.navItem(isActive("/bookings"))}
-          onClick={() => setBookingsOpen((o) => !o)}
+          onClick={handleBookingsClick}
         >
           <span>📅</span>
           <span style={{ flex: 1 }}>Bookings</span>
@@ -224,10 +248,26 @@ export default function Sidebar() {
         ))}
       </nav>
 
+      {/* Setup Drawers */}
+      <BranchDrawer
+        open={showBranchDrawer}
+        onClose={() => setShowBranchDrawer(false)}
+        editing={null}
+        onSaved={handleBranchSaved}
+      />
+      <StaffDrawer
+        open={showStaffDrawer}
+        onClose={() => setShowStaffDrawer(false)}
+        editing={null}
+      />
+
       {/* Footer */}
       <div style={s.footer}>
-        <a
-          href="/salon-admin/logout"
+        <button
+          onClick={async () => {
+            await fetch("/salon-admin/logout", { credentials: "include" }).catch(() => {});
+            window.location.href = "/login";
+          }}
           style={{
             display: "flex",
             alignItems: "center",
@@ -236,12 +276,16 @@ export default function Sidebar() {
             borderRadius: "8px",
             fontSize: "13px",
             color: "rgba(255,255,255,0.5)",
-            textDecoration: "none",
+            background: "none",
+            border: "none",
+            width: "100%",
+            textAlign: "left",
+            cursor: "pointer",
             transition: "all 0.15s",
           }}
         >
           <span>↩</span> Logout
-        </a>
+        </button>
       </div>
     </aside>
   );

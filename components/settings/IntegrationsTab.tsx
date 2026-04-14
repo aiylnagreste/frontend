@@ -24,15 +24,11 @@ const EMPTY_FB = { page_access_token: "", verify_token: "" };
 
 export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
   const qc = useQueryClient();
-  const { data: config, isFetching: isRefreshing } = useQuery<WebhookConfig>({
+  const { data: config } = useQuery<WebhookConfig>({
     queryKey: QK.webhookConfig(),
     queryFn: fetchWebhookConfig,
     staleTime: 5 * 60_000,
   });
-
-  function refreshStatus() {
-    qc.invalidateQueries({ queryKey: QK.webhookConfig() });
-  }
 
   const [wa, setWa] = useState(EMPTY_WA);
   const [ig, setIg] = useState(EMPTY_IG);
@@ -127,14 +123,7 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
               <span style={{ fontSize: "20px" }}>💬</span>
               <h4 style={{ fontWeight: 600, margin: 0 }}>WhatsApp</h4>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <ConnectionBadge hasToken={!!config?.has_whatsapp} verified={!!config?.wa_verified} />
-              {config?.has_whatsapp && !config?.wa_verified && (
-                <button onClick={refreshStatus} disabled={isRefreshing} style={refreshBtn} title="Refresh connection status">
-                  {isRefreshing ? "…" : "↻"}
-                </button>
-              )}
-            </div>
+            <ConnectionBadge hasToken={!!config?.has_whatsapp} verified={!!config?.wa_verified} />
           </div>
 
           <div style={{ padding: "20px" }}>
@@ -183,14 +172,7 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
                 <span style={{ fontSize: "20px" }}>📸</span>
                 <h4 style={{ fontWeight: 600, margin: 0 }}>Instagram</h4>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <ConnectionBadge hasToken={!!config?.has_instagram} verified={!!config?.ig_verified} />
-                {config?.has_instagram && !config?.ig_verified && (
-                  <button onClick={refreshStatus} disabled={isRefreshing} style={refreshBtn} title="Refresh connection status">
-                    {isRefreshing ? "…" : "↻"}
-                  </button>
-                )}
-              </div>
+              <ConnectionBadge hasToken={!!config?.has_instagram} verified={!!config?.ig_verified} />
             </div>
 
             <div style={{ padding: "20px" }}>
@@ -230,14 +212,7 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
                 <span style={{ fontSize: "20px" }}>👍</span>
                 <h4 style={{ fontWeight: 600, margin: 0 }}>Facebook Messenger</h4>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <ConnectionBadge hasToken={!!config?.has_facebook} verified={!!config?.fb_verified} />
-                {config?.has_facebook && !config?.fb_verified && (
-                  <button onClick={refreshStatus} disabled={isRefreshing} style={refreshBtn} title="Refresh connection status">
-                    {isRefreshing ? "…" : "↻"}
-                  </button>
-                )}
-              </div>
+              <ConnectionBadge hasToken={!!config?.has_facebook} verified={!!config?.fb_verified} />
             </div>
 
             <div style={{ padding: "20px" }}>
@@ -536,14 +511,3 @@ const cancelBtn: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const refreshBtn: React.CSSProperties = {
-  padding: "3px 8px",
-  background: "transparent",
-  color: "#d97706",
-  border: "1px solid #fde047",
-  borderRadius: "6px",
-  fontSize: "14px",
-  fontWeight: 700,
-  cursor: "pointer",
-  lineHeight: 1,
-};

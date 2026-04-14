@@ -14,9 +14,10 @@ interface BranchDrawerProps {
   open: boolean;
   onClose: () => void;
   editing: Branch | null;
+  onSaved?: () => void;
 }
 
-export function BranchDrawer({ open, onClose, editing }: BranchDrawerProps) {
+export function BranchDrawer({ open, onClose, editing, onSaved }: BranchDrawerProps) {
   const qc = useQueryClient();
   const [form, setForm] = useState({
     number: "",
@@ -82,6 +83,7 @@ export function BranchDrawer({ open, onClose, editing }: BranchDrawerProps) {
       
       qc.invalidateQueries({ queryKey: QK.branches() });
       onClose();
+      onSaved?.();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save branch");
     } finally {

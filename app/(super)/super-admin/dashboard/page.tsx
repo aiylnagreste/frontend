@@ -105,28 +105,6 @@ export default function SuperDashboardPage() {
           </h1>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button
-              onClick={() => {
-                refetchTenants();
-                refetchStats();
-                refetchResets();
-                toast.info("Refreshing data...");
-              }}
-              disabled={isLoading}
-              style={{
-                background: "#e0e7ff",
-                color: "#1e3a8a",
-                padding: "8px 16px",
-                border: "none",
-                borderRadius: "40px",
-                cursor: isLoading ? "not-allowed" : "pointer",
-                fontSize: "13px",
-                fontWeight: 500,
-                opacity: isLoading ? 0.6 : 1,
-              }}
-            >
-              {isLoading ? "Loading..." : "🔄 Refresh"}
-            </button>
-            <button
               onClick={() => setShowChangePwd(true)}
               style={{
                 background: "#f0fdf4",
@@ -276,7 +254,7 @@ export default function SuperDashboardPage() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                 <thead>
                   <tr>
-                    {["ID", "Salon Name", "Owner", "Email", "Phone", "Status", "Actions", "Password"].map(h => (
+                    {["ID", "Salon Name", "Owner", "Email", "Phone", "Status", "Actions"].map(h => (
                       <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#2c4c7c", background: "#fafcff", borderBottom: "1px solid #ecf3fa" }}>
                         {h}
                       </th>
@@ -310,23 +288,6 @@ export default function SuperDashboardPage() {
                             }}
                           >
                             {t.status === "active" ? "Suspend" : "Activate"}
-                          </button>
-                        </td>
-                        <td style={{ padding: "14px 16px" }}>
-                          <button
-                            onClick={() => setSetPasswordFor({ id: tenantId, name: t.salon_name })}
-                            style={{
-                              background: "#f0fdf4",
-                              color: "#166534",
-                              border: "1px solid #bbf7d0",
-                              padding: "5px 12px",
-                              borderRadius: "30px",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              fontWeight: 500,
-                            }}
-                          >
-                            Set Password
                           </button>
                         </td>
                       </tr>
@@ -390,6 +351,8 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
     if (emailErr) errs.email = emailErr;
     const phoneErr = validatePhoneRequired(form.phone);
     if (phoneErr) errs.phone = phoneErr;
+    if (!form.password.trim()) errs.password = "Password is required";
+    else if (form.password.length < 6) errs.password = "Password must be at least 6 characters";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -423,7 +386,7 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
           { id: "owner_name", label: "👤 Owner Full Name *", placeholder: "Full name" },
           { id: "email", label: "📧 Admin Email *", placeholder: "salon@example.com", type: "email" },
           { id: "phone", label: "📞 Phone *", placeholder: "+92 300 1234567", type: "tel" },
-          { id: "password", label: "🔑 Password (optional)", placeholder: "Leave blank for auto-generated", type: "password" },
+          { id: "password", label: "🔑 Password *", placeholder: "Min 6 characters", type: "password" },
         ].map(f => (
           <div key={f.id} style={{ marginBottom: "16px" }}>
             <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#2c3e66", marginBottom: "6px" }}>{f.label}</label>

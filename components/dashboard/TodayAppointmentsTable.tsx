@@ -157,7 +157,7 @@ export default function TodayAppointmentsTable() {
                     }}
                   >
                     <td style={{ padding: "10px 16px", fontWeight: 500 }}>
-                      {b.customer_name}
+                      {b.customer_name.toUpperCase()}
                     </td>
                     <td style={{ padding: "10px 16px", color: "var(--color-sub)" }}>
                       {b.service}

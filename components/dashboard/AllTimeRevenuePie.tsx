@@ -19,7 +19,7 @@ export default function AllTimeRevenuePie() {
   const tz = general?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const { data, isLoading } = useQuery<AnalyticsResponse>({
-    queryKey: QK.analytics({ period: "day", status: "confirmed,completed", tz }),
+    queryKey: QK.analytics({ period: "day", status: "completed", tz }),
     queryFn: () => fetchAnalytics({ period: "day", status: "completed", tz }),
     staleTime: 0,
     refetchInterval: 60_000,
@@ -42,7 +42,7 @@ export default function AllTimeRevenuePie() {
       <CardHeader>
         <span style={{ fontWeight: 600, fontSize: "14px" }}>💰 Today's Revenue</span>
         <span style={{ fontSize: "12px", color: "var(--color-sub)" }}>
-          Confirmed + Completed · by branch
+          Completed · by branch
         </span>
       </CardHeader>
       <CardContent>
