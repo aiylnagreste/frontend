@@ -223,7 +223,7 @@ export default function RegisterPage() {
                     {f.label} <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type={f.type || "text"}
+                    type={"type" in f ? f.type : "text"}
                     className={`${inputClass} ${errors[f.key] ? "border-red-400 focus:border-red-400 focus:ring-red-400" : ""}`}
                     placeholder={f.placeholder}
                     value={form[f.key]}
