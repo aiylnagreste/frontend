@@ -7,6 +7,7 @@ import type {
   Client,
   DashboardStats,
   Deal,
+  Plan,
   Role,
   SalonTimings,
   Service,
@@ -82,3 +83,4 @@ const SA = "/super-admin/api";
 export const fetchTenants = () => api.get<Tenant[]>(`${SA}/tenants`);
 export const fetchSuperStats = () =>
   api.get<{ total_tenants: number; active_tenants: number }>(`${SA}/stats`);
+export const fetchPlans = () => api.get<Plan[]>(`${SA}/plans`);

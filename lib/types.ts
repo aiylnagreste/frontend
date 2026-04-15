@@ -121,3 +121,18 @@ export interface Tenant {
   phone: string;
   status: "active" | "suspended";
 }
+
+export interface Plan {
+  id: number;
+  name: string;
+  description: string | null;
+  price_cents: number;
+  billing_cycle: string;
+  max_services: number;
+  whatsapp_access: number | boolean;
+  instagram_access: number | boolean;
+  facebook_access: number | boolean;
+  ai_calls_access: number | boolean;
+  stripe_price_id: string | null;
+  is_active: number | boolean;
+}
