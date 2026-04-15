@@ -121,3 +121,41 @@ export interface Tenant {
   phone: string;
   status: "active" | "suspended";
 }
+
+export interface Plan {
+  id: number;
+  name: string;
+  description: string | null;
+  price_cents: number;
+  billing_cycle: 'monthly' | 'yearly' | 'one-time';
+  max_services: number;
+  whatsapp_access: 0 | 1;
+  instagram_access: 0 | 1;
+  facebook_access: 0 | 1;
+  ai_calls_access: 0 | 1;
+  stripe_price_id: string | null;
+  is_active: 0 | 1;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PublicPlan = Omit<Plan, 'stripe_price_id' | 'is_active' | 'created_at' | 'updated_at'>;
+
+export interface Subscription {
+  id: number;
+  tenant_id: string;
+  plan_id: number;
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
+  status: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  created_at: string;
+  // Joined fields from SQL query:
+  salon_name: string;
+  owner_name: string;
+  email: string;
+  plan_name: string;
+  price_cents: number;
+  billing_cycle: string;
+}

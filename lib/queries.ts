@@ -7,10 +7,13 @@ import type {
   Client,
   DashboardStats,
   Deal,
+  Plan,
+  PublicPlan,
   Role,
   SalonTimings,
   Service,
   Staff,
+  Subscription,
   Tenant,
   WebhookConfig,
 } from "./types";
@@ -82,3 +85,21 @@ const SA = "/super-admin/api";
 export const fetchTenants = () => api.get<Tenant[]>(`${SA}/tenants`);
 export const fetchSuperStats = () =>
   api.get<{ total_tenants: number; active_tenants: number }>(`${SA}/stats`);
+
+export async function fetchPlans(): Promise<Plan[]> {
+  const res = await fetch('/api/super-admin/plans', { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to fetch plans');
+  return res.json();
+}
+
+export async function fetchSubscriptions(): Promise<Subscription[]> {
+  const res = await fetch('/api/super-admin/payments', { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to fetch subscriptions');
+  return res.json();
+}
+
+export async function fetchPublicPlans(): Promise<PublicPlan[]> {
+  const res = await fetch('/api/public/plans');
+  if (!res.ok) throw new Error('Failed to load plans');
+  return res.json();
+}
