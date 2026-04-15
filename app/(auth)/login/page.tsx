@@ -176,6 +176,14 @@ export default function LoginPage() {
             >
               {loading ? "Signing in…" : "Login"}
             </button>
+            <div style={{ textAlign: "center", marginTop: 14 }}>
+              <a
+                href="/forgot-password"
+                style={{ color: "#7c3aed", fontSize: 13, textDecoration: "none" }}
+              >
+                Forgot password?
+              </a>
+            </div>
           </form>
         ) : (
           <div style={{ padding: "32px 40px" }}>
