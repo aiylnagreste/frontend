@@ -137,6 +137,19 @@ export interface Plan {
   is_active: number | boolean;
 }
 
+export interface PublicPlan {
+  id: number;
+  name: string;
+  description: string | null;
+  price_cents: number;
+  billing_cycle: string;
+  max_services: number;
+  whatsapp_access: number | boolean;
+  instagram_access: number | boolean;
+  facebook_access: number | boolean;
+  ai_calls_access: number | boolean;
+}
+
 export interface Subscription {
   id: number;
   tenant_id: string;
