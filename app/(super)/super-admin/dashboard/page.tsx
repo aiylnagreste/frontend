@@ -104,6 +104,36 @@ export default function SuperDashboardPage() {
             🏢 Super Admin Portal
           </h1>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <a
+              href="/super-admin/plans"
+              style={{
+                background: "#eff6ff",
+                color: "#1d4ed8",
+                padding: "8px 16px",
+                textDecoration: "none",
+                borderRadius: "40px",
+                fontWeight: 500,
+                fontSize: "13px",
+                border: "1px solid #bfdbfe",
+              }}
+            >
+              📋 Plans
+            </a>
+            <a
+              href="/super-admin/payments"
+              style={{
+                background: "#eff6ff",
+                color: "#1d4ed8",
+                padding: "8px 16px",
+                textDecoration: "none",
+                borderRadius: "40px",
+                fontWeight: 500,
+                fontSize: "13px",
+                border: "1px solid #bfdbfe",
+              }}
+            >
+              💳 Payments
+            </a>
             <button
               onClick={() => setShowChangePwd(true)}
               style={{

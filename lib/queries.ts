@@ -12,6 +12,7 @@ import type {
   SalonTimings,
   Service,
   Staff,
+  Subscription,
   Tenant,
   WebhookConfig,
 } from "./types";
@@ -84,3 +85,4 @@ export const fetchTenants = () => api.get<Tenant[]>(`${SA}/tenants`);
 export const fetchSuperStats = () =>
   api.get<{ total_tenants: number; active_tenants: number }>(`${SA}/stats`);
 export const fetchPlans = () => api.get<Plan[]>(`${SA}/plans`);
+export const fetchSubscriptions = () => api.get<Subscription[]>(`${SA}/subscriptions`);

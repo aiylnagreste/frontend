@@ -136,3 +136,22 @@ export interface Plan {
   stripe_price_id: string | null;
   is_active: number | boolean;
 }
+
+export interface Subscription {
+  id: number;
+  tenant_id: string;
+  plan_id: number;
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
+  status: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  created_at: string;
+  updated_at: string;
+  salon_name: string;
+  owner_name: string;
+  email: string;
+  plan_name: string;
+  price_cents: number;
+  billing_cycle: string;
+}
