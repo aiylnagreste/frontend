@@ -75,5 +75,6 @@ export const config = {
     "/super-admin/payments",
     "/super-admin/payments/:path*",
     "/super-admin/change-password",
+    "/super-admin/change-password/:path*",
   ],
 };
