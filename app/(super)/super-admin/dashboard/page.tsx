@@ -23,7 +23,6 @@ export default function SuperDashboardPage() {
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [setPasswordFor, setSetPasswordFor] = useState<{ id: string; name: string } | null>(null);
-  const [showChangePwd, setShowChangePwd] = useState(false);
 
   // ✅ Track loading states
   const { 
@@ -78,95 +77,10 @@ export default function SuperDashboardPage() {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        background: "#f4f7fc",
-        padding: "24px 16px",
+        padding: "24px 28px",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       }}
     >
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
-        {/* Header */}
-        <div
-          style={{
-            background: "#fff",
-            padding: "20px 28px",
-            borderRadius: "16px",
-            marginBottom: "28px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "16px",
-          }}
-        >
-          <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#1e2a5e", margin: 0 }}>
-            🏢 Super Admin Portal
-          </h1>
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-            <a
-              href="/super-admin/plans"
-              style={{
-                background: "#eff6ff",
-                color: "#1d4ed8",
-                padding: "8px 16px",
-                textDecoration: "none",
-                borderRadius: "40px",
-                fontWeight: 500,
-                fontSize: "13px",
-                border: "1px solid #bfdbfe",
-              }}
-            >
-              📋 Plans
-            </a>
-            <a
-              href="/super-admin/payments"
-              style={{
-                background: "#eff6ff",
-                color: "#1d4ed8",
-                padding: "8px 16px",
-                textDecoration: "none",
-                borderRadius: "40px",
-                fontWeight: 500,
-                fontSize: "13px",
-                border: "1px solid #bfdbfe",
-              }}
-            >
-              💳 Payments
-            </a>
-            <button
-              onClick={() => setShowChangePwd(true)}
-              style={{
-                background: "#f0fdf4",
-                color: "#166534",
-                padding: "8px 16px",
-                border: "1px solid #bbf7d0",
-                borderRadius: "40px",
-                cursor: "pointer",
-                fontSize: "13px",
-                fontWeight: 500,
-              }}
-            >
-              🔑 Change Password
-            </button>
-            <a
-              href="/super-admin/logout"
-              style={{
-                background: "#f1f3f5",
-                color: "#c0392b",
-                padding: "8px 20px",
-                textDecoration: "none",
-                borderRadius: "40px",
-                fontWeight: 500,
-                fontSize: "13px",
-                border: "1px solid #ffe2df",
-              }}
-            >
-              🚪 Logout
-            </a>
-          </div>
-        </div>
-
         {/* Stats Cards - Show skeletons while loading */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "20px", marginBottom: "28px" }}>
           {isLoading ? (
@@ -332,7 +246,6 @@ export default function SuperDashboardPage() {
             ⚡ Note: Creating a salon does NOT auto-create any branch or default staff.
           </div>
         </div>
-      </div>
 
       {showModal && (
         <CreateTenantModal
@@ -354,9 +267,6 @@ export default function SuperDashboardPage() {
         />
       )}
 
-      {showChangePwd && (
-        <ChangeSuperPasswordModal onClose={() => setShowChangePwd(false)} />
-      )}
     </div>
   );
 }
@@ -492,55 +402,6 @@ function SetPasswordModal({ tenantId, salonName, onClose, onSaved }: { tenantId:
           <button onClick={onClose} style={{ padding: "10px 20px", background: "#f1f3f5", border: "none", borderRadius: "40px", cursor: "pointer", fontWeight: 500, fontSize: "13px" }}>Cancel</button>
           <button onClick={handleSave} disabled={loading} style={{ padding: "10px 24px", background: "#1f3a6b", color: "#fff", border: "none", borderRadius: "40px", cursor: "pointer", fontWeight: 500, fontSize: "13px" }}>
             {loading ? "Saving…" : "Set Password"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ChangeSuperPasswordModal({ onClose }: { onClose: () => void }) {
-  const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
-  const [loading, setLoading] = useState(false);
-
-  async function handleSave() {
-    if (form.newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
-    if (form.newPassword !== form.confirmPassword) { toast.error("Passwords do not match"); return; }
-    setLoading(true);
-    try {
-      await api.put("/super-admin/api/change-password", {
-        currentPassword: form.currentPassword,
-        newPassword: form.newPassword,
-      });
-      toast.success("Password changed successfully");
-      onClose();
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to change password");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const inputStyle = { width: "100%", padding: "10px 14px", border: "1.5px solid #e2e8f0", borderRadius: "12px", fontSize: "13px", outline: "none", boxSizing: "border-box" as const };
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: "#fff", borderRadius: "24px", width: "90%", maxWidth: "420px", padding: "28px 32px", boxShadow: "0 25px 50px rgba(0,0,0,0.2)" }}>
-        <h3 style={{ fontSize: "18px", fontWeight: 600, marginBottom: "6px", color: "#0f2e4a" }}>🔑 Change Your Password</h3>
-        <p style={{ fontSize: "13px", color: "#5b6e8c", marginBottom: "20px" }}>Super Admin account</p>
-        {(["currentPassword", "newPassword", "confirmPassword"] as const).map((field) => (
-          <div key={field} style={{ marginBottom: "14px" }}>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#2c3e66", marginBottom: "6px" }}>
-              {field === "currentPassword" ? "Current Password" : field === "newPassword" ? "New Password" : "Confirm New Password"}
-            </label>
-            <input type="password" value={form[field]} onChange={(e) => setForm(f => ({ ...f, [field]: e.target.value }))} style={inputStyle} />
-          </div>
-        ))}
-        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
-          <button onClick={onClose} style={{ padding: "10px 20px", background: "#f1f3f5", border: "none", borderRadius: "40px", cursor: "pointer", fontWeight: 500, fontSize: "13px" }}>Cancel</button>
-          <button onClick={handleSave} disabled={loading} style={{ padding: "10px 24px", background: "#1f3a6b", color: "#fff", border: "none", borderRadius: "40px", cursor: "pointer", fontWeight: 500, fontSize: "13px" }}>
-            {loading ? "Saving…" : "Update Password"}
           </button>
         </div>
       </div>
