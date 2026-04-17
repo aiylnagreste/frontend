@@ -151,7 +151,7 @@ export interface Subscription {
   current_period_start: string | null;
   current_period_end: string | null;
   created_at: string;
-  // Joined fields from SQL query:
+  updated_at: string;
   salon_name: string;
   owner_name: string;
   email: string;
