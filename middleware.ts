@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 const PROTECTED = ["/dashboard", "/bookings", "/clients", "/staff", "/packages", "/deals", "/reports", "/settings"];
 
-const SUPER_PROTECTED = ["/super-admin/dashboard"];
+const SUPER_PROTECTED = [
+  "/super-admin/dashboard",
+  "/super-admin/plans",
+  "/super-admin/payments",
+  "/super-admin/change-password",
+];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -38,12 +43,11 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // Redirect root to dashboard or login
+  // Root: authenticated tenants go to dashboard, guests see the landing page
   if (pathname === "/") {
     const tenantToken = req.cookies.get("tenantToken");
-    return NextResponse.redirect(
-      new URL(tenantToken ? "/dashboard" : "/login", req.url),
-    );
+    if (tenantToken) return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.next();
   }
 
   return NextResponse.next();
@@ -66,5 +70,10 @@ export const config = {
     "/settings/:path*",
     "/super-admin/dashboard",
     "/super-admin/dashboard/:path*",
+    "/super-admin/plans",
+    "/super-admin/plans/:path*",
+    "/super-admin/payments",
+    "/super-admin/payments/:path*",
+    "/super-admin/change-password",
   ],
 };
