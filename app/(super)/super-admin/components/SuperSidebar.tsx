@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { fetchTenants } from "@/lib/queries";
+import { api } from "@/lib/api";
 
 interface ResetRequest { tenantId: string }
 
@@ -35,21 +37,13 @@ export function SuperSidebar() {
 
   const { data: resetRequests = [] } = useQuery<ResetRequest[]>({
     queryKey: ["resetRequests"],
-    queryFn: async () => {
-      const res = await fetch("/super-admin/api/reset-requests", { credentials: "include" });
-      if (!res.ok) return [];
-      return res.json();
-    },
+    queryFn: () => api.get<ResetRequest[]>("/super-admin/api/reset-requests"),
     staleTime: 30_000,
   });
 
-  const { data: tenants = [] } = useQuery<unknown[]>({
+  const { data: tenants = [] } = useQuery({
     queryKey: ["tenants"],
-    queryFn: async () => {
-      const res = await fetch("/super-admin/api/tenants", { credentials: "include" });
-      if (!res.ok) return [];
-      return res.json();
-    },
+    queryFn: fetchTenants,
     staleTime: 30_000,
   });
 
@@ -122,7 +116,6 @@ export function SuperSidebar() {
           </div>
           <div className="min-w-0">
             <div className="text-[11px] font-semibold text-white/80 truncate">Super Admin</div>
-            <div className="text-[9px] text-white/30 truncate">admin@glowdesk.io</div>
           </div>
         </div>
         <a
