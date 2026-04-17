@@ -5,33 +5,35 @@ import { fetchTenants, fetchSuperStats } from "@/lib/queries";
 import type { Tenant } from "@/lib/types";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useState, useEffect } from "react";
 import { validateName, validateEmail, validatePhoneRequired } from "@/lib/validation";
-import { 
-  Search, 
-  Plus, 
-  MoreVertical, 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign,
-  Users,
-  Building2,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Calendar,
-  Eye,
-  UserCheck,
-  Phone,
-  Mail,
-  Edit,
-  Power,
-  Key,
-  X
+import {
+  Search, Plus, Store, CheckCircle, XCircle,
+  DollarSign, Key, Users, Mail, Calendar, Power, X, ArrowUp, ArrowDown, TriangleAlert,
 } from "lucide-react";
+
+const C = {
+  bg: "#F4F3EF",
+  surface: "#FFFFFF",
+  primary: "#0D9488",
+  primaryLight: "#CCFBF1",
+  primaryGlow: "rgba(13,148,136,0.12)",
+  accent: "#E8913A",
+  accentLight: "#FEF3C7",
+  text: "#1A1D23",
+  text2: "#5F6577",
+  text3: "#9CA3B4",
+  border: "#E6E4DF",
+  border2: "#F0EEEA",
+  success: "#10B981",
+  successBg: "#ECFDF5",
+  error: "#EF4444",
+  errorBg: "#FEF2F2",
+  warning: "#F59E0B",
+  warningBg: "#FFFBEB",
+};
 
 interface ResetRequest {
   tenantId: string;
@@ -41,6 +43,67 @@ interface ResetRequest {
   requestedAt: string;
 }
 
+// ── Stat Card ─────────────────────────────────────────────────────────────────
+function StatCard({ title, value, change, iconEl, accent, trend }: {
+  title: string; value: string | number; change: string;
+  iconEl: React.ReactNode; accent: "teal"|"green"|"red"|"amber"; trend?: "up"|"down"|"neutral";
+}) {
+  const colors: Record<string, { icon: string; iconBg: string }> = {
+    teal:  { icon: C.primary,  iconBg: C.primaryLight },
+    green: { icon: C.success,  iconBg: C.successBg },
+    red:   { icon: C.error,    iconBg: C.errorBg },
+    amber: { icon: C.accent,   iconBg: C.accentLight },
+  };
+  const { icon, iconBg } = colors[accent];
+
+  return (
+    <div className={`gd-stat-card ${accent}`} style={{
+      background: C.surface,
+      border: `1px solid ${C.border2}`,
+      borderRadius: 12,
+      padding: 20,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <span style={{ fontSize: 13, fontWeight: 500, color: C.text2 }}>{title}</span>
+        <div style={{
+          width: 40, height: 40, borderRadius: 10,
+          background: iconBg, color: icon,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>{iconEl}</div>
+      </div>
+      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 700, color: C.text, marginBottom: 6 }}>{value}</div>
+      <div style={{
+        display: "inline-flex", alignItems: "center", gap: 4,
+        fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 99,
+        background: trend === "up" ? C.successBg : trend === "down" ? C.errorBg : C.border2,
+        color: trend === "up" ? "#059669" : trend === "down" ? "#DC2626" : C.text3,
+      }}>
+        {trend === "up" && <ArrowUp size={11} />}
+        {trend === "down" && <ArrowDown size={11} />}
+        {change}
+      </div>
+    </div>
+  );
+}
+
+// ── Badge ─────────────────────────────────────────────────────────────────────
+function StatusBadge({ status }: { status: string }) {
+  const active = status === "active";
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      padding: "4px 10px", borderRadius: 99,
+      fontSize: 12, fontWeight: 600,
+      background: active ? C.successBg : C.errorBg,
+      color: active ? "#059669" : "#DC2626",
+    }}>
+      {active ? <CheckCircle size={11} /> : <XCircle size={11} />}
+      {active ? "Active" : "Suspended"}
+    </span>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 export default function SuperDashboardPage() {
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
@@ -53,26 +116,12 @@ export default function SuperDashboardPage() {
     return () => window.removeEventListener("open-new-salon", handler);
   }, []);
 
-  const {
-    data: tenants,
-    isLoading: tenantsLoading,
-    refetch: refetchTenants,
-  } = useQuery<Tenant[]>({
-    queryKey: ["tenants"],
-    queryFn: fetchTenants,
-    staleTime: 0,
+  const { data: tenants, isLoading: tenantsLoading, refetch: refetchTenants } = useQuery<Tenant[]>({
+    queryKey: ["tenants"], queryFn: fetchTenants, staleTime: 0,
   });
-
-  const {
-    data: stats,
-    isLoading: statsLoading,
-    refetch: refetchStats,
-  } = useQuery({
-    queryKey: ["superStats"],
-    queryFn: fetchSuperStats,
-    staleTime: 0,
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+    queryKey: ["superStats"], queryFn: fetchSuperStats, staleTime: 0,
   });
-
   const { data: resetRequests = [], refetch: refetchResets } = useQuery<ResetRequest[]>({
     queryKey: ["resetRequests"],
     queryFn: async () => {
@@ -88,244 +137,212 @@ export default function SuperDashboardPage() {
       api.patch(`/super-admin/api/tenants/${encodeURIComponent(id)}/status`, {
         status: status === "active" ? "suspended" : "active",
       }),
-    onSuccess: () => {
-      toast.success("Status updated");
-      refetchTenants();
-      refetchStats();
-    },
+    onSuccess: () => { toast.success("Status updated"); refetchTenants(); refetchStats(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const tenantsArray = Array.isArray(tenants) ? tenants : [];
-  const activeTenants = tenantsArray.filter((t) => t.status === "active").length;
-  const suspendedTenants = tenantsArray.filter((t) => t.status !== "active").length;
+  const activeTenants = tenantsArray.filter(t => t.status === "active").length;
+  const suspendedTenants = tenantsArray.filter(t => t.status !== "active").length;
   const isLoading = tenantsLoading || statsLoading;
 
   const totalSalons = stats?.total_tenants ?? tenantsArray.length;
   const activeSalons = stats?.active_tenants ?? activeTenants;
   const activePercentage = totalSalons > 0 ? Math.round((activeSalons / totalSalons) * 100) : 0;
 
-  const filteredTenants = tenantsArray.filter(tenant => 
-    tenant.salon_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.owner_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTenants = tenantsArray.filter(t =>
+    t.salon_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    t.owner_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    t.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="p-6 bg-gray-50 min-h-full">
+    <div style={{ padding: "32px 36px", background: C.bg, minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" }}>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Super Admin · Overview</p>
-        </div>
-        <div className="text-xs text-gray-400 bg-white border border-gray-100 rounded-lg px-3 py-1.5 shadow-sm">
-          {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-        </div>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, fontWeight: 700, color: C.text, letterSpacing: "-0.02em" }}>Dashboard</h1>
+        <p style={{ fontSize: 14, color: C.text2, marginTop: 4 }}>Super Admin · System Overview</p>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
         {isLoading ? (
-          <>
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-                <Skeleton style={{ height: "10px", width: "40%", marginBottom: "12px" }} />
-                <Skeleton style={{ height: "32px", width: "50%" }} />
-              </div>
-            ))}
-          </>
+          [1,2,3,4].map(i => (
+            <div key={i} style={{ background: C.surface, borderRadius: 12, padding: 20, border: `1px solid ${C.border2}` }}>
+              <Skeleton style={{ height: 10, width: "40%", marginBottom: 12 }} />
+              <Skeleton style={{ height: 32, width: "50%" }} />
+            </div>
+          ))
         ) : (
           <>
-            <StatCard
-              title="Total Salons"
-              value={totalSalons}
-              change={`+${stats?.new_this_month || 0} this month`}
-              icon={Building2}
-              iconColor="text-blue-600"
-              iconBg="bg-blue-50"
-              trend="up"
-            />
-            <StatCard
-              title="Active"
-              value={activeSalons}
-              change={`${activePercentage}% uptime`}
-              icon={CheckCircle}
-              iconColor="text-emerald-600"
-              iconBg="bg-emerald-50"
-              trend="up"
-            />
-            <StatCard
-              title="Suspended"
-              value={suspendedTenants}
-              change="needs attention"
-              icon={XCircle}
-              iconColor="text-red-600"
-              iconBg="bg-red-50"
-              trend="down"
-            />
-            <StatCard
-              title="Monthly Revenue"
-              value={`$${((stats?.mrr || 0) / 100).toLocaleString()}`}
-              change={`${stats?.revenue_change || 0}% vs last month`}
-              icon={DollarSign}
-              iconColor="text-amber-600"
-              iconBg="bg-amber-50"
-              trend={stats?.revenue_change >= 0 ? "up" : "down"}
-            />
+            <StatCard title="Total Salons" value={totalSalons} change={`+${stats?.new_this_month || 0} this month`} iconEl={<Store size={16} />} accent="teal" trend="up" />
+            <StatCard title="Active" value={activeSalons} change={`${activePercentage}% uptime`} iconEl={<CheckCircle size={16} />} accent="green" trend="up" />
+            <StatCard title="Suspended" value={suspendedTenants} change="needs attention" iconEl={<XCircle size={16} />} accent="red" trend="down" />
+            <StatCard title="Monthly Revenue" value={`$${((stats?.mrr || 0) / 100).toLocaleString()}`} change={`${stats?.revenue_change || 0}% vs last month`} iconEl={<DollarSign size={16} />} accent="amber" trend={stats?.revenue_change >= 0 ? "up" : "down"} />
           </>
         )}
       </div>
 
-      {/* Password Reset Requests */}
+      {/* Reset Requests */}
       {resetRequests.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-                <Key className="w-4 h-4 text-red-600" />
+        <div style={{ background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "16px 24px", borderBottom: `1px solid ${C.border2}`,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: C.errorBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Key size={14} style={{ color: C.error }} />
               </div>
-              <h3 className="font-semibold text-gray-900">Password Reset Requests</h3>
-              <span className="bg-red-100 text-red-700 text-xs font-medium rounded-full px-2 py-0.5">
+              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, color: C.text }}>Password Reset Requests</h3>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: C.error, color: "#fff" }}>
                 {resetRequests.length}
               </span>
             </div>
           </div>
-          <div className="divide-y divide-gray-50">
-            {resetRequests.map((r) => (
-              <div key={r.tenantId} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900">{r.salonName}</p>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      {r.ownerName}
+          {resetRequests.map(r => (
+            <div key={r.tenantId} style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 24px", borderBottom: `1px solid ${C.border2}`,
+              transition: "background 0.15s",
+            }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.02)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{r.salonName}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 4 }}>
+                  {[
+                    { icon: <Users size={11} />, text: r.ownerName },
+                    { icon: <Mail size={11} />, text: r.email },
+                    { icon: <Calendar size={11} />, text: new Date(r.requestedAt).toLocaleDateString() },
+                  ].map((m, i) => (
+                    <span key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.text3 }}>
+                      {m.icon}{m.text}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Mail className="w-3 h-3" />
-                      {r.email}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(r.requestedAt).toLocaleDateString()}
-                    </span>
-                  </div>
+                  ))}
                 </div>
-                <button
-                  onClick={() => setSetPasswordFor({ id: r.tenantId, name: r.salonName })}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                  <Key className="w-4 h-4" />
-                  Set Password
-                </button>
               </div>
-            ))}
-          </div>
+              <button
+                onClick={() => setSetPasswordFor({ id: r.tenantId, name: r.salonName })}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "7px 14px", background: C.primary, color: "#fff",
+                  border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                <Key size={13} /> Set Password
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Salons Table */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-indigo-600" />
+      <div style={{ background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 12, overflow: "hidden" }}>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "18px 24px", borderBottom: `1px solid ${C.border2}`,
+          flexWrap: "wrap", gap: 12,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Store size={14} style={{ color: C.primary }} />
             </div>
-            <h3 className="font-semibold text-gray-900">Managed Salons</h3>
+            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, color: C.text }}>Managed Salons</h3>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ position: "relative" }}>
+              <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: C.text3 }} />
               <input
-                type="text"
-                placeholder="Search salons..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                type="text" placeholder="Search salons..."
+                value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                style={{
+                  paddingLeft: 34, paddingRight: 14, paddingTop: 9, paddingBottom: 9,
+                  border: `1.5px solid ${C.border}`, borderRadius: 8,
+                  fontSize: 13, width: 240, outline: "none", color: C.text,
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+                onFocus={e => { e.target.style.borderColor = C.primary; e.target.style.boxShadow = `0 0 0 3px ${C.primaryGlow}`; }}
+                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = "none"; }}
               />
             </div>
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "8px 16px", background: C.primary, color: "#fff",
+                border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              }}
             >
-              <Plus className="w-4 h-4" />
-              New Salon
+              <Plus size={14} /> New Salon
             </button>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="p-6 space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex gap-4">
-                <Skeleton style={{ height: "40px", width: "100%", borderRadius: "8px" }} />
-              </div>
-            ))}
+          <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 10 }}>
+            {[1,2,3,4,5].map(i => <Skeleton key={i} style={{ height: 44, borderRadius: 8 }} />)}
           </div>
         ) : filteredTenants.length === 0 ? (
           <EmptyState icon="🏪" title="No salons found" description={searchTerm ? "Try a different search term" : 'Click "New Salon" to get started.'} />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Salon</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Owner</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                <tr style={{ borderBottom: `1px solid ${C.border2}`, background: C.bg }}>
+                  {["Salon", "Owner", "Contact", "Status", "Actions"].map(h => (
+                    <th key={h} style={{ padding: "12px 24px", textAlign: "left", fontSize: 11, fontWeight: 600, color: C.text3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredTenants.map((t) => {
-                  const tenantId = t.tenant_id || t.id || "";
+              <tbody>
+                {filteredTenants.map(t => {
+                  const tid = t.tenant_id || t.id || "";
                   return (
-                    <tr key={tenantId} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{t.salon_name}</div>
-                        <div className="text-xs text-gray-500 mt-0.5">ID: {tenantId.slice(0, 8)}...</div>
+                    <tr key={tid} style={{ borderBottom: `1px solid ${C.border2}`, transition: "background 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,148,136,0.02)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <td style={{ padding: "14px 24px" }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{t.salon_name}</div>
+                        <div style={{ fontSize: 11, color: C.text3, marginTop: 2, fontFamily: "'Space Grotesk', monospace" }}>{tid.slice(0, 12)}...</div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-gray-900">{t.owner_name}</div>
+                      <td style={{ padding: "14px 24px", fontSize: 13, fontWeight: 500, color: C.text }}>{t.owner_name}</td>
+                      <td style={{ padding: "14px 24px" }}>
+                        <div style={{ fontSize: 13, color: C.text2 }}>{t.email}</div>
+                        <div style={{ fontSize: 12, color: C.text3, marginTop: 2 }}>{t.phone}</div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-600">{t.email}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">{t.phone}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          t.status === "active" 
-                            ? "bg-emerald-100 text-emerald-800" 
-                            : "bg-red-100 text-red-800"
-                        }`}>
-                          {t.status === "active" ? (
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                          ) : (
-                            <XCircle className="w-3 h-3 mr-1" />
-                          )}
-                          {t.status === "active" ? "Active" : "Suspended"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
+                      <td style={{ padding: "14px 24px" }}><StatusBadge status={t.status} /></td>
+                      <td style={{ padding: "14px 24px" }}>
+                        <div style={{ display: "flex", gap: 4 }}>
                           <button
-                            onClick={() => toggleMutation.mutate({ id: tenantId, status: t.status })}
+                            onClick={() => toggleMutation.mutate({ id: tid, status: t.status })}
                             disabled={toggleMutation.isPending}
-                            className={`p-2 rounded-lg transition-colors ${
-                              t.status === "active"
-                                ? "text-red-600 hover:bg-red-50"
-                                : "text-emerald-600 hover:bg-emerald-50"
-                            }`}
                             title={t.status === "active" ? "Suspend" : "Activate"}
+                            style={{
+                              width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+                              background: "transparent", border: "none", borderRadius: 8, cursor: "pointer",
+                              color: t.status === "active" ? C.error : C.success,
+                              transition: "background 0.15s",
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = t.status === "active" ? C.errorBg : C.successBg; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                           >
-                            <Power className="w-4 h-4" />
+                            <Power size={14} />
                           </button>
                           <button
-                            onClick={() => setSetPasswordFor({ id: tenantId, name: t.salon_name })}
-                            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                            onClick={() => setSetPasswordFor({ id: tid, name: t.salon_name })}
                             title="Set Password"
+                            style={{
+                              width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+                              background: "transparent", border: "none", borderRadius: 8, cursor: "pointer", color: C.text3,
+                              transition: "background 0.15s",
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = C.border2; e.currentTarget.style.color = C.text2; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.text3; }}
                           >
-                            <Key className="w-4 h-4" />
+                            <Key size={14} />
                           </button>
                         </div>
                       </td>
@@ -341,64 +358,45 @@ export default function SuperDashboardPage() {
       {showModal && (
         <CreateTenantModal
           onClose={() => setShowModal(false)}
-          onCreated={() => {
-            refetchTenants();
-            refetchStats();
-            setShowModal(false);
-          }}
+          onCreated={() => { refetchTenants(); refetchStats(); setShowModal(false); }}
         />
       )}
-
       {setPasswordFor && (
         <SetPasswordModal
-          tenantId={setPasswordFor.id}
-          salonName={setPasswordFor.name}
+          tenantId={setPasswordFor.id} salonName={setPasswordFor.name}
           onClose={() => setSetPasswordFor(null)}
-          onSaved={() => {
-            refetchResets();
-            setSetPasswordFor(null);
-          }}
+          onSaved={() => { refetchResets(); setSetPasswordFor(null); }}
         />
       )}
     </div>
   );
 }
 
-function StatCard({ 
-  title, 
-  value, 
-  change, 
-  icon: Icon, 
-  iconColor, 
-  iconBg,
-  trend 
-}: { 
-  title: string; 
-  value: string | number; 
-  change: string; 
-  icon: React.ElementType; 
-  iconColor: string;
-  iconBg: string;
-  trend?: "up" | "down";
+// ── Shared modal styles ───────────────────────────────────────────────────────
+const C2 = C; // alias
+
+function ModalInput({ label, type = "text", value, onChange, placeholder, error }: {
+  label: string; type?: string; value: string;
+  onChange: (v: string) => void; placeholder?: string; error?: string;
 }) {
   return (
-    <div className="sa-stat-card bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          <div className="flex items-center gap-1 mt-2">
-            {trend === "up" && <TrendingUp className="w-3 h-3 text-emerald-600" />}
-            {trend === "down" && <TrendingDown className="w-3 h-3 text-red-600" />}
-            <span className={`text-xs ${trend === "up" ? "text-emerald-600" : trend === "down" ? "text-red-600" : "text-gray-500"}`}>
-              {change}
-            </span>
-          </div>
-        </div>
-        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center`}>
-          <Icon className={`w-5 h-5 ${iconColor}`} />
-        </div>
-      </div>
+    <div style={{ marginBottom: 16 }}>
+      <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: C2.text2, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{label}</label>
+      <input
+        type={type} value={value} onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          width: "100%", padding: "11px 14px",
+          border: `1.5px solid ${error ? C2.error : C2.border}`, borderRadius: 8,
+          fontSize: 14, color: C2.text, outline: "none",
+          fontFamily: "'DM Sans', sans-serif",
+          background: C2.surface,
+          transition: "border-color 0.2s, box-shadow 0.2s",
+        }}
+        onFocus={e => { e.target.style.borderColor = C2.primary; e.target.style.boxShadow = `0 0 0 3px ${C2.primaryGlow}`; }}
+        onBlur={e => { e.target.style.borderColor = error ? C2.error : C2.border; e.target.style.boxShadow = "none"; }}
+      />
+      {error && <p style={{ fontSize: 12, color: C2.error, marginTop: 5 }}>{error}</p>}
     </div>
   );
 }
@@ -409,8 +407,8 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
   const [loading, setLoading] = useState(false);
 
   function set(key: string, value: string) {
-    setForm((f) => ({ ...f, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: "" }));
+    setForm(f => ({ ...f, [key]: value }));
+    setErrors(prev => ({ ...prev, [key]: "" }));
   }
 
   function validateForm(): boolean {
@@ -445,96 +443,32 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, background: "rgba(17,19,24,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-2xl w-[90%] max-w-[500px] shadow-2xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900">Create New Salon</h3>
-          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-            <X className="w-5 h-5" />
+      <div style={{ background: C2.surface, borderRadius: 20, width: "90%", maxWidth: 480, boxShadow: "0 24px 60px rgba(26,29,35,0.14)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 28px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: C2.primaryLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Plus size={14} style={{ color: C2.primary }} />
+            </div>
+            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 17, fontWeight: 600, color: C2.text }}>Create New Salon</h3>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: C2.text3, borderRadius: 8 }}>
+            <X size={16} />
           </button>
         </div>
-        <div className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Salon Name *</label>
-            <input
-              type="text"
-              placeholder="e.g., Royal Glam Studio"
-              value={form.salon_name}
-              onChange={(e) => set("salon_name", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                errors.salon_name ? "border-red-400" : "border-gray-200"
-              }`}
-            />
-            {errors.salon_name && <p className="text-xs text-red-500 mt-1">{errors.salon_name}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name *</label>
-            <input
-              type="text"
-              placeholder="Full name"
-              value={form.owner_name}
-              onChange={(e) => set("owner_name", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                errors.owner_name ? "border-red-400" : "border-gray-200"
-              }`}
-            />
-            {errors.owner_name && <p className="text-xs text-red-500 mt-1">{errors.owner_name}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-            <input
-              type="email"
-              placeholder="salon@example.com"
-              value={form.email}
-              onChange={(e) => set("email", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                errors.email ? "border-red-400" : "border-gray-200"
-              }`}
-            />
-            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-            <input
-              type="tel"
-              placeholder="+92 300 1234567"
-              value={form.phone}
-              onChange={(e) => set("phone", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                errors.phone ? "border-red-400" : "border-gray-200"
-              }`}
-            />
-            {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-            <input
-              type="password"
-              placeholder="Min 6 characters"
-              value={form.password}
-              onChange={(e) => set("password", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                errors.password ? "border-red-400" : "border-gray-200"
-              }`}
-            />
-            {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
-          </div>
+        <div style={{ padding: "0 28px 24px" }}>
+          <ModalInput label="Salon Name" value={form.salon_name} onChange={v => set("salon_name", v)} placeholder="e.g., Royal Glam Studio" error={errors.salon_name} />
+          <ModalInput label="Owner Name" value={form.owner_name} onChange={v => set("owner_name", v)} placeholder="Full name" error={errors.owner_name} />
+          <ModalInput label="Email Address" type="email" value={form.email} onChange={v => set("email", v)} placeholder="salon@example.com" error={errors.email} />
+          <ModalInput label="Phone Number" type="tel" value={form.phone} onChange={v => set("phone", v)} placeholder="+92 300 1234567" error={errors.phone} />
+          <ModalInput label="Password" type="password" value={form.password} onChange={v => set("password", v)} placeholder="Min 6 characters" error={errors.password} />
         </div>
-        <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleCreate}
-            disabled={loading}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60"
-          >
-            {loading ? "Creating..." : "Create Salon"}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "16px 28px", background: C2.bg, borderRadius: "0 0 20px 20px", borderTop: `1px solid ${C2.border2}` }}>
+          <button onClick={onClose} style={{ padding: "9px 18px", background: C2.surface, border: `1.5px solid ${C2.border}`, borderRadius: 8, fontSize: 13, fontWeight: 500, color: C2.text2, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleCreate} disabled={loading} style={{ padding: "9px 18px", background: C2.primary, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
+            {loading ? "Creating…" : "Create Salon"}
           </button>
         </div>
       </div>
@@ -542,16 +476,8 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
   );
 }
 
-function SetPasswordModal({
-  tenantId,
-  salonName,
-  onClose,
-  onSaved,
-}: {
-  tenantId: string;
-  salonName: string;
-  onClose: () => void;
-  onSaved: () => void;
+function SetPasswordModal({ tenantId, salonName, onClose, onSaved }: {
+  tenantId: string; salonName: string; onClose: () => void; onSaved: () => void;
 }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -574,59 +500,30 @@ function SetPasswordModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, background: "rgba(17,19,24,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-2xl w-[90%] max-w-[420px] shadow-2xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-              <Key className="w-4 h-4 text-amber-600" />
+      <div style={{ background: C2.surface, borderRadius: 20, width: "90%", maxWidth: 420, boxShadow: "0 24px 60px rgba(26,29,35,0.14)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 28px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: C2.accentLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Key size={14} style={{ color: C2.accent }} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">Set New Password</h3>
+            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 17, fontWeight: 600, color: C2.text }}>Set New Password</h3>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: C2.text3, borderRadius: 8 }}>
+            <X size={16} />
           </button>
         </div>
-        <div className="p-6">
-          <p className="text-sm text-gray-500 mb-4">{salonName}</p>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Min 6 characters"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-              <input
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Re-enter new password"
-              />
-            </div>
-          </div>
+        <div style={{ padding: "0 28px 24px" }}>
+          <p style={{ fontSize: 13, color: C2.text2, marginBottom: 18 }}>{salonName}</p>
+          <ModalInput label="New Password" type="password" value={newPassword} onChange={setNewPassword} placeholder="Min 6 characters" />
+          <ModalInput label="Confirm Password" type="password" value={confirm} onChange={setConfirm} placeholder="Re-enter new password" />
         </div>
-        <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60"
-          >
-            {loading ? "Saving..." : "Set Password"}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "16px 28px", background: C2.bg, borderRadius: "0 0 20px 20px", borderTop: `1px solid ${C2.border2}` }}>
+          <button onClick={onClose} style={{ padding: "9px 18px", background: C2.surface, border: `1.5px solid ${C2.border}`, borderRadius: 8, fontSize: 13, fontWeight: 500, color: C2.text2, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleSave} disabled={loading} style={{ padding: "9px 18px", background: C2.primary, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
+            {loading ? "Saving…" : "Set Password"}
           </button>
         </div>
       </div>

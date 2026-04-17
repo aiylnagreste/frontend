@@ -1,14 +1,19 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { SuperSidebar } from "./components/SuperSidebar";
-import { SuperTopbar } from "./components/SuperTopbar";
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const noSidebar = pathname === "/super-admin/login" || pathname === "/super-admin";
+
+  if (noSidebar) return <>{children}</>;
+
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div style={{ display: "flex", minHeight: "100vh", background: "#F4F3EF", fontFamily: "'DM Sans', sans-serif" }}>
       <SuperSidebar />
-      <div className="flex flex-col flex-1 min-w-0">
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+      <div style={{ flex: 1, marginLeft: 240, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <main style={{ flex: 1 }}>{children}</main>
       </div>
     </div>
   );
