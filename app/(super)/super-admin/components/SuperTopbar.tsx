@@ -21,7 +21,7 @@ export function SuperTopbar() {
         <p className="text-[11px] text-slate-400 mt-0.5">{meta.crumb}</p>
       </div>
       <div className="flex items-center gap-2">
-        <button className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-sm hover:bg-slate-100 transition-colors">
+        <button aria-label="Notifications" className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-sm hover:bg-slate-100 transition-colors">
           🔔
         </button>
       </div>
