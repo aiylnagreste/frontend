@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Plus, Pencil, Trash2, X, MessageCircle, Share2, Users, Phone } from "lucide-react";
+import { Plus, Pencil, Trash2, X, MessageCircle, Share2, Users, Phone, Power } from "lucide-react";
 
 type PlanFormData = {
   name: string;
@@ -59,12 +59,12 @@ function FeatureChip({ label, active, icon }: { label: string; active: boolean; 
   );
 }
 
-function PlanCard({ plan, onEdit, onDelete }: { plan: Plan; onEdit: (p: Plan) => void; onDelete: (id: number) => void }) {
+function PlanCard({ plan, onEdit, onToggle, onHardDelete }: { plan: Plan; onEdit: (p: Plan) => void; onToggle: (p: Plan) => void; onHardDelete: (id: number) => void }) {
   const price = (plan.price_cents / 100).toFixed(2);
   const cycle = plan.billing_cycle === "monthly" ? "/mo" : plan.billing_cycle === "yearly" ? "/yr" : "";
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ background: "#fff", borderRadius: 12, border: `1px solid ${plan.is_active ? "#e2e8f0" : "#fecaca"}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", padding: 20, display: "flex", flexDirection: "column", gap: 16, opacity: plan.is_active ? 1 : 0.75 }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
@@ -77,7 +77,14 @@ function PlanCard({ plan, onEdit, onDelete }: { plan: Plan; onEdit: (p: Plan) =>
           <button onClick={() => onEdit(plan)} style={{ padding: "6px", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", borderRadius: 6 }} title="Edit">
             <Pencil size={14} />
           </button>
-          <button onClick={() => onDelete(plan.id)} style={{ padding: "6px", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", borderRadius: 6 }} title="Deactivate">
+          <button
+            onClick={() => onToggle(plan)}
+            style={{ padding: "6px", background: "none", border: "none", cursor: "pointer", color: plan.is_active ? "#f59e0b" : "#10b981", borderRadius: 6 }}
+            title={plan.is_active ? "Deactivate" : "Activate"}
+          >
+            <Power size={14} />
+          </button>
+          <button onClick={() => onHardDelete(plan.id)} style={{ padding: "6px", background: "none", border: "none", cursor: "pointer", color: "#ef4444", borderRadius: 6 }} title="Delete permanently">
             <Trash2 size={14} />
           </button>
         </div>
@@ -153,10 +160,10 @@ function PlanForm({ initial, onClose, onSaved }: { initial: PlanFormData & { id?
         ai_calls_access: form.ai_calls_access ? 1 : 0,
       };
       if (initial.id) {
-        await api.put(`/api/super-admin/plans/${initial.id}`, payload);
+        await api.put(`/super-admin/api/plans/${initial.id}`, payload);
         toast.success("Plan updated");
       } else {
-        await api.post("/api/super-admin/plans", payload);
+        await api.post("/super-admin/api/plans", payload);
         toast.success("Plan created");
       }
       onSaved();
@@ -251,9 +258,30 @@ export default function PlansPage() {
     staleTime: 0,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete<{ ok: boolean }>(`/api/super-admin/plans/${id}`),
-    onSuccess: () => { toast.success("Plan deactivated"); qc.invalidateQueries({ queryKey: ["superPlans"] }); },
+  const toggleMutation = useMutation({
+    mutationFn: (plan: Plan) => api.put(`/super-admin/api/plans/${plan.id}`, {
+      name: plan.name,
+      description: plan.description,
+      price_cents: plan.price_cents,
+      billing_cycle: plan.billing_cycle,
+      max_services: plan.max_services,
+      whatsapp_access: plan.whatsapp_access ? 1 : 0,
+      instagram_access: plan.instagram_access ? 1 : 0,
+      facebook_access: plan.facebook_access ? 1 : 0,
+      ai_calls_access: plan.ai_calls_access ? 1 : 0,
+      stripe_price_id: plan.stripe_price_id,
+      is_active: plan.is_active ? 0 : 1,
+    }),
+    onSuccess: (_, plan) => {
+      toast.success(plan.is_active ? "Plan deactivated" : "Plan activated");
+      qc.invalidateQueries({ queryKey: ["superPlans"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const hardDeleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete<{ ok: boolean }>(`/super-admin/api/plans/${id}/permanent`),
+    onSuccess: () => { toast.success("Plan permanently deleted"); qc.invalidateQueries({ queryKey: ["superPlans"] }); },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Delete failed"),
   });
 
@@ -270,32 +298,38 @@ export default function PlansPage() {
 
   function handleNew() { setEditing({ ...BLANK }); setDrawerOpen(true); }
 
-  function handleDelete(id: number) {
-    if (!confirm("Deactivate this plan? Existing subscribers are unaffected.")) return;
-    deleteMutation.mutate(id);
+  function handleToggle(plan: Plan) {
+    const action = plan.is_active ? "Deactivate" : "Activate";
+    if (!confirm(`${action} "${plan.name}"?`)) return;
+    toggleMutation.mutate(plan);
+  }
+
+  function handleHardDelete(id: number) {
+    if (!confirm("Permanently delete this plan? This cannot be undone.")) return;
+    hardDeleteMutation.mutate(id);
   }
 
   return (
-    <div style={{ padding: "24px", maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: "#0f172a" }}>Plans</h1>
-          <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748b" }}>Manage subscription plans and feature access</p>
-        </div>
-        <button onClick={handleNew} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", fontSize: 14, borderRadius: 8, border: "none", background: "#7c3aed", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
-          <Plus size={14} /> New Plan
+    <div className="p-5 bg-slate-50 min-h-full">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-[12px] text-slate-400">Manage subscription plans and feature access</p>
+        <button
+          onClick={handleNew}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-semibold rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+        >
+          <Plus size={13} /> New Plan
         </button>
       </div>
 
       {isLoading ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-52" style={{ height: 208 }} />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => <Skeleton key={i} style={{ height: 208, borderRadius: 12 }} />)}
         </div>
       ) : !plans?.length ? (
         <EmptyState title="No plans yet" description="Create your first subscription plan to allow salon admins to register." action={{ label: "Create Plan", onClick: handleNew }} />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-          {plans.map(p => <PlanCard key={p.id} plan={p} onEdit={handleEdit} onDelete={handleDelete} />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {plans.map(p => <PlanCard key={p.id} plan={p} onEdit={handleEdit} onToggle={handleToggle} onHardDelete={handleHardDelete} />)}
         </div>
       )}
 

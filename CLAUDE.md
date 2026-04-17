@@ -23,7 +23,7 @@ rewrites() {
 
 **Required Vercel env var:**
 ```
-BACKEND_URL=https://salon-bot-20-saas-production.up.railway.app
+BACKEND_URL=https://salon-bot-saas-30-production.up.railway.app
 ```
 
 ## Project Structure

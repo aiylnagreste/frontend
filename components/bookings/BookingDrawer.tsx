@@ -10,6 +10,8 @@ import { ModalShell } from "@/components/ui/ModalShell";
 import type { Booking, Branch, Staff, Service, SalonTimings } from "@/lib/types";
 import { validateName, validatePhoneRequired } from "@/lib/validation";
 
+const EMPTY_BOOKINGS: Booking[] = [];
+
 interface BookingDrawerProps {
     open: boolean;
     onClose: () => void;
@@ -63,7 +65,7 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
         enabled: open,
     });
 
-    const { data: allBookings = [] } = useQuery<Booking[]>({
+    const { data: allBookings = EMPTY_BOOKINGS } = useQuery<Booking[]>({
         queryKey: QK.bookings({}),
         queryFn: () => fetchBookings(),
         enabled: open,

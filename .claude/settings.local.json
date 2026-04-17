@@ -29,7 +29,11 @@
       "Bash(git -C \"d:/vs self code/frontend\" commit -m \"feat: add custom date range filter to reports, match staff buttons to bookings style\")",
       "Bash(git -C \"d:/vs self code/frontend\" add \"app/\\(dashboard\\)/reports/page.tsx\")",
       "Bash(git -C \"d:/vs self code/frontend\" commit -m \"fix: convert reports date range to dropdown popover instead of inline row\")",
-      "Read(//d/vs self code/**)"
+      "Read(//d/vs self code/**)",
+      "Read(//c/Users/abc/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.7/skills/brainstorming/**)",
+      "Bash(bash \"C:/Users/abc/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.7/scripts/start-server.sh\" --project-dir \"d:/vs self code/frontend\")",
+      "Read(//c/Users/abc/.claude/plugins/cache/**)",
+      "Bash(bash \"C:/Users/abc/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh\" --project-dir \"d:/vs self code/frontend\")"
     ],
     "additionalDirectories": [
       "d:\\vs self code\\salon-bot\\src",

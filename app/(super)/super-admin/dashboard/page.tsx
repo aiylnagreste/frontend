@@ -8,8 +8,30 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { validateName, validateEmail, validatePhoneRequired } from "@/lib/validation";
+import { 
+  Search, 
+  Plus, 
+  MoreVertical, 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign,
+  Users,
+  Building2,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Calendar,
+  Eye,
+  UserCheck,
+  Phone,
+  Mail,
+  Edit,
+  Power,
+  Key,
+  X
+} from "lucide-react";
 
 interface ResetRequest {
   tenantId: string;
@@ -23,12 +45,18 @@ export default function SuperDashboardPage() {
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [setPasswordFor, setSetPasswordFor] = useState<{ id: string; name: string } | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ Track loading states
-  const { 
-    data: tenants, 
+  useEffect(() => {
+    const handler = () => setShowModal(true);
+    window.addEventListener("open-new-salon", handler);
+    return () => window.removeEventListener("open-new-salon", handler);
+  }, []);
+
+  const {
+    data: tenants,
     isLoading: tenantsLoading,
-    refetch: refetchTenants 
+    refetch: refetchTenants,
   } = useQuery<Tenant[]>({
     queryKey: ["tenants"],
     queryFn: fetchTenants,
@@ -38,7 +66,7 @@ export default function SuperDashboardPage() {
   const {
     data: stats,
     isLoading: statsLoading,
-    refetch: refetchStats
+    refetch: refetchStats,
   } = useQuery({
     queryKey: ["superStats"],
     queryFn: fetchSuperStats,
@@ -60,7 +88,7 @@ export default function SuperDashboardPage() {
       api.patch(`/super-admin/api/tenants/${encodeURIComponent(id)}/status`, {
         status: status === "active" ? "suspended" : "active",
       }),
-    onSuccess: () => { 
+    onSuccess: () => {
       toast.success("Status updated");
       refetchTenants();
       refetchStats();
@@ -69,183 +97,246 @@ export default function SuperDashboardPage() {
   });
 
   const tenantsArray = Array.isArray(tenants) ? tenants : [];
-  const activeTenants = tenantsArray.filter(t => t.status === "active").length;
-  
-  // ✅ Show loading state while data is fetching
+  const activeTenants = tenantsArray.filter((t) => t.status === "active").length;
+  const suspendedTenants = tenantsArray.filter((t) => t.status !== "active").length;
   const isLoading = tenantsLoading || statsLoading;
 
-  return (
-    <div
-      style={{
-        padding: "24px 28px",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      }}
-    >
-        {/* Stats Cards - Show skeletons while loading */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "20px", marginBottom: "28px" }}>
-          {isLoading ? (
-            // Show skeleton cards while loading
-            <>
-              <div style={{ background: "#fff", padding: "24px 20px", borderRadius: "20px" }}>
-                <Skeleton style={{ height: "12px", width: "60%", marginBottom: "12px" }} />
-                <Skeleton style={{ height: "40px", width: "40%" }} />
-              </div>
-              <div style={{ background: "#fff", padding: "24px 20px", borderRadius: "20px" }}>
-                <Skeleton style={{ height: "12px", width: "60%", marginBottom: "12px" }} />
-                <Skeleton style={{ height: "40px", width: "40%" }} />
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ background: "#fff", padding: "24px 20px", borderRadius: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
-                <div style={{ fontSize: "12px", fontWeight: 600, color: "#5b6e8c", textTransform: "uppercase", letterSpacing: "0.05em" }}>📋 Total Salons</div>
-                <div style={{ fontSize: "40px", fontWeight: 800, color: "#1e3a8a", marginTop: "8px" }}>{stats?.total_tenants ?? tenantsArray.length}</div>
-              </div>
-              <div style={{ background: "#fff", padding: "24px 20px", borderRadius: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
-                <div style={{ fontSize: "12px", fontWeight: 600, color: "#5b6e8c", textTransform: "uppercase", letterSpacing: "0.05em" }}>✅ Active Salons</div>
-                <div style={{ fontSize: "40px", fontWeight: 800, color: "#1e3a8a", marginTop: "8px" }}>{stats?.active_tenants ?? activeTenants}</div>
-              </div>
-            </>
-          )}
-        </div>
+  const totalSalons = stats?.total_tenants ?? tenantsArray.length;
+  const activeSalons = stats?.active_tenants ?? activeTenants;
+  const activePercentage = totalSalons > 0 ? Math.round((activeSalons / totalSalons) * 100) : 0;
 
-        {/* Password Reset Requests */}
-        {resetRequests.length > 0 && (
-          <div style={{ background: "#fff", borderRadius: "20px", boxShadow: "0 4px 16px rgba(0,0,0,0.05)", marginBottom: "28px", overflow: "hidden" }}>
-            <div style={{ padding: "20px 28px", borderBottom: "1px solid #eef2f8", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "18px" }}>🔔</span>
-              <h3 style={{ fontWeight: 600, fontSize: "16px", color: "#0b2b44", margin: 0 }}>
-                Password Reset Requests
-              </h3>
-              <span style={{ background: "#fee2e2", color: "#b91c1c", borderRadius: "20px", padding: "2px 8px", fontSize: "11px", fontWeight: 700 }}>
+  const filteredTenants = tenantsArray.filter(tenant => 
+    tenant.salon_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.owner_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-full">
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">Super Admin · Overview</p>
+        </div>
+        <div className="text-xs text-gray-400 bg-white border border-gray-100 rounded-lg px-3 py-1.5 shadow-sm">
+          {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+        </div>
+      </div>
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        {isLoading ? (
+          <>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                <Skeleton style={{ height: "10px", width: "40%", marginBottom: "12px" }} />
+                <Skeleton style={{ height: "32px", width: "50%" }} />
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Total Salons"
+              value={totalSalons}
+              change={`+${stats?.new_this_month || 0} this month`}
+              icon={Building2}
+              iconColor="text-blue-600"
+              iconBg="bg-blue-50"
+              trend="up"
+            />
+            <StatCard
+              title="Active"
+              value={activeSalons}
+              change={`${activePercentage}% uptime`}
+              icon={CheckCircle}
+              iconColor="text-emerald-600"
+              iconBg="bg-emerald-50"
+              trend="up"
+            />
+            <StatCard
+              title="Suspended"
+              value={suspendedTenants}
+              change="needs attention"
+              icon={XCircle}
+              iconColor="text-red-600"
+              iconBg="bg-red-50"
+              trend="down"
+            />
+            <StatCard
+              title="Monthly Revenue"
+              value={`$${((stats?.mrr || 0) / 100).toLocaleString()}`}
+              change={`${stats?.revenue_change || 0}% vs last month`}
+              icon={DollarSign}
+              iconColor="text-amber-600"
+              iconBg="bg-amber-50"
+              trend={stats?.revenue_change >= 0 ? "up" : "down"}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Password Reset Requests */}
+      {resetRequests.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                <Key className="w-4 h-4 text-red-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900">Password Reset Requests</h3>
+              <span className="bg-red-100 text-red-700 text-xs font-medium rounded-full px-2 py-0.5">
                 {resetRequests.length}
               </span>
             </div>
-            <div style={{ padding: "12px 28px" }}>
-              {resetRequests.map((r) => (
-                <div key={r.tenantId} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontWeight: 600, fontSize: "13px", margin: 0 }}>{r.salonName}</p>
-                    <p style={{ fontSize: "12px", color: "#5b6e8c", margin: "2px 0 0" }}>{r.ownerName} · {r.email}</p>
-                  </div>
-                  <p style={{ fontSize: "11px", color: "#94a3b8", whiteSpace: "nowrap" }}>
-                    {new Date(r.requestedAt).toLocaleString()}
-                  </p>
-                  <button
-                    onClick={() => setSetPasswordFor({ id: r.tenantId, name: r.salonName })}
-                    style={{ background: "#1f3a6b", color: "#fff", border: "none", padding: "6px 16px", borderRadius: "30px", cursor: "pointer", fontSize: "12px", fontWeight: 500, whiteSpace: "nowrap" }}
-                  >
-                    Set Password
-                  </button>
-                </div>
-              ))}
-            </div>
           </div>
-        )}
+          <div className="divide-y divide-gray-50">
+            {resetRequests.map((r) => (
+              <div key={r.tenantId} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900">{r.salonName}</p>
+                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      {r.ownerName}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Mail className="w-3 h-3" />
+                      {r.email}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(r.requestedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSetPasswordFor({ id: r.tenantId, name: r.salonName })}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  <Key className="w-4 h-4" />
+                  Set Password
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* Table */}
-        <div style={{ background: "#fff", borderRadius: "20px", boxShadow: "0 4px 16px rgba(0,0,0,0.05)", overflow: "hidden" }}>
-          <div
-            style={{
-              padding: "20px 28px",
-              borderBottom: "1px solid #eef2f8",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "12px",
-            }}
-          >
-            <h3 style={{ fontWeight: 600, fontSize: "18px", color: "#0b2b44", margin: 0 }}>
-              🏪 Managed Salons
-            </h3>
+      {/* Salons Table */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-indigo-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900">Managed Salons</h3>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search salons..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
             <button
               onClick={() => setShowModal(true)}
-              style={{
-                background: "#1f3a6b",
-                color: "#fff",
-                padding: "10px 24px",
-                border: "none",
-                borderRadius: "40px",
-                cursor: "pointer",
-                fontWeight: 500,
-                fontSize: "13px",
-              }}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
             >
-              + New Salon
+              <Plus className="w-4 h-4" />
+              New Salon
             </button>
           </div>
+        </div>
 
-          {isLoading ? (
-            // Show skeleton rows while loading
-            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "8px" }}>
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} style={{ display: "flex", gap: "16px", padding: "14px 16px" }}>
-                  <Skeleton style={{ height: "20px", width: "10%" }} />
-                  <Skeleton style={{ height: "20px", width: "20%" }} />
-                  <Skeleton style={{ height: "20px", width: "15%" }} />
-                  <Skeleton style={{ height: "20px", width: "20%" }} />
-                  <Skeleton style={{ height: "20px", width: "15%" }} />
-                  <Skeleton style={{ height: "20px", width: "10%" }} />
-                  <Skeleton style={{ height: "20px", width: "10%" }} />
-                </div>
-              ))}
-            </div>
-          ) : tenantsArray.length === 0 ? (
-            <EmptyState icon="🏪" title="No salons registered yet" description='Click "+ New Salon" to get started.' />
-          ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-                <thead>
-                  <tr>
-                    {["ID", "Salon Name", "Owner", "Email", "Phone", "Status", "Actions"].map(h => (
-                      <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#2c4c7c", background: "#fafcff", borderBottom: "1px solid #ecf3fa" }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tenantsArray.map((t) => {
-                    const tenantId = t.tenant_id || t.id || "";
-                    return (
-                      <tr key={tenantId} style={{ borderBottom: "1px solid #ecf3fa" }}>
-                        <td style={{ padding: "14px 16px", fontFamily: "monospace", fontSize: "12px" }}>{tenantId}</td>
-                        <td style={{ padding: "14px 16px", fontWeight: 600 }}>{t.salon_name}</td>
-                        <td style={{ padding: "14px 16px" }}>{t.owner_name}</td>
-                        <td style={{ padding: "14px 16px", fontSize: "12px" }}>{t.email}</td>
-                        <td style={{ padding: "14px 16px", fontFamily: "monospace", fontSize: "12px" }}>{t.phone}</td>
-                        <td style={{ padding: "14px 16px" }}><Badge status={t.status} /></td>
-                        <td style={{ padding: "14px 16px" }}>
+        {isLoading ? (
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex gap-4">
+                <Skeleton style={{ height: "40px", width: "100%", borderRadius: "8px" }} />
+              </div>
+            ))}
+          </div>
+        ) : filteredTenants.length === 0 ? (
+          <EmptyState icon="🏪" title="No salons found" description={searchTerm ? "Try a different search term" : 'Click "New Salon" to get started.'} />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Salon</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Owner</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filteredTenants.map((t) => {
+                  const tenantId = t.tenant_id || t.id || "";
+                  return (
+                    <tr key={tenantId} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">{t.salon_name}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">ID: {tenantId.slice(0, 8)}...</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-gray-900">{t.owner_name}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600">{t.email}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">{t.phone}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          t.status === "active" 
+                            ? "bg-emerald-100 text-emerald-800" 
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                          {t.status === "active" ? (
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                          ) : (
+                            <XCircle className="w-3 h-3 mr-1" />
+                          )}
+                          {t.status === "active" ? "Active" : "Suspended"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
                           <button
                             onClick={() => toggleMutation.mutate({ id: tenantId, status: t.status })}
                             disabled={toggleMutation.isPending}
-                            style={{
-                              background: t.status === "active" ? "#fee2e2" : "#e0f2fe",
-                              color: t.status === "active" ? "#b91c1c" : "#0f5c3b",
-                              border: "none",
-                              padding: "5px 14px",
-                              borderRadius: "30px",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              fontWeight: 500,
-                            }}
+                            className={`p-2 rounded-lg transition-colors ${
+                              t.status === "active"
+                                ? "text-red-600 hover:bg-red-50"
+                                : "text-emerald-600 hover:bg-emerald-50"
+                            }`}
+                            title={t.status === "active" ? "Suspend" : "Activate"}
                           >
-                            {t.status === "active" ? "Suspend" : "Activate"}
+                            <Power className="w-4 h-4" />
                           </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <div style={{ padding: "12px 20px", background: "#eef2ff", fontSize: "11px", color: "#2c4f7c", textAlign: "center" }}>
-            ⚡ Note: Creating a salon does NOT auto-create any branch or default staff.
+                          <button
+                            onClick={() => setSetPasswordFor({ id: tenantId, name: t.salon_name })}
+                            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                            title="Set Password"
+                          >
+                            <Key className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </div>
+        )}
+      </div>
 
       {showModal && (
         <CreateTenantModal
@@ -263,10 +354,51 @@ export default function SuperDashboardPage() {
           tenantId={setPasswordFor.id}
           salonName={setPasswordFor.name}
           onClose={() => setSetPasswordFor(null)}
-          onSaved={() => { refetchResets(); setSetPasswordFor(null); }}
+          onSaved={() => {
+            refetchResets();
+            setSetPasswordFor(null);
+          }}
         />
       )}
+    </div>
+  );
+}
 
+function StatCard({ 
+  title, 
+  value, 
+  change, 
+  icon: Icon, 
+  iconColor, 
+  iconBg,
+  trend 
+}: { 
+  title: string; 
+  value: string | number; 
+  change: string; 
+  icon: React.ElementType; 
+  iconColor: string;
+  iconBg: string;
+  trend?: "up" | "down";
+}) {
+  return (
+    <div className="sa-stat-card bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+          <div className="flex items-center gap-1 mt-2">
+            {trend === "up" && <TrendingUp className="w-3 h-3 text-emerald-600" />}
+            {trend === "down" && <TrendingDown className="w-3 h-3 text-red-600" />}
+            <span className={`text-xs ${trend === "up" ? "text-emerald-600" : trend === "down" ? "text-red-600" : "text-gray-500"}`}>
+              {change}
+            </span>
+          </div>
+        </div>
+        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -277,8 +409,8 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
   const [loading, setLoading] = useState(false);
 
   function set(key: string, value: string) {
-    setForm(f => ({ ...f, [key]: value }));
-    setErrors(prev => ({ ...prev, [key]: "" }));
+    setForm((f) => ({ ...f, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: "" }));
   }
 
   function validateForm(): boolean {
@@ -311,50 +443,98 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
     }
   }
 
-  const modalInputStyle = { width: "100%", padding: "10px 14px", border: "1.5px solid #e2e8f0", borderRadius: "12px", fontSize: "13px", outline: "none", boxSizing: "border-box" as const };
-
   return (
     <div
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ background: "#fff", borderRadius: "24px", width: "90%", maxWidth: "480px", padding: "28px 32px", boxShadow: "0 25px 50px rgba(0,0,0,0.2)" }}>
-        <h3 style={{ fontSize: "20px", fontWeight: 600, marginBottom: "20px", color: "#0f2e4a" }}>✨ Register New Salon</h3>
-
-        {[
-          { id: "salon_name", label: "🏷️ Salon Name *", placeholder: "e.g., Royal Glam Studio" },
-          { id: "owner_name", label: "👤 Owner Full Name *", placeholder: "Full name" },
-          { id: "email", label: "📧 Admin Email *", placeholder: "salon@example.com", type: "email" },
-          { id: "phone", label: "📞 Phone *", placeholder: "+92 300 1234567", type: "tel" },
-          { id: "password", label: "🔑 Password *", placeholder: "Min 6 characters", type: "password" },
-        ].map(f => (
-          <div key={f.id} style={{ marginBottom: "16px" }}>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#2c3e66", marginBottom: "6px" }}>{f.label}</label>
+      <div className="bg-white rounded-2xl w-[90%] max-w-[500px] shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900">Create New Salon</h3>
+          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Salon Name *</label>
             <input
-              type={f.type ?? "text"}
-              placeholder={f.placeholder}
-              value={form[f.id as keyof typeof form]}
-              onChange={(e) => set(f.id, e.target.value)}
-              style={{ ...modalInputStyle, borderColor: errors[f.id] ? "#DC2626" : "#e2e8f0" }}
+              type="text"
+              placeholder="e.g., Royal Glam Studio"
+              value={form.salon_name}
+              onChange={(e) => set("salon_name", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                errors.salon_name ? "border-red-400" : "border-gray-200"
+              }`}
             />
-            {errors[f.id] && (
-              <span style={{ display: "block", fontSize: "11px", color: "#DC2626", marginTop: "4px" }}>
-                {errors[f.id]}
-              </span>
-            )}
+            {errors.salon_name && <p className="text-xs text-red-500 mt-1">{errors.salon_name}</p>}
           </div>
-        ))}
-
-        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
-          <button onClick={onClose} style={{ padding: "10px 20px", background: "#f1f3f5", border: "none", borderRadius: "40px", cursor: "pointer", fontWeight: 500, fontSize: "13px" }}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name *</label>
+            <input
+              type="text"
+              placeholder="Full name"
+              value={form.owner_name}
+              onChange={(e) => set("owner_name", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                errors.owner_name ? "border-red-400" : "border-gray-200"
+              }`}
+            />
+            {errors.owner_name && <p className="text-xs text-red-500 mt-1">{errors.owner_name}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+            <input
+              type="email"
+              placeholder="salon@example.com"
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                errors.email ? "border-red-400" : "border-gray-200"
+              }`}
+            />
+            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+            <input
+              type="tel"
+              placeholder="+92 300 1234567"
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                errors.phone ? "border-red-400" : "border-gray-200"
+              }`}
+            />
+            {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+            <input
+              type="password"
+              placeholder="Min 6 characters"
+              value={form.password}
+              onChange={(e) => set("password", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                errors.password ? "border-red-400" : "border-gray-200"
+              }`}
+            />
+            {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
             Cancel
           </button>
           <button
             onClick={handleCreate}
             disabled={loading}
-            style={{ padding: "10px 24px", background: "#1f3a6b", color: "#fff", border: "none", borderRadius: "40px", cursor: "pointer", fontWeight: 500, fontSize: "13px" }}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60"
           >
-            {loading ? "Creating…" : "Create Salon"}
+            {loading ? "Creating..." : "Create Salon"}
           </button>
         </div>
       </div>
@@ -362,7 +542,17 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
   );
 }
 
-function SetPasswordModal({ tenantId, salonName, onClose, onSaved }: { tenantId: string; salonName: string; onClose: () => void; onSaved: () => void }) {
+function SetPasswordModal({
+  tenantId,
+  salonName,
+  onClose,
+  onSaved,
+}: {
+  tenantId: string;
+  salonName: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -382,26 +572,61 @@ function SetPasswordModal({ tenantId, salonName, onClose, onSaved }: { tenantId:
     }
   }
 
-  const inputStyle = { width: "100%", padding: "10px 14px", border: "1.5px solid #e2e8f0", borderRadius: "12px", fontSize: "13px", outline: "none", boxSizing: "border-box" as const };
-
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: "#fff", borderRadius: "24px", width: "90%", maxWidth: "420px", padding: "28px 32px", boxShadow: "0 25px 50px rgba(0,0,0,0.2)" }}>
-        <h3 style={{ fontSize: "18px", fontWeight: 600, marginBottom: "6px", color: "#0f2e4a" }}>🔑 Set New Password</h3>
-        <p style={{ fontSize: "13px", color: "#5b6e8c", marginBottom: "20px" }}>{salonName}</p>
-        <div style={{ marginBottom: "14px" }}>
-          <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#2c3e66", marginBottom: "6px" }}>New Password</label>
-          <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} style={inputStyle} />
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-2xl w-[90%] max-w-[420px] shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+              <Key className="w-4 h-4 text-amber-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Set New Password</h3>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#2c3e66", marginBottom: "6px" }}>Confirm Password</label>
-          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} style={inputStyle} />
+        <div className="p-6">
+          <p className="text-sm text-gray-500 mb-4">{salonName}</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Min 6 characters"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <input
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Re-enter new password"
+              />
+            </div>
+          </div>
         </div>
-        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ padding: "10px 20px", background: "#f1f3f5", border: "none", borderRadius: "40px", cursor: "pointer", fontWeight: 500, fontSize: "13px" }}>Cancel</button>
-          <button onClick={handleSave} disabled={loading} style={{ padding: "10px 24px", background: "#1f3a6b", color: "#fff", border: "none", borderRadius: "40px", cursor: "pointer", fontWeight: 500, fontSize: "13px" }}>
-            {loading ? "Saving…" : "Set Password"}
+        <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60"
+          >
+            {loading ? "Saving..." : "Set Password"}
           </button>
         </div>
       </div>

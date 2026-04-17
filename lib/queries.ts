@@ -87,13 +87,13 @@ export const fetchSuperStats = () =>
   api.get<{ total_tenants: number; active_tenants: number }>(`${SA}/stats`);
 
 export async function fetchPlans(): Promise<Plan[]> {
-  const res = await fetch('/api/super-admin/plans', { credentials: 'include' });
+  const res = await fetch('/super-admin/api/plans', { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch plans');
   return res.json();
 }
 
 export async function fetchSubscriptions(): Promise<Subscription[]> {
-  const res = await fetch('/api/super-admin/payments', { credentials: 'include' });
+  const res = await fetch('/super-admin/api/subscriptions', { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch subscriptions');
   return res.json();
 }
