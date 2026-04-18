@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchTenants, fetchSuperStats } from "@/lib/queries";
-import type { Tenant } from "@/lib/types";
+import { fetchTenants, fetchSuperStats, fetchPlans, QK } from "@/lib/queries";
+import type { Tenant, Plan } from "@/lib/types";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { validateName, validateEmail, validatePhoneRequired } from "@/lib/validation";
 import {
   Search, Plus, Store, CheckCircle, XCircle,
-  DollarSign, Key, Users, Mail, Calendar, Power, X, ArrowUp, ArrowDown, TriangleAlert,
+  DollarSign, Key, Users, Mail, Calendar, Power, X, ArrowUp, ArrowDown, TriangleAlert, CreditCard,
 } from "lucide-react";
 
 const C = {
@@ -109,6 +109,12 @@ export default function SuperDashboardPage() {
   const [showModal, setShowModal] = useState(false);
   const [setPasswordFor, setSetPasswordFor] = useState<{ id: string; name: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [editPlanFor, setEditPlanFor] = useState<{
+    tenantId: string;
+    salonName: string;
+    currentPlan: string | null;
+    currentExpiry: string | null;
+  } | null>(null);
 
   useEffect(() => {
     const handler = () => setShowModal(true);
@@ -344,6 +350,25 @@ export default function SuperDashboardPage() {
                           >
                             <Key size={14} />
                           </button>
+                          <button
+                            onClick={() => setEditPlanFor({
+                              tenantId: t.tenant_id,
+                              salonName: t.salon_name,
+                              currentPlan: t.subscription_plan,
+                              currentExpiry: t.subscription_expires,
+                            })}
+                            title="Edit Plan"
+                            style={{
+                              width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+                              background: "transparent", border: "none", cursor: "pointer",
+                              color: C.primary, borderRadius: 8,
+                              transition: "background 0.15s",
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = C.primaryLight; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                          >
+                            <CreditCard size={14} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -366,6 +391,15 @@ export default function SuperDashboardPage() {
           tenantId={setPasswordFor.id} salonName={setPasswordFor.name}
           onClose={() => setSetPasswordFor(null)}
           onSaved={() => { refetchResets(); setSetPasswordFor(null); }}
+        />
+      )}
+      {editPlanFor && (
+        <EditPlanModal
+          tenantId={editPlanFor.tenantId}
+          salonName={editPlanFor.salonName}
+          currentPlan={editPlanFor.currentPlan}
+          currentExpiry={editPlanFor.currentExpiry}
+          onClose={() => setEditPlanFor(null)}
         />
       )}
     </div>
@@ -472,6 +506,232 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EditPlanModal({
+  tenantId,
+  salonName,
+  currentPlan,
+  currentExpiry,
+  onClose,
+}: {
+  tenantId: string;
+  salonName: string;
+  currentPlan: string | null;
+  currentExpiry: string | null;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const { data: plans, isLoading: plansLoading } = useQuery({
+    queryKey: QK.plans(),
+    queryFn: fetchPlans,
+  });
+
+  const initialPlanId = (() => {
+    if (!plans || !currentPlan) return "";
+    const match = plans.find((p: Plan) => p.name === currentPlan);
+    return match ? String(match.id) : "";
+  })();
+
+  const [form, setForm] = useState({
+    plan_id: initialPlanId,
+    expires_at: currentExpiry ? currentExpiry.slice(0, 10) : "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (plans && currentPlan && !form.plan_id) {
+      const match = plans.find((p: Plan) => p.name === currentPlan);
+      if (match) setForm(f => ({ ...f, plan_id: String(match.id) }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plans]);
+
+  const mutation = useMutation({
+    mutationFn: (body: { plan_id: number; expires_at: string }) =>
+      api.patch<{ ok: boolean; error?: string }>(
+        `/super-admin/api/tenants/${encodeURIComponent(tenantId)}/plan`,
+        body
+      ),
+    onSuccess: (resp) => {
+      if (resp && resp.ok === false) {
+        toast.error(resp.error || "Failed to update plan");
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["tenants"] });
+      toast.success(`Plan updated for ${salonName}`);
+      onClose();
+    },
+    onError: (err: { message?: string }) => {
+      toast.error(err.message || "Failed to update plan");
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (!form.plan_id) newErrors.plan_id = "Please select a plan";
+    if (!form.expires_at) newErrors.expires_at = "Expiry date is required";
+    else if (form.expires_at < today) newErrors.expires_at = "Expiry date must be in the future";
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length) return;
+
+    mutation.mutate({
+      plan_id: parseInt(form.plan_id, 10),
+      expires_at: form.expires_at,
+    });
+  }
+
+  return (
+    <div
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: "fixed", inset: 0,
+        background: "rgba(17,19,24,0.5)", backdropFilter: "blur(4px)",
+        zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center",
+      }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          background: C.surface, borderRadius: 20, width: "90%", maxWidth: 440,
+          boxShadow: "0 24px 60px rgba(26,29,35,0.14)",
+          fontFamily: "'DM Sans', sans-serif",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px 16px" }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8, background: C.primaryLight,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <CreditCard size={14} style={{ color: C.primary }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 17, fontWeight: 600, fontFamily: "'Space Grotesk', sans-serif", color: C.text }}>
+              Edit Plan
+            </div>
+            <div style={{ fontSize: 13, color: C.text2, marginTop: 2 }}>{salonName}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "none", border: "none", cursor: "pointer", color: C.text3, borderRadius: 8,
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <div style={{ padding: "0 24px 24px" }}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{
+              display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+              letterSpacing: "0.06em", color: C.text2, marginBottom: 6,
+            }}>
+              Plan
+            </label>
+            <select
+              value={form.plan_id}
+              onChange={e => setForm(f => ({ ...f, plan_id: e.target.value }))}
+              disabled={plansLoading}
+              style={{
+                width: "100%", padding: "11px 14px",
+                border: `1.5px solid ${errors.plan_id ? C.error : C.border}`,
+                borderRadius: 8, fontSize: 14, color: C.text,
+                fontFamily: "'DM Sans', sans-serif",
+                background: C.surface, outline: "none",
+              }}
+              onFocus={e => {
+                e.currentTarget.style.borderColor = C.primary;
+                e.currentTarget.style.boxShadow = `0 0 0 3px ${C.primaryGlow}`;
+              }}
+              onBlur={e => {
+                e.currentTarget.style.borderColor = errors.plan_id ? C.error : C.border;
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              <option value="">{plansLoading ? "Loading plans…" : "Select a plan"}</option>
+              {(plans || []).map((p: Plan) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            {errors.plan_id && (
+              <div style={{ fontSize: 12, color: C.error, marginTop: 6 }}>{errors.plan_id}</div>
+            )}
+          </div>
+
+          <div>
+            <label style={{
+              display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+              letterSpacing: "0.06em", color: C.text2, marginBottom: 6,
+            }}>
+              Expiry Date
+            </label>
+            <input
+              type="date"
+              min={today}
+              value={form.expires_at}
+              onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
+              style={{
+                width: "100%", padding: "11px 14px",
+                border: `1.5px solid ${errors.expires_at ? C.error : C.border}`,
+                borderRadius: 8, fontSize: 14, color: C.text,
+                fontFamily: "'DM Sans', sans-serif", outline: "none",
+              }}
+              onFocus={e => {
+                e.currentTarget.style.borderColor = C.primary;
+                e.currentTarget.style.boxShadow = `0 0 0 3px ${C.primaryGlow}`;
+              }}
+              onBlur={e => {
+                e.currentTarget.style.borderColor = errors.expires_at ? C.error : C.border;
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
+            {errors.expires_at && (
+              <div style={{ fontSize: 12, color: C.error, marginTop: 6 }}>{errors.expires_at}</div>
+            )}
+          </div>
+        </div>
+
+        <div style={{
+          padding: "16px 24px", background: C.bg,
+          borderRadius: "0 0 20px 20px", borderTop: `1px solid ${C.border2}`,
+          display: "flex", justifyContent: "flex-end", gap: 8,
+        }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: "10px 18px", background: "transparent",
+              border: `1px solid ${C.border}`, borderRadius: 8,
+              fontSize: 13, fontWeight: 500, color: C.text2, cursor: "pointer",
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            Discard Changes
+          </button>
+          <button
+            type="submit"
+            disabled={mutation.isPending}
+            style={{
+              padding: "10px 18px",
+              background: C.primary, border: "none", borderRadius: 8,
+              fontSize: 13, fontWeight: 600, color: "#FFFFFF",
+              cursor: mutation.isPending ? "not-allowed" : "pointer",
+              opacity: mutation.isPending ? 0.7 : 1,
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            {mutation.isPending ? "Saving…" : "Save Plan"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
