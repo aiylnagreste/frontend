@@ -113,7 +113,6 @@ export default function SuperDashboardPage() {
     tenantId: string;
     salonName: string;
     currentPlan: string | null;
-    currentExpiry: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -355,7 +354,6 @@ export default function SuperDashboardPage() {
                               tenantId: t.tenant_id,
                               salonName: t.salon_name,
                               currentPlan: t.subscription_plan,
-                              currentExpiry: t.subscription_expires,
                             })}
                             title="Edit Plan"
                             style={{
@@ -398,7 +396,6 @@ export default function SuperDashboardPage() {
           tenantId={editPlanFor.tenantId}
           salonName={editPlanFor.salonName}
           currentPlan={editPlanFor.currentPlan}
-          currentExpiry={editPlanFor.currentExpiry}
           onClose={() => setEditPlanFor(null)}
         />
       )}
@@ -436,9 +433,13 @@ function ModalInput({ label, type = "text", value, onChange, placeholder, error 
 }
 
 function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
-  const [form, setForm] = useState({ salon_name: "", owner_name: "", email: "", phone: "", password: "" });
+  const [form, setForm] = useState({ salon_name: "", owner_name: "", email: "", phone: "", password: "", plan_id: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const { data: plans, isLoading: plansLoading } = useQuery({
+    queryKey: QK.plans(),
+    queryFn: fetchPlans,
+  });
 
   function set(key: string, value: string) {
     setForm(f => ({ ...f, [key]: value }));
@@ -498,6 +499,31 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
           <ModalInput label="Email Address" type="email" value={form.email} onChange={v => set("email", v)} placeholder="salon@example.com" error={errors.email} />
           <ModalInput label="Phone Number" type="tel" value={form.phone} onChange={v => set("phone", v)} placeholder="+92 300 1234567" error={errors.phone} />
           <ModalInput label="Password" type="password" value={form.password} onChange={v => set("password", v)} placeholder="Min 6 characters" error={errors.password} />
+          <div style={{ marginBottom: 16 }}>
+            <label style={{
+              display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+              letterSpacing: "0.06em", color: C2.text2, marginBottom: 6,
+            }}>
+              Plan <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span>
+            </label>
+            <select
+              value={form.plan_id}
+              onChange={e => set("plan_id", e.target.value)}
+              disabled={plansLoading}
+              style={{
+                width: "100%", padding: "11px 14px",
+                border: `1.5px solid ${C2.border}`,
+                borderRadius: 8, fontSize: 14, color: C2.text,
+                fontFamily: "'DM Sans', sans-serif",
+                background: C2.surface, outline: "none",
+              }}
+            >
+              <option value="">{plansLoading ? "Loading plans…" : "No plan (assign later)"}</option>
+              {(plans || []).map((p: Plan) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "16px 28px", background: C2.bg, borderRadius: "0 0 20px 20px", borderTop: `1px solid ${C2.border2}` }}>
           <button onClick={onClose} style={{ padding: "9px 18px", background: C2.surface, border: `1.5px solid ${C2.border}`, borderRadius: 8, fontSize: 13, fontWeight: 500, color: C2.text2, cursor: "pointer" }}>Cancel</button>
@@ -514,17 +540,14 @@ function EditPlanModal({
   tenantId,
   salonName,
   currentPlan,
-  currentExpiry,
   onClose,
 }: {
   tenantId: string;
   salonName: string;
   currentPlan: string | null;
-  currentExpiry: string | null;
   onClose: () => void;
 }) {
   const qc = useQueryClient();
-  const today = new Date().toISOString().slice(0, 10);
 
   const { data: plans, isLoading: plansLoading } = useQuery({
     queryKey: QK.plans(),
@@ -539,7 +562,6 @@ function EditPlanModal({
 
   const [form, setForm] = useState({
     plan_id: initialPlanId,
-    expires_at: currentExpiry ? currentExpiry.slice(0, 10) : "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -552,7 +574,7 @@ function EditPlanModal({
   }, [plans]);
 
   const mutation = useMutation({
-    mutationFn: (body: { plan_id: number; expires_at: string }) =>
+    mutationFn: (body: { plan_id: number }) =>
       api.patch<{ ok: boolean; error?: string }>(
         `/super-admin/api/tenants/${encodeURIComponent(tenantId)}/plan`,
         body
@@ -575,14 +597,11 @@ function EditPlanModal({
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     if (!form.plan_id) newErrors.plan_id = "Please select a plan";
-    if (!form.expires_at) newErrors.expires_at = "Expiry date is required";
-    else if (form.expires_at < today) newErrors.expires_at = "Expiry date must be in the future";
     setErrors(newErrors);
     if (Object.keys(newErrors).length) return;
 
     mutation.mutate({
       plan_id: parseInt(form.plan_id, 10),
-      expires_at: form.expires_at,
     });
   }
 
@@ -666,37 +685,6 @@ function EditPlanModal({
             )}
           </div>
 
-          <div>
-            <label style={{
-              display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
-              letterSpacing: "0.06em", color: C.text2, marginBottom: 6,
-            }}>
-              Expiry Date
-            </label>
-            <input
-              type="date"
-              min={today}
-              value={form.expires_at}
-              onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
-              style={{
-                width: "100%", padding: "11px 14px",
-                border: `1.5px solid ${errors.expires_at ? C.error : C.border}`,
-                borderRadius: 8, fontSize: 14, color: C.text,
-                fontFamily: "'DM Sans', sans-serif", outline: "none",
-              }}
-              onFocus={e => {
-                e.currentTarget.style.borderColor = C.primary;
-                e.currentTarget.style.boxShadow = `0 0 0 3px ${C.primaryGlow}`;
-              }}
-              onBlur={e => {
-                e.currentTarget.style.borderColor = errors.expires_at ? C.error : C.border;
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            />
-            {errors.expires_at && (
-              <div style={{ fontSize: 12, color: C.error, marginTop: 6 }}>{errors.expires_at}</div>
-            )}
-          </div>
         </div>
 
         <div style={{
