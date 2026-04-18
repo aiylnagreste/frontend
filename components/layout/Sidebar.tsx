@@ -158,7 +158,7 @@ export default function Sidebar() {
       {/* Brand */}
       <div style={s.brand}>
         <div style={s.brandTitle}>
-          <span>💅</span>
+          <span>✨</span>
           <span>
             <span style={{ color: "#ec8fa3" }}>Salon</span> Admin
           </span>

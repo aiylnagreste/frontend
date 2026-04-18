@@ -449,9 +449,9 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
       <div style={{ background: C2.surface, borderRadius: 20, width: "90%", maxWidth: 480, boxShadow: "0 24px 60px rgba(26,29,35,0.14)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 28px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: C2.primaryLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {/* <div style={{ width: 32, height: 32, borderRadius: 8, background: C2.primaryLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Plus size={14} style={{ color: C2.primary }} />
-            </div>
+            </div> */}
             <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 17, fontWeight: 600, color: C2.text }}>Create New Salon</h3>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: C2.text3, borderRadius: 8 }}>

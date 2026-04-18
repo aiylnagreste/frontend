@@ -1091,17 +1091,32 @@ function IntegrationsTabWrapper() {
 function AccountTab() {
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
+  const [currentPasswordError, setCurrentPasswordError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (form.newPassword !== form.confirmPassword) {
-      toast.error("New passwords do not match");
+    
+    // Reset error
+    setCurrentPasswordError("");
+    
+    // Validate current password is provided
+    if (!form.currentPassword) {
+      setCurrentPasswordError("Current password is required");
       return;
     }
+    
+    // Validate new password length
     if (form.newPassword.length < 6) {
       toast.error("New password must be at least 6 characters");
       return;
     }
+    
+    // Validate passwords match
+    if (form.newPassword !== form.confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    
     setLoading(true);
     try {
       await api.put("/salon-admin/api/change-password", {
@@ -1110,8 +1125,14 @@ function AccountTab() {
       });
       toast.success("Password changed successfully");
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setCurrentPasswordError("");
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to change password");
+      // Check if error is due to incorrect current password
+      if (e instanceof Error && e.message.toLowerCase().includes("current password")) {
+        setCurrentPasswordError("Current password is incorrect");
+      } else {
+        toast.error(e instanceof Error ? e.message : "Failed to change password");
+      }
     } finally {
       setLoading(false);
     }
@@ -1147,21 +1168,29 @@ function AccountTab() {
               type="password"
               required
               value={form.currentPassword}
-              onChange={(e) => setForm((f) => ({ ...f, currentPassword: e.target.value }))}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, currentPassword: e.target.value }));
+                setCurrentPasswordError(""); // Clear error when user types
+              }}
               placeholder="Enter your current password"
               style={{
                 width: "100%",
                 padding: "10px 14px",
-                border: "1.5px solid var(--color-border)",
+                border: `1.5px solid ${currentPasswordError ? "var(--color-danger)" : "var(--color-border)"}`,
                 borderRadius: "8px",
                 fontSize: "14px",
                 background: "var(--color-surface)",
                 outline: "none",
                 boxSizing: "border-box",
               }}
-              onFocus={(e) => e.target.style.borderColor = "var(--color-rose)"}
-              onBlur={(e) => e.target.style.borderColor = "var(--color-border)"}
+              onFocus={(e) => e.target.style.borderColor = currentPasswordError ? "var(--color-danger)" : "var(--color-rose)"}
+              onBlur={(e) => e.target.style.borderColor = currentPasswordError ? "var(--color-danger)" : "var(--color-border)"}
             />
+            {currentPasswordError && (
+              <p style={{ fontSize: "12px", color: "var(--color-danger)", marginTop: "5px" }}>
+                {currentPasswordError}
+              </p>
+            )}
           </div>
 
           {/* New Password */}
@@ -1220,7 +1249,10 @@ function AccountTab() {
           <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", borderTop: "1px solid var(--color-border)", paddingTop: "20px" }}>
             <button
               type="button"
-              onClick={() => setForm({ currentPassword: "", newPassword: "", confirmPassword: "" })}
+              onClick={() => {
+                setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                setCurrentPasswordError("");
+              }}
               style={outlineBtn}
             >
               Clear

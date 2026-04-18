@@ -32,125 +32,279 @@ export default function LoginPage() {
     }
   }
 
-  const inputStyle = {
-    width: "100%",
-    padding: "10px 14px",
-    border: "1.5px solid #e5e7eb",
-    borderRadius: "8px",
-    fontSize: "14px",
-    outline: "none",
-    boxSizing: "border-box" as const,
-  };
-
   return (
     <div
       style={{
         minHeight: "100vh",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(135deg, #b5484b 0%, #6b3057 100%)",
-        padding: "20px",
+        fontFamily: "'DM Sans', sans-serif",
       }}
     >
+      {/* Left visual panel */}
       <div
         style={{
-          background: "#fff",
-          borderRadius: "16px",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-          width: "100%",
-          maxWidth: "420px",
+          flex: 1,
+          background: "#111318",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
           overflow: "hidden",
         }}
       >
+        {/* Glow blobs */}
         <div
           style={{
-            background: "linear-gradient(135deg, #b5484b 0%, #6b3057 100%)",
-            color: "#fff",
-            padding: "36px 40px 28px",
+            position: "absolute",
+            width: 500,
+            height: 500,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(181,72,75,0.15) 0%, transparent 70%)",
+            top: -100,
+            left: -100,
+            pointerEvents: "none",
+            animation: "gdDrift 12s ease-in-out infinite alternate",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            width: 400,
+            height: 400,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(107,48,87,0.12) 0%, transparent 70%)",
+            bottom: -80,
+            right: -80,
+            pointerEvents: "none",
+            animation: "gdDrift 10s ease-in-out infinite alternate-reverse",
+          }}
+        />
+
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
             textAlign: "center",
+            padding: "40px 48px",
           }}
         >
-          <div style={{ fontSize: "40px", marginBottom: "8px" }}>💅</div>
-          <h1 style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>Salon Admin</h1>
-          <p style={{ opacity: 0.85, fontSize: "13px", marginTop: "4px" }}>
-            Management Portal
+          {/* Brand icon */}
+          <div style={{ width: 64, height: 64, borderRadius: 16, background: "linear-gradient(135deg, #b5484b, #6b3057)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px", fontSize: 28, color: "#fff", fontWeight: 700, boxShadow: "0 8px 32px rgba(181,72,75,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>✨</div>
+
+          <h1
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 32,
+              fontWeight: 700,
+              color: "#fff",
+              letterSpacing: "-0.02em",
+              marginBottom: 12,
+            }}
+          >
+            Salon Admin
+          </h1>
+          <p
+            style={{
+              color: "rgba(255,255,255,0.45)",
+              fontSize: 14,
+              lineHeight: 1.7,
+              maxWidth: 320,
+            }}
+          >
+            Management portal for your salon. Access appointments, client data,
+            and business insights.
+          </p>
+        </div>
+      </div>
+
+      {/* Right form panel */}
+      <div
+        style={{
+          width: 480,
+          background: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "60px 52px",
+        }}
+      >
+        <div style={{ marginBottom: 36 }}>
+          <h2
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 24,
+              fontWeight: 700,
+              color: "#1A1D23",
+              letterSpacing: "-0.02em",
+              marginBottom: 6,
+            }}
+          >
+            Sign In
+          </h2>
+          <p style={{ fontSize: 13, color: "#5F6577" }}>
+            Access your salon dashboard
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: "32px 40px" }}>
-            {error && (
-              <div
-                style={{
-                  background: "#fee2e2",
-                  color: "#dc2626",
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  fontSize: "13px",
-                  marginBottom: "20px",
-                }}
-              >
-                {error}
-              </div>
-            )}
+        {error && (
+          <div
+            style={{
+              background: "#FEF2F2",
+              color: "#DC2626",
+              padding: "12px 16px",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 500,
+              marginBottom: 20,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              borderLeft: "3px solid #EF4444",
+            }}
+          >
+            <span>⚠</span>
+            <span>{error}</span>
+          </div>
+        )}
 
-            <div style={{ marginBottom: "18px" }}>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "6px" }}>
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={inputStyle}
-                onFocus={(e) => (e.target.style.borderColor = "#b5484b")}
-                onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-              />
-            </div>
-
-            <div style={{ marginBottom: "24px" }}>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "6px" }}>
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={inputStyle}
-                onFocus={(e) => (e.target.style.borderColor = "#b5484b")}
-                onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 20 }}>
+            <label
               style={{
-                width: "100%",
-                padding: "12px",
-                background: loading ? "#9ca3af" : "linear-gradient(135deg, #b5484b 0%, #6b3057 100%)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "15px",
+                display: "block",
+                fontSize: 11,
                 fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
-                transition: "opacity 0.2s",
+                color: "#5F6577",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                marginBottom: 8,
               }}
             >
-              {loading ? "Signing in…" : "Login"}
-            </button>
-            <div style={{ textAlign: "center", marginTop: 14 }}>
-              <a
-                href="/forgot-password"
-                style={{ color: "#7c3aed", fontSize: 13, textDecoration: "none" }}
-              >
-                Forgot password?
-              </a>
-            </div>
-          </form>
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              autoComplete="email"
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                border: "1.5px solid #E6E4DF",
+                borderRadius: 8,
+                fontSize: 14,
+                color: "#1A1D23",
+                outline: "none",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "border-color 0.2s, box-shadow 0.2s",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#b5484b";
+                e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.12)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#E6E4DF";
+                e.target.style.boxShadow = "none";
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label
+              style={{
+                display: "block",
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#5F6577",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                marginBottom: 8,
+              }}
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                border: "1.5px solid #E6E4DF",
+                borderRadius: 8,
+                fontSize: 14,
+                color: "#1A1D23",
+                outline: "none",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "border-color 0.2s, box-shadow 0.2s",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#b5484b";
+                e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.12)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#E6E4DF";
+                e.target.style.boxShadow = "none";
+              }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "13px",
+              background: loading
+                ? "#9CA3B4"
+                : "linear-gradient(135deg, #b5484b, #6b3057)",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: loading ? "not-allowed" : "pointer",
+              fontFamily: "'DM Sans', sans-serif",
+              marginTop: 8,
+              transition: "opacity 0.2s",
+            }}
+          >
+            {loading ? "Signing in…" : "Login to Dashboard"}
+          </button>
+        </form>
+
+        <div style={{ textAlign: "center", marginTop: 24 }}>
+          <a
+            href="/forgot-password"
+            style={{
+              color: "#b5484b",
+              fontSize: 12,
+              textDecoration: "none",
+              fontWeight: 500,
+            }}
+          >
+            Forgot password?
+          </a>
+        </div>
+
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: 11,
+            color: "#9CA3B4",
+            marginTop: 24,
+          }}
+        >
+          Secure admin access only · Session managed via HTTP-only cookies
+        </p>
       </div>
     </div>
   );

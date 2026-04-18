@@ -114,7 +114,7 @@ function HeroSection() {
             background: `linear-gradient(135deg, ${T.primary}, ${T.accent})`,
             textDecoration: "none",
             boxShadow: `0 8px 24px rgba(13,148,136,0.25)`,
-          }}>Start Free Trial →</Link>
+          }}>Start →</Link>
           <button style={{
             fontSize: 14, fontWeight: 500, color: T.text,
             padding: "13px 28px", borderRadius: 99,
@@ -291,7 +291,7 @@ function PricingSection({ plans }: { plans: PublicPlan[] }) {
                     background: popular ? `linear-gradient(135deg, ${T.primary}, ${T.accent})` : T.bg,
                     color: popular ? "#fff" : T.text2,
                     border: popular ? "none" : `1.5px solid ${T.border}`,
-                  }}>{isFree(p) ? "Get Started Free" : "Start Free Trial"}</Link>
+                  }}>{isFree(p) ? "Get Started Free" : "Start"}</Link>
                 </div>
               );
             })}
@@ -401,7 +401,7 @@ function BottomCta() {
           background: `linear-gradient(135deg, ${T.primary}, ${T.accent})`,
           textDecoration: "none",
           boxShadow: `0 8px 24px rgba(13,148,136,0.3)`,
-        }}>Start Free Trial →</Link>
+        }}>Start →</Link>
       </div>
     </section>
   );
