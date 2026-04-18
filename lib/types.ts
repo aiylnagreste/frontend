@@ -120,6 +120,8 @@ export interface Tenant {
   email: string;
   phone: string;
   status: "active" | "suspended";
+  subscription_plan: string | null;
+  subscription_expires: string | null;
 }
 
 export interface Plan {

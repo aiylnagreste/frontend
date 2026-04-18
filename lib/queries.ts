@@ -38,6 +38,7 @@ export const QK = {
   salonName: () => ["salonName"] as const,
   salonConfig: (tenantId: string) => ["salonConfig", tenantId] as const,
   webhookConfig: () => ["webhookConfig"] as const,
+  plans: () => ["plans"] as const,
 };
 
 // ─── Fetchers ───────────────────────────────────────────────────────────────
