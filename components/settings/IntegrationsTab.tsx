@@ -268,6 +268,107 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
           {saveMutation.isPending ? "Saving…" : "Save All Integrations"}
         </button>
       </div>
+
+      {/* ── Widget & Voice Section ── */}
+      {!planFeatures && null}
+      {planFeatures && (planFeatures.widget_access === 1 || planFeatures.ai_calls_access === 1) && (
+        <WidgetVoiceSection tenantId={tenantId} planFeatures={planFeatures} />
+      )}
+    </div>
+  );
+}
+
+// ── WidgetVoiceSection ────────────────────────────────────────────────────────
+function WidgetVoiceSection({ tenantId, planFeatures }: { tenantId: string; planFeatures: PlanFeatures }) {
+  const backendOrigin = typeof window !== "undefined"
+    ? (process.env.NEXT_PUBLIC_BACKEND_URL ?? window.location.origin)
+    : "";
+  const widgetScriptUrl = `${backendOrigin}/widget/${tenantId}/widget.js`;
+  const voiceWsUrl = `wss://${(backendOrigin).replace(/^https?:\/\//, "")}/live/${tenantId}`;
+
+  return (
+    <div style={{
+      background: "var(--color-surface)",
+      border: "1px solid var(--color-border)",
+      borderRadius: "var(--radius-md)",
+      overflow: "hidden",
+    }}>
+      <div style={cardHeaderStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ fontSize: "20px" }}>🌐</span>
+          <h4 style={{ fontWeight: 600, margin: 0 }}>Widget &amp; Voice</h4>
+        </div>
+      </div>
+      <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <p style={{ fontSize: "13px", color: "var(--color-sub)", margin: 0 }}>
+          Embed live chat and AI voice call features on your website.
+        </p>
+
+        {planFeatures.widget_access === 1 && (
+          <div>
+            <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "8px", color: "var(--color-sub)" }}>
+              Chat Widget Script Tag
+            </label>
+            <CopyBox value={`<script src="${widgetScriptUrl}"></script>`} label="Widget script copied" />
+            <p style={{ fontSize: "11px", color: "var(--color-sub)", marginTop: "6px" }}>
+              Paste this just before the closing <code style={{ fontFamily: "monospace", fontSize: "11px" }}>&lt;/body&gt;</code> tag on your website.
+            </p>
+          </div>
+        )}
+
+        {planFeatures.ai_calls_access === 1 && (
+          <div>
+            <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "8px", color: "var(--color-sub)" }}>
+              Voice Call Endpoint (WebSocket)
+            </label>
+            <CopyBox value={voiceWsUrl} label="Voice endpoint copied" />
+            <p style={{ fontSize: "11px", color: "var(--color-sub)", marginTop: "6px" }}>
+              WebSocket endpoint for the AI voice call feature.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── CopyBox ───────────────────────────────────────────────────────────────────
+function CopyBox({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    toast.success(label);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      background: "var(--color-canvas)",
+      border: "1px solid var(--color-border)",
+      borderRadius: "8px",
+      padding: "10px 12px",
+    }}>
+      <code style={{ fontSize: "11px", color: "#3b82f6", wordBreak: "break-all", flex: 1, fontFamily: "monospace" }}>
+        {value}
+      </code>
+      <button onClick={handleCopy} style={{
+        padding: "4px 12px",
+        background: copied ? "#16a34a" : "var(--color-rose)",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        fontSize: "11px",
+        fontWeight: 600,
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+      }}>
+        {copied ? "Copied!" : "Copy"}
+      </button>
     </div>
   );
 }
