@@ -9,9 +9,10 @@ import {
   fetchTimings,
   fetchGeneral,
   fetchWebhookConfig,
+  fetchPlanFeatures,
   QK,
 } from "@/lib/queries";
-import type { Branch, Staff, Role, SalonTimings, WebhookConfig } from "@/lib/types";
+import type { Branch, Staff, Role, SalonTimings, WebhookConfig, PlanFeatures } from "@/lib/types";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
@@ -99,6 +100,11 @@ function GeneralTab() {
     queryKey: QK.general(),
     queryFn: fetchGeneral,
     staleTime: 10 * 60_000,
+  });
+  const { data: planFeatures } = useQuery({
+    queryKey: QK.planFeatures(),
+    queryFn: fetchPlanFeatures,
+    staleTime: 60_000,
   });
 
   const [currency, setCurrency] = useState(general?.currency ?? "Rs.");
@@ -225,6 +231,7 @@ function GeneralTab() {
           </div>
 
           {/* Widget Customization Card */}
+          {planFeatures?.widget_access === 1 && (
           <div
             style={{
               background: "var(--color-surface)",
@@ -252,15 +259,15 @@ function GeneralTab() {
               value={botName}
               onChange={(e) => setBotName(e.target.value)}
               placeholder={general?.owner_name ?? "e.g. Glamour Studio"}
-              style={{ 
-                width: "100%", 
-                padding: "9px 12px", 
-                border: "1px solid var(--color-border)", 
-                borderRadius: "8px", 
-                fontSize: "13px", 
-                background: "var(--color-surface)", 
-                marginBottom: "16px", 
-                boxSizing: "border-box" 
+              style={{
+                width: "100%",
+                padding: "9px 12px",
+                border: "1px solid var(--color-border)",
+                borderRadius: "8px",
+                fontSize: "13px",
+                background: "var(--color-surface)",
+                marginBottom: "16px",
+                boxSizing: "border-box"
               }}
             />
 
@@ -268,60 +275,61 @@ function GeneralTab() {
               Widget Color
             </label>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
-              <input 
-                type="color" 
-                value={primaryColor} 
+              <input
+                type="color"
+                value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                style={{ 
-                  width: "40px", 
-                  height: "34px", 
-                  border: "1px solid var(--color-border)", 
-                  borderRadius: "6px", 
-                  cursor: "pointer", 
-                  padding: "2px", 
-                  flexShrink: 0 
-                }} 
+                style={{
+                  width: "40px",
+                  height: "34px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  padding: "2px",
+                  flexShrink: 0
+                }}
               />
-              <input 
-                type="text" 
-                value={primaryColor} 
+              <input
+                type="text"
+                value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                style={{ 
-                  width: "100px", 
-                  padding: "7px 10px", 
-                  border: "1px solid var(--color-border)", 
-                  borderRadius: "8px", 
-                  fontSize: "12px", 
-                  fontFamily: "monospace", 
-                  background: "var(--color-surface)" 
-                }} 
+                style={{
+                  width: "100px",
+                  padding: "7px 10px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontFamily: "monospace",
+                  background: "var(--color-surface)"
+                }}
               />
               {colorPresets.map((c) => (
-                <button 
-                  key={c} 
-                  onClick={() => setPrimaryColor(c)} 
+                <button
+                  key={c}
+                  onClick={() => setPrimaryColor(c)}
                   title={c}
-                  style={{ 
-                    width: "24px", 
-                    height: "24px", 
-                    borderRadius: "50%", 
-                    background: c, 
-                    border: primaryColor === c ? "2px solid var(--color-text)" : "2px solid var(--color-border)", 
-                    cursor: "pointer", 
-                    flexShrink: 0 
-                  }} 
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    background: c,
+                    border: primaryColor === c ? "2px solid var(--color-text)" : "2px solid var(--color-border)",
+                    cursor: "pointer",
+                    flexShrink: 0
+                  }}
                 />
               ))}
             </div>
 
-            <button 
-              onClick={() => saveMutation.mutate()} 
-              disabled={saveMutation.isPending} 
+            <button
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending}
               style={primaryBtn}
             >
               {saveMutation.isPending ? "Saving…" : "Save Widget Settings"}
             </button>
           </div>
+          )}
         </div>
 
         {/* RIGHT COLUMN - Preview and Embed Code */}
@@ -408,6 +416,7 @@ function GeneralTab() {
           </div>
 
           {/* Embed Code Card */}
+          {planFeatures?.widget_access === 1 && (
           <div
             style={{
               background: "var(--color-surface)",
@@ -535,6 +544,7 @@ function GeneralTab() {
               </p>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
@@ -1083,8 +1093,13 @@ function IntegrationsTabWrapper() {
     queryFn: fetchGeneral,
     staleTime: 10 * 60_000,
   });
+  const { data: planFeatures } = useQuery({
+    queryKey: QK.planFeatures(),
+    queryFn: fetchPlanFeatures,
+    staleTime: 60_000,
+  });
   const tenantId = general?.tenantId ?? "";
-  return <IntegrationsTab tenantId={tenantId} />;
+  return <IntegrationsTab tenantId={tenantId} planFeatures={planFeatures} />;
 }
 
 /* ─── Account Tab ─── */

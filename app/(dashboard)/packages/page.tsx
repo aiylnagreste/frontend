@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchServices, fetchBranches, fetchGeneral, QK } from "@/lib/queries";
 import type { Service, Branch } from "@/lib/types";
+import { Badge } from "@/components/ui/Badge";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -128,8 +129,18 @@ export default function PackagesPage() {
                   borderRadius: "var(--radius-md)",
                   padding: "16px",
                   position: "relative",
+                  opacity: s.frozen === 1 ? 0.6 : 1,
                 }}
               >
+                {s.frozen === 1 && (
+                  <div style={{
+                    position: "absolute",
+                    top: "12px",
+                    left: "12px",
+                  }}>
+                    <Badge status="no_show" label="Frozen" />
+                  </div>
+                )}
                 <div
                   style={{
                     position: "absolute",

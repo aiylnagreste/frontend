@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchWebhookConfig, QK } from "@/lib/queries";
-import type { WebhookConfig } from "@/lib/types";
+import type { WebhookConfig, PlanFeatures } from "@/lib/types";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
@@ -16,13 +16,14 @@ function ConnectionBadge({ hasToken }: { hasToken: boolean; verified: boolean })
 
 interface IntegrationsTabProps {
   tenantId: string;
+  planFeatures?: PlanFeatures;
 }
 
 const EMPTY_WA = { phone_number_id: "", access_token: "", verify_token: "" };
 const EMPTY_IG = { page_access_token: "", verify_token: "" };
 const EMPTY_FB = { page_access_token: "", verify_token: "" };
 
-export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
+export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps) {
   const qc = useQueryClient();
   const { data: config } = useQuery<WebhookConfig>({
     queryKey: QK.webhookConfig(),
@@ -114,136 +115,147 @@ export function IntegrationsTab({ tenantId }: IntegrationsTabProps) {
         Connect your salon&apos;s WhatsApp, Instagram, and Facebook accounts so customers can book through messaging apps.
       </p>
 
+      {!planFeatures && <div style={{ color: "var(--color-sub)", padding: 24 }}>Loading plan features…</div>}
+      {planFeatures && planFeatures.whatsapp_access === 0 && planFeatures.instagram_access === 0 && planFeatures.facebook_access === 0 && (
+        <div style={{ color: "var(--color-sub)", padding: 24 }}>Your plan does not include any messaging integrations. Upgrade to enable WhatsApp, Instagram, or Facebook.</div>
+      )}
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
 
         {/* ── WhatsApp ── */}
-        <div style={cardStyle}>
-          <div style={cardHeaderStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "20px" }}>💬</span>
-              <h4 style={{ fontWeight: 600, margin: 0 }}>WhatsApp</h4>
+        {planFeatures?.whatsapp_access === 1 && (
+          <div style={cardStyle}>
+            <div style={cardHeaderStyle}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "20px" }}>💬</span>
+                <h4 style={{ fontWeight: 600, margin: 0 }}>WhatsApp</h4>
+              </div>
+              <ConnectionBadge hasToken={!!config?.has_whatsapp} verified={!!config?.wa_verified} />
             </div>
-            <ConnectionBadge hasToken={!!config?.has_whatsapp} verified={!!config?.wa_verified} />
-          </div>
 
-          <div style={{ padding: "20px" }}>
-            <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/whatsapp`} />
+            <div style={{ padding: "20px" }}>
+              <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/whatsapp`} />
 
-            <CredentialSection
-              isSaved={!!config?.has_whatsapp}
-              isEditing={editingWa}
-              onEdit={() => setEditingWa(true)}
-              onCancel={() => cancelEdit("wa")}
-              onDelete={() => deleteMutation.mutate("whatsapp")}
-              isDeleting={deleteMutation.isPending}
-              savedFields={waSavedFields}
-            >
-              <Field
-                label="Phone Number ID"
-                value={wa.phone_number_id}
-                onChange={v => setWa(p => ({ ...p, phone_number_id: v }))}
-                placeholder="Enter Phone Number ID"
-              />
-              <Field
-                label="Access Token"
-                value={wa.access_token}
-                onChange={v => setWa(p => ({ ...p, access_token: v }))}
-                placeholder="Enter new Access Token"
-                isPassword
-              />
-              <Field
-                label="Verify Token"
-                value={wa.verify_token}
-                onChange={v => setWa(p => ({ ...p, verify_token: v }))}
-                placeholder="Enter new Verify Token"
-                helpText="Must match what you set in Meta Developer Console"
-              />
-            </CredentialSection>
+              <CredentialSection
+                isSaved={!!config?.has_whatsapp}
+                isEditing={editingWa}
+                onEdit={() => setEditingWa(true)}
+                onCancel={() => cancelEdit("wa")}
+                onDelete={() => deleteMutation.mutate("whatsapp")}
+                isDeleting={deleteMutation.isPending}
+                savedFields={waSavedFields}
+              >
+                <Field
+                  label="Phone Number ID"
+                  value={wa.phone_number_id}
+                  onChange={v => setWa(p => ({ ...p, phone_number_id: v }))}
+                  placeholder="Enter Phone Number ID"
+                />
+                <Field
+                  label="Access Token"
+                  value={wa.access_token}
+                  onChange={v => setWa(p => ({ ...p, access_token: v }))}
+                  placeholder="Enter new Access Token"
+                  isPassword
+                />
+                <Field
+                  label="Verify Token"
+                  value={wa.verify_token}
+                  onChange={v => setWa(p => ({ ...p, verify_token: v }))}
+                  placeholder="Enter new Verify Token"
+                  helpText="Must match what you set in Meta Developer Console"
+                />
+              </CredentialSection>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ── Right column ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
 
           {/* Instagram */}
-          <div style={cardStyle}>
-            <div style={cardHeaderStyle}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "20px" }}>📸</span>
-                <h4 style={{ fontWeight: 600, margin: 0 }}>Instagram</h4>
+          {planFeatures?.instagram_access === 1 && (
+            <div style={cardStyle}>
+              <div style={cardHeaderStyle}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ fontSize: "20px" }}>📸</span>
+                  <h4 style={{ fontWeight: 600, margin: 0 }}>Instagram</h4>
+                </div>
+                <ConnectionBadge hasToken={!!config?.has_instagram} verified={!!config?.ig_verified} />
               </div>
-              <ConnectionBadge hasToken={!!config?.has_instagram} verified={!!config?.ig_verified} />
-            </div>
 
-            <div style={{ padding: "20px" }}>
-              <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/instagram`} />
+              <div style={{ padding: "20px" }}>
+                <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/instagram`} />
 
-              <CredentialSection
-                isSaved={!!config?.has_instagram}
-                isEditing={editingIg}
-                onEdit={() => setEditingIg(true)}
-                onCancel={() => cancelEdit("ig")}
-                onDelete={() => deleteMutation.mutate("instagram")}
-                isDeleting={deleteMutation.isPending}
-                savedFields={igSavedFields}
-              >
-                <Field
-                  label="Page Access Token"
-                  value={ig.page_access_token}
-                  onChange={v => setIg(p => ({ ...p, page_access_token: v }))}
-                  placeholder="Enter new Page Access Token"
-                  isPassword
-                />
-                <Field
-                  label="Verify Token"
-                  value={ig.verify_token}
-                  onChange={v => setIg(p => ({ ...p, verify_token: v }))}
-                  placeholder="Enter new Verify Token"
-                  helpText="Must match what you set in Meta Developer Console"
-                />
-              </CredentialSection>
+                <CredentialSection
+                  isSaved={!!config?.has_instagram}
+                  isEditing={editingIg}
+                  onEdit={() => setEditingIg(true)}
+                  onCancel={() => cancelEdit("ig")}
+                  onDelete={() => deleteMutation.mutate("instagram")}
+                  isDeleting={deleteMutation.isPending}
+                  savedFields={igSavedFields}
+                >
+                  <Field
+                    label="Page Access Token"
+                    value={ig.page_access_token}
+                    onChange={v => setIg(p => ({ ...p, page_access_token: v }))}
+                    placeholder="Enter new Page Access Token"
+                    isPassword
+                  />
+                  <Field
+                    label="Verify Token"
+                    value={ig.verify_token}
+                    onChange={v => setIg(p => ({ ...p, verify_token: v }))}
+                    placeholder="Enter new Verify Token"
+                    helpText="Must match what you set in Meta Developer Console"
+                  />
+                </CredentialSection>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Facebook */}
-          <div style={cardStyle}>
-            <div style={cardHeaderStyle}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "20px" }}>👍</span>
-                <h4 style={{ fontWeight: 600, margin: 0 }}>Facebook Messenger</h4>
+          {planFeatures?.facebook_access === 1 && (
+            <div style={cardStyle}>
+              <div style={cardHeaderStyle}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ fontSize: "20px" }}>👍</span>
+                  <h4 style={{ fontWeight: 600, margin: 0 }}>Facebook Messenger</h4>
+                </div>
+                <ConnectionBadge hasToken={!!config?.has_facebook} verified={!!config?.fb_verified} />
               </div>
-              <ConnectionBadge hasToken={!!config?.has_facebook} verified={!!config?.fb_verified} />
-            </div>
 
-            <div style={{ padding: "20px" }}>
-              <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/facebook`} />
+              <div style={{ padding: "20px" }}>
+                <WebhookUrlBox url={`${backendOrigin}/webhooks/${tenantId}/facebook`} />
 
-              <CredentialSection
-                isSaved={!!config?.has_facebook}
-                isEditing={editingFb}
-                onEdit={() => setEditingFb(true)}
-                onCancel={() => cancelEdit("fb")}
-                onDelete={() => deleteMutation.mutate("facebook")}
-                isDeleting={deleteMutation.isPending}
-                savedFields={fbSavedFields}
-              >
-                <Field
-                  label="Page Access Token"
-                  value={fb.page_access_token}
-                  onChange={v => setFb(p => ({ ...p, page_access_token: v }))}
-                  placeholder="Enter new Page Access Token"
-                  isPassword
-                />
-                <Field
-                  label="Verify Token"
-                  value={fb.verify_token}
-                  onChange={v => setFb(p => ({ ...p, verify_token: v }))}
-                  placeholder="Enter new Verify Token"
-                  helpText="Must match what you set in Meta Developer Console"
-                />
-              </CredentialSection>
+                <CredentialSection
+                  isSaved={!!config?.has_facebook}
+                  isEditing={editingFb}
+                  onEdit={() => setEditingFb(true)}
+                  onCancel={() => cancelEdit("fb")}
+                  onDelete={() => deleteMutation.mutate("facebook")}
+                  isDeleting={deleteMutation.isPending}
+                  savedFields={fbSavedFields}
+                >
+                  <Field
+                    label="Page Access Token"
+                    value={fb.page_access_token}
+                    onChange={v => setFb(p => ({ ...p, page_access_token: v }))}
+                    placeholder="Enter new Page Access Token"
+                    isPassword
+                  />
+                  <Field
+                    label="Verify Token"
+                    value={fb.verify_token}
+                    onChange={v => setFb(p => ({ ...p, verify_token: v }))}
+                    placeholder="Enter new Verify Token"
+                    helpText="Must match what you set in Meta Developer Console"
+                  />
+                </CredentialSection>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
