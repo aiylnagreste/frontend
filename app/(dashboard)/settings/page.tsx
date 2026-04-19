@@ -259,65 +259,10 @@ function GeneralTab() {
             </button>
           </div>
 
-          {/* Website & CORS Card */}
-          {showCorsCard && (
-          <div
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-              borderRadius: "var(--radius-md)",
-              padding: "24px",
-            }}
-          >
-            <h4 style={{ fontWeight: 600, marginBottom: "4px" }}>🌐 Website &amp; CORS</h4>
-            <p
-              style={{
-                fontSize: "12px",
-                color: "var(--color-sub)",
-                marginBottom: "16px",
-              }}
-            >
-              Add your website&apos;s URL so the chat widget and voice call can work on your site. This URL will be used for CORS.
-            </p>
-            <label
-              style={{
-                fontSize: "13px",
-                fontWeight: 500,
-                display: "block",
-                marginBottom: "6px",
-                color: "var(--color-ink)",
-              }}
-            >
-              Your Website URL
-            </label>
-            <input
-              type="url"
-              value={corsUrl}
-              onChange={(e) => setCorsUrl(e.target.value)}
-              placeholder="https://yoursalon.com"
-              style={{
-                width: "100%",
-                padding: "9px 12px",
-                border: "1px solid var(--color-border)",
-                borderRadius: "8px",
-                fontSize: "13px",
-                background: "var(--color-surface)",
-                marginBottom: "16px",
-                boxSizing: "border-box",
-              }}
-            />
-            <button
-              onClick={() => corsOriginMutation.mutate()}
-              disabled={corsOriginMutation.isPending}
-              style={primaryBtn}
-            >
-              {corsOriginMutation.isPending ? "Saving…" : "Save Website URL"}
-            </button>
-          </div>
-          )}
+         
 
           {/* Widget Customization Card */}
-          {planFeatures?.widget_access === 1 && (
+          {showCorsCard && (
           <div
             style={{
               background: "var(--color-surface)",
@@ -416,6 +361,64 @@ function GeneralTab() {
             </button>
           </div>
           )}
+
+
+           {/* Website & CORS Card */}
+        {showCorsCard && (
+          <div
+            style={{
+              background: "var(--color-surface)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-md)",
+              padding: "24px",
+            }}
+          >
+            <h4 style={{ fontWeight: 600, marginBottom: "4px" }}>🌐 Website &amp; CORS</h4>
+            <p
+              style={{
+                fontSize: "12px",
+                color: "var(--color-sub)",
+                marginBottom: "16px",
+              }}
+            >
+              Add your website&apos;s URL so the chat widget and voice call can work on your site. This URL will be used for CORS.
+            </p>
+            <label
+              style={{
+                fontSize: "13px",
+                fontWeight: 500,
+                display: "block",
+                marginBottom: "6px",
+                color: "var(--color-ink)",
+              }}
+            >
+              Your Website URL
+            </label>
+            <input
+              type="url"
+              value={corsUrl}
+              onChange={(e) => setCorsUrl(e.target.value)}
+              placeholder="https://yoursalon.com"
+              style={{
+                width: "100%",
+                padding: "9px 12px",
+                border: "1px solid var(--color-border)",
+                borderRadius: "8px",
+                fontSize: "13px",
+                background: "var(--color-surface)",
+                marginBottom: "16px",
+                boxSizing: "border-box",
+              }}
+            />
+            <button
+              onClick={() => corsOriginMutation.mutate()}
+              disabled={corsOriginMutation.isPending}
+              style={primaryBtn}
+            >
+              {corsOriginMutation.isPending ? "Saving…" : "Save Website URL"}
+            </button>
+          </div>
+          )}
         </div>
 
         {/* RIGHT COLUMN - Preview and Embed Code */}
@@ -502,7 +505,7 @@ function GeneralTab() {
           </div>
 
           {/* Embed Code Card */}
-          {planFeatures?.widget_access === 1 && (
+          {showCorsCard && (
           <div
             style={{
               background: "var(--color-surface)",

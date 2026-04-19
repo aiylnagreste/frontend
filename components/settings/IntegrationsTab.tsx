@@ -111,9 +111,10 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {planFeatures && planFeatures.whatsapp_access === 1 ||planFeatures && planFeatures.instagram_access === 1 || planFeatures && planFeatures.facebook_access === 1 && (
       <p style={{ fontSize: "13px", color: "var(--color-sub)", marginBottom: "0" }}>
         Connect your salon&apos;s WhatsApp, Instagram, and Facebook accounts so customers can book through messaging apps.
-      </p>
+      </p>)}
 
       {!planFeatures && <div style={{ color: "var(--color-sub)", padding: 24 }}>Loading plan features…</div>}
       {planFeatures && planFeatures.whatsapp_access === 0 && planFeatures.instagram_access === 0 && planFeatures.facebook_access === 0 && (
@@ -258,79 +259,37 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
           )}
         </div>
       </div>
+    
 
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
-        <button
-          onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending}
-          style={primaryBtn}
-        >
-          {saveMutation.isPending ? "Saving…" : "Save All Integrations"}
-        </button>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      
 
-      {/* ── Widget & Voice Section ── */}
-      {!planFeatures && null}
-      {planFeatures && (planFeatures.widget_access === 1 || planFeatures.ai_calls_access === 1) && (
-        <WidgetVoiceSection tenantId={tenantId} planFeatures={planFeatures} />
-      )}
+      {/* Save button with conditional justifyContent */}
+      {(() => {
+        const enabledCount = [
+          planFeatures?.facebook_access === 1,
+          planFeatures?.instagram_access === 1,
+          planFeatures?.whatsapp_access === 1
+        ].filter(Boolean).length;
+
+        return enabledCount > 0 && (
+          <div style={{ 
+            display: "flex", 
+            justifyContent: enabledCount > 1 ? "flex-end" : "flex-start", 
+            marginTop: "8px" 
+          }}>
+            <button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} style={primaryBtn}>
+              {saveMutation.isPending ? "Saving…" : "Save All Integrations"}
+            </button>
+          </div>
+        );
+      })()}
+    </div>
+     
     </div>
   );
 }
 
-// ── WidgetVoiceSection ────────────────────────────────────────────────────────
-function WidgetVoiceSection({ tenantId, planFeatures }: { tenantId: string; planFeatures: PlanFeatures }) {
-  const backendOrigin = typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_BACKEND_URL ?? window.location.origin)
-    : "";
-  const widgetScriptUrl = `${backendOrigin}/widget/${tenantId}/widget.js`;
-  const voiceWsUrl = `wss://${(backendOrigin).replace(/^https?:\/\//, "")}/live/${tenantId}`;
-
-  return (
-    <div style={{
-      background: "var(--color-surface)",
-      border: "1px solid var(--color-border)",
-      borderRadius: "var(--radius-md)",
-      overflow: "hidden",
-    }}>
-      <div style={cardHeaderStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span style={{ fontSize: "20px" }}>🌐</span>
-          <h4 style={{ fontWeight: 600, margin: 0 }}>Widget &amp; Voice</h4>
-        </div>
-      </div>
-      <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-        <p style={{ fontSize: "13px", color: "var(--color-sub)", margin: 0 }}>
-          Embed live chat and AI voice call features on your website.
-        </p>
-
-        {planFeatures.widget_access === 1 && (
-          <div>
-            <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "8px", color: "var(--color-sub)" }}>
-              Chat Widget Script Tag
-            </label>
-            <CopyBox value={`<script src="${widgetScriptUrl}"></script>`} label="Widget script copied" />
-            <p style={{ fontSize: "11px", color: "var(--color-sub)", marginTop: "6px" }}>
-              Paste this just before the closing <code style={{ fontFamily: "monospace", fontSize: "11px" }}>&lt;/body&gt;</code> tag on your website.
-            </p>
-          </div>
-        )}
-
-        {planFeatures.ai_calls_access === 1 && (
-          <div>
-            <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "8px", color: "var(--color-sub)" }}>
-              Voice Call Endpoint (WebSocket)
-            </label>
-            <CopyBox value={voiceWsUrl} label="Voice endpoint copied" />
-            <p style={{ fontSize: "11px", color: "var(--color-sub)", marginTop: "6px" }}>
-              WebSocket endpoint for the AI voice call feature.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 // ── CopyBox ───────────────────────────────────────────────────────────────────
 function CopyBox({ value, label }: { value: string; label: string }) {

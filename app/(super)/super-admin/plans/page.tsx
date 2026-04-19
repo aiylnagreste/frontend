@@ -117,7 +117,7 @@ function PlanCard({ plan, onEdit, onToggle, onHardDelete }: {
           <FeatureChip label="WhatsApp" active={!!plan.whatsapp_access} icon={<MessageCircle size={10} />} />
           <FeatureChip label="Instagram" active={!!plan.instagram_access} icon={<Share2 size={10} />} />
           <FeatureChip label="Facebook" active={!!plan.facebook_access} icon={<Users size={10} />} />
-          <FeatureChip label="AI Calls" active={!!plan.ai_calls_access} icon={<Phone size={10} />} />
+          <FeatureChip label="Widget" active={!!plan.ai_calls_access} icon={<Phone size={10} />} />
         </div>
       </div>
     </div>
@@ -264,7 +264,7 @@ function PlanForm({ initial, onClose, onSaved }: {
           <Toggle label="WhatsApp Chat" checked={form.whatsapp_access} onChange={v => set("whatsapp_access", v)} />
           <Toggle label="Instagram Chat" checked={form.instagram_access} onChange={v => set("instagram_access", v)} />
           <Toggle label="Facebook Chat" checked={form.facebook_access} onChange={v => set("facebook_access", v)} />
-          <Toggle label="AI Voice Calls" checked={form.ai_calls_access} onChange={v => set("ai_calls_access", v)} />
+          <Toggle label="Widget Call & Chat" checked={form.ai_calls_access} onChange={v => set("ai_calls_access", v)} />
         </div>
       </div>
 
