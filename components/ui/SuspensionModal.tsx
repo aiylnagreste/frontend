@@ -62,7 +62,7 @@ export function SuspensionModal({ salonName }: { salonName?: string }) {
           {salonName ? `${salonName}'s account` : "Your salon account"} has been suspended. All actions
           are currently disabled. Please contact support to restore access.
         </p>
-        <a
+        {/* <a
           href="mailto:support@glowdesk.app"
           style={{
             display: "inline-block",
@@ -76,7 +76,7 @@ export function SuspensionModal({ salonName }: { salonName?: string }) {
           }}
         >
           Contact Support
-        </a>
+        </a> */}
       </div>
     </div>
   );
