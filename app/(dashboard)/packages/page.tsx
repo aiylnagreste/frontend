@@ -22,6 +22,7 @@ function parseDuration(mins: number) {
 export default function PackagesPage() {
   const qc = useQueryClient();
   const [branchFilter, setBranchFilter] = useState("");
+  const [frozenFilter, setFrozenFilter] = useState<"all" | "active" | "frozen">("all");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
 
@@ -55,9 +56,16 @@ export default function PackagesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const filtered = branchFilter
-    ? services.filter((s) => s.branch === branchFilter)
-    : services;
+  // OOC-FEAT-01 + OOC-FEAT-02: apply branch filter, frozen filter, then sort frozen-last
+  const filtered = services
+    .filter((s) => (branchFilter ? s.branch === branchFilter : true))
+    .filter((s) => {
+      if (frozenFilter === "active") return s.frozen === 0;
+      if (frozenFilter === "frozen") return s.frozen === 1;
+      return true; // "all"
+    })
+    .slice() // defensive copy before sort — avoid mutating query cache
+    .sort((a, b) => a.frozen - b.frozen); // 0s first, 1s last
 
   function openAddDrawer() {
     setEditingService(null);
@@ -94,6 +102,32 @@ export default function PackagesPage() {
           >
             + Add Service
           </button>
+        </div>
+
+        <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+          {(["all", "active", "frozen"] as const).map((key) => {
+            const isActive = frozenFilter === key;
+            const label = key === "all" ? "All" : key === "active" ? "Active" : "Frozen";
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFrozenFilter(key)}
+                style={{
+                  padding: "6px 14px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  borderRadius: "8px",
+                  border: "1px solid var(--color-border)",
+                  background: isActive ? "var(--color-rose)" : "var(--color-surface)",
+                  color: isActive ? "#fff" : "var(--color-ink)",
+                  cursor: "pointer",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
 
         <select
