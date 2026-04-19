@@ -41,6 +41,7 @@ export const QK = {
   webhookConfig: () => ["webhookConfig"] as const,
   plans: () => ["plans"] as const,
   planFeatures: () => ["planFeatures"] as const,
+  corsOrigin: () => ["corsOrigin"] as const,
 };
 
 // ─── Fetchers ───────────────────────────────────────────────────────────────
@@ -84,6 +85,15 @@ export const fetchSalonConfig = (tenantId: string) =>
 export const fetchWebhookConfig = () => api.get<WebhookConfig>(`${BASE}/webhook-config`);
 
 export const fetchPlanFeatures = () => api.get<PlanFeatures>(`${BASE}/plan-features`);
+
+export async function fetchCorsOrigin(): Promise<string | null> {
+  const data = await api.get<{ ok: boolean; cors_origin: string | null }>(`${BASE}/cors-origin`);
+  return data.cors_origin;
+}
+
+export async function saveCorsOrigin(cors_origin: string | null): Promise<void> {
+  await api.put(`${BASE}/cors-origin`, { cors_origin });
+}
 
 // Super admin
 const SA = "/super-admin/api";

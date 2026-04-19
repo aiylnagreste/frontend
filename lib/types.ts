@@ -153,6 +153,11 @@ export interface Plan {
 
 export type PublicPlan = Omit<Plan, 'stripe_price_id' | 'is_active' | 'created_at' | 'updated_at'>;
 
+export interface CorsOriginResponse {
+  ok: boolean;
+  cors_origin: string | null;
+}
+
 export interface Subscription {
   id: number;
   tenant_id: string;
