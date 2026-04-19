@@ -24,6 +24,16 @@ export interface Service {
   description: string;
   branch: string;
   durationMinutes: number;
+  frozen: 0 | 1;
+}
+
+export interface PlanFeatures {
+  max_services: number;
+  whatsapp_access: 0 | 1;
+  instagram_access: 0 | 1;
+  facebook_access: 0 | 1;
+  widget_access: 0 | 1;
+  ai_calls_access: 0 | 1;
 }
 
 export interface Deal {

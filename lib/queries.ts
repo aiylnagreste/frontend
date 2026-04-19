@@ -8,6 +8,7 @@ import type {
   DashboardStats,
   Deal,
   Plan,
+  PlanFeatures,
   PublicPlan,
   Role,
   SalonTimings,
@@ -39,6 +40,7 @@ export const QK = {
   salonConfig: (tenantId: string) => ["salonConfig", tenantId] as const,
   webhookConfig: () => ["webhookConfig"] as const,
   plans: () => ["plans"] as const,
+  planFeatures: () => ["planFeatures"] as const,
 };
 
 // ─── Fetchers ───────────────────────────────────────────────────────────────
@@ -80,6 +82,8 @@ export const fetchSalonConfig = (tenantId: string) =>
   );
 
 export const fetchWebhookConfig = () => api.get<WebhookConfig>(`${BASE}/webhook-config`);
+
+export const fetchPlanFeatures = () => api.get<PlanFeatures>(`${BASE}/plan-features`);
 
 // Super admin
 const SA = "/super-admin/api";
