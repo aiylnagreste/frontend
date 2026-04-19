@@ -16,6 +16,7 @@ import type {
   Staff,
   Subscription,
   Tenant,
+  TenantStatus,
   WebhookConfig,
 } from "./types";
 
@@ -41,6 +42,7 @@ export const QK = {
   webhookConfig: () => ["webhookConfig"] as const,
   plans: () => ["plans"] as const,
   planFeatures: () => ["planFeatures"] as const,
+  tenantStatus: () => ["tenantStatus"] as const,
   corsOrigin: () => ["corsOrigin"] as const,
 };
 
@@ -85,6 +87,9 @@ export const fetchSalonConfig = (tenantId: string) =>
 export const fetchWebhookConfig = () => api.get<WebhookConfig>(`${BASE}/webhook-config`);
 
 export const fetchPlanFeatures = () => api.get<PlanFeatures>(`${BASE}/plan-features`);
+
+export const fetchTenantStatus = () =>
+  api.get<TenantStatus>(`${BASE}/tenant-status`);
 
 export async function fetchCorsOrigin(): Promise<string | null> {
   const data = await api.get<{ ok: boolean; cors_origin: string | null }>(`${BASE}/cors-origin`);

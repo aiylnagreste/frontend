@@ -158,6 +158,12 @@ export interface CorsOriginResponse {
   cors_origin: string | null;
 }
 
+export interface TenantStatus {
+  tenant_id: string;
+  status: "active" | "suspended";
+  salon_name: string;
+}
+
 export interface Subscription {
   id: number;
   tenant_id: string;
