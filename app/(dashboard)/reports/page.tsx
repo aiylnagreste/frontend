@@ -12,7 +12,14 @@ import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CHART_COLORS, formatCurrency } from "@/lib/utils";
-import { SlidersHorizontal } from "lucide-react";
+import {
+  BarChart3,
+  PieChart as PieChartIcon,
+  ClipboardList,
+  TrendingUp,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 
 type Period = "day" | "week" | "month" | "year";
 
@@ -22,6 +29,13 @@ const PERIODS: { id: Period; label: string }[] = [
   { id: "month", label: "This Month" },
   { id: "year", label: "This Year" },
 ];
+
+const STATUS_META: Record<string, { label: string; color: string }> = {
+  completed: { label: "Completed", color: "#22c55e" },
+  confirmed: { label: "Confirmed", color: "#3b82f6" },
+  canceled: { label: "Canceled", color: "#ef4444" },
+  no_show: { label: "No Show", color: "#f97316" },
+};
 
 export default function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
@@ -67,188 +81,385 @@ export default function ReportsPage() {
   });
 
   const topServices = (analytics?.topServices ?? []).slice(0, 10);
-  const revenueByService = (analytics?.revenueByService ?? []).filter(s => s.name && s.revenue > 0).slice(0, 8);
+  const revenueByService = (analytics?.revenueByService ?? [])
+    .filter((s) => s.name && s.revenue > 0)
+    .slice(0, 8);
 
-  const STATUS_META: Record<string, { label: string; color: string }> = {
-    completed:  { label: "Completed",  color: "#22c55e" },
-    confirmed:  { label: "Confirmed",  color: "#3b82f6" },
-    canceled:   { label: "Canceled",   color: "#ef4444" },
-    no_show:    { label: "No Show",    color: "#f97316" },
-  };
   const statusData = Object.entries(analytics?.bookingsByStatus ?? {})
     .map(([status, count]) => ({
       name: STATUS_META[status]?.label ?? status,
       value: count,
       color: STATUS_META[status]?.color ?? "#94a3b8",
     }))
-    .filter(s => s.value > 0)
+    .filter((s) => s.value > 0)
     .sort((a, b) => b.value - a.value);
 
+  const statusTotal = statusData.reduce((t, x) => t + x.value, 0);
+
+  function selectPeriod(p: Period) {
+    setPeriod(p);
+    setShowCustomRange(false);
+  }
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-        <h3 style={{ fontSize: "18px", fontWeight: 700, margin: 0 }}>Reports</h3>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          <select
-            value={branch}
-            onChange={(e) => setBranch(e.target.value)}
-            style={selectStyle}
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+        <div>
+          <h3
+            style={{
+              fontSize: "20px",
+              fontWeight: 700,
+              margin: 0,
+              fontFamily: "'Space Grotesk', sans-serif",
+              color: "#1A1D23",
+              letterSpacing: "-0.02em",
+            }}
           >
-            <option value="">All Branches</option>
-            {branches.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
-          </select>
-          <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-            <div ref={rangeDropdownRef} style={{ position: "relative" }}>
-              <button
-                onClick={() => setShowCustomRange((v) => !v)}
-                title="Custom date range"
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: "7px",
-                  fontSize: "12px",
-                  border: showCustomRange ? "1.5px solid var(--color-rose)" : "1.5px solid var(--color-border)",
-                  background: showCustomRange ? "var(--color-rose-dim)" : "var(--color-surface)",
-                  color: showCustomRange ? "var(--color-rose)" : "var(--color-sub)",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <SlidersHorizontal size={14} />
-              </button>
-              {showCustomRange && (
-                <div style={{
-                  position: "absolute",
-                  top: "calc(100% + 6px)",
-                  right: 0,
-                  background: "var(--color-surface)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: "10px",
-                  padding: "12px 16px",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  zIndex: 50,
-                  whiteSpace: "nowrap",
-                }}>
-                  <input
-                    type="date"
-                    value={customFrom}
-                    onChange={(e) => setCustomFrom(e.target.value)}
-                    style={{ padding: "6px 10px", border: "1px solid var(--color-border)", borderRadius: "7px", fontSize: "12px", background: "var(--color-canvas)" }}
-                  />
-                  <span style={{ fontSize: "12px", color: "var(--color-sub)" }}>→</span>
-                  <input
-                    type="date"
-                    value={customTo}
-                    onChange={(e) => setCustomTo(e.target.value)}
-                    style={{ padding: "6px 10px", border: "1px solid var(--color-border)", borderRadius: "7px", fontSize: "12px", background: "var(--color-canvas)" }}
-                  />
-                </div>
-              )}
-            </div>
-            {PERIODS.map(p => (
-              <button
-                key={p.id}
-                onClick={() => { setPeriod(p.id); setShowCustomRange(false); }}
-                style={{
-                  padding: "7px 14px",
-                  borderRadius: "7px",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  border: !showCustomRange && period === p.id ? "1.5px solid var(--color-rose)" : "1.5px solid var(--color-border)",
-                  background: !showCustomRange && period === p.id ? "var(--color-rose-dim)" : "var(--color-surface)",
-                  color: !showCustomRange && period === p.id ? "var(--color-rose)" : "var(--color-sub)",
-                  cursor: "pointer",
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
+            Reports
+          </h3>
+          <p style={{ fontSize: "13px", color: "#5F6577", margin: "4px 0 0" }}>
+            Analyze your salon&apos;s performance and revenue
+          </p>
+        </div>
+      </div>
+
+      {/* Filters row */}
+      <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+        {/* Branch select */}
+        <select
+          value={branch}
+          onChange={(e) => setBranch(e.target.value)}
+          style={{
+            ...filterInputStyle,
+            paddingRight: "36px",
+            cursor: "pointer",
+            appearance: "none",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%235F6577' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 12px center",
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = "#b5484b";
+            e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)";
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = "#E6E4DF";
+            e.target.style.boxShadow = "none";
+          }}
+        >
+          <option value="">All Branches</option>
+          {branches.map((b) => (
+            <option key={b.id} value={b.name}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+
+        {/* Period tabs + custom range */}
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              background: "#F8F8F6",
+              borderRadius: "8px",
+              padding: "3px",
+              border: "1px solid #E6E4DF",
+            }}
+          >
+            {PERIODS.map((p) => {
+              const isActive = !showCustomRange && period === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => selectPeriod(p.id)}
+                  style={{
+                    padding: "6px 14px",
+                    fontSize: "12px",
+                    fontWeight: isActive ? 600 : 500,
+                    borderRadius: "6px",
+                    border: "none",
+                    background: isActive ? "#fff" : "transparent",
+                    color: isActive ? "#1A1D23" : "#5F6577",
+                    cursor: "pointer",
+                    fontFamily: "'DM Sans', sans-serif",
+                    boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Custom range toggle */}
+          <div ref={rangeDropdownRef} style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowCustomRange((v) => !v)}
+              title="Custom date range"
+              style={{
+                padding: "6px 10px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                fontWeight: 500,
+                border: showCustomRange ? "1.5px solid #b5484b" : "1px solid #E6E4DF",
+                background: showCustomRange ? "rgba(181,72,75,0.08)" : "#fff",
+                color: showCustomRange ? "#b5484b" : "#5F6577",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "all 0.15s",
+              }}
+            >
+              <SlidersHorizontal size={13} strokeWidth={1.8} />
+              {showCustomRange && "Custom"}
+            </button>
+            {showCustomRange && (
+              <div style={customRangeStyle}>
+                <input
+                  type="date"
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  style={dateInputStyle}
+                />
+                <span style={{ fontSize: "12px", color: "#9CA3B4" }}>→</span>
+                <input
+                  type="date"
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  style={dateInputStyle}
+                />
+                <button
+                  onClick={() => setShowCustomRange(false)}
+                  style={closeRangeBtn}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#F0EEED"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Summary KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "16px" }}>
-        <KpiTile label="Revenue (Completed)" value={formatCurrency(analytics?.totalRevenue ?? 0, currency)} color="var(--color-rose)" loading={isLoading} />
-        <KpiTile label="Bookings (Completed)" value={String(analytics?.bookingCount ?? 0)} loading={isLoading} />
-        <KpiTile label="Top Service" value={analytics?.topServices?.[0]?.name ?? "—"} small loading={isLoading} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
+        <KpiTile
+          label="Revenue"
+          sublabel="Completed bookings"
+          value={formatCurrency(analytics?.totalRevenue ?? 0, currency)}
+          accent
+          loading={isLoading}
+        />
+        <KpiTile
+          label="Bookings"
+          sublabel="Completed"
+          value={String(analytics?.bookingCount ?? 0)}
+          loading={isLoading}
+        />
+        <KpiTile
+          label="Top Service"
+          sublabel="By bookings"
+          value={analytics?.topServices?.[0]?.name ?? "—"}
+          small
+          loading={isLoading}
+        />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+      {/* Charts grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
         {/* Top Services Bar */}
         <Card>
           <CardHeader>
-            <span style={{ fontWeight: 600, fontSize: "13px" }}>📊 Most Booked Services</span>
+            <div style={chartHeaderStyle}>
+              <BarChart3 size={14} color="#5F6577" />
+              <span>Most Booked Services</span>
+            </div>
           </CardHeader>
           <CardContent>
-            {isLoading ? <Skeleton style={{ height: "200px" }} /> :
-             topServices.length === 0 ? <EmptyState icon="📊" title="No data for this period" /> :
-            <ResponsiveContainer width="100%" height={Math.max(160, topServices.length * 30)}>
-              <BarChart data={topServices} layout="vertical" margin={{ left: 0, right: 16 }}>
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: unknown) => [String(v ?? 0), "Bookings"]} contentStyle={{ fontSize: "12px", borderRadius: "8px" }} />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                  {topServices.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>}
+            {isLoading ? (
+              <Skeleton style={{ height: "200px" }} />
+            ) : topServices.length === 0 ? (
+              <EmptyState icon="📊" title="No data for this period" />
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(160, topServices.length * 30)}>
+                <BarChart data={topServices} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "#5F6577" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11, fill: "#1A1D23" }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    formatter={(v: unknown) => [String(v ?? 0), "Bookings"]}
+                    contentStyle={tooltipStyle}
+                    cursor={{ fill: "rgba(181,72,75,0.04)" }}
+                  />
+                  <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={18}>
+                    {topServices.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
         {/* Revenue Pie */}
         <Card>
           <CardHeader>
-            <span style={{ fontWeight: 600, fontSize: "13px" }}>💰 Revenue by Service</span>
+            <div style={chartHeaderStyle}>
+              <PieChartIcon size={14} color="#5F6577" />
+              <span>Revenue by Service</span>
+            </div>
           </CardHeader>
           <CardContent>
-            {isLoading ? <Skeleton style={{ height: "200px" }} /> :
-             revenueByService.length === 0 ? <EmptyState icon="💰" title="No revenue data" /> :
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie data={revenueByService} dataKey="revenue" nameKey="name" cx="50%" cy="45%" innerRadius={50} outerRadius={80} paddingAngle={3}>
-                  {revenueByService.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                </Pie>
-                <Tooltip formatter={(v: unknown, name: unknown) => [formatCurrency(v as number, currency), name as string]} contentStyle={{ fontSize: "12px", borderRadius: "8px" }} />
-                <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{ fontSize: "11px" }}>{v}</span>} />
-              </PieChart>
-            </ResponsiveContainer>}
+            {isLoading ? (
+              <Skeleton style={{ height: "200px" }} />
+            ) : revenueByService.length === 0 ? (
+              <EmptyState icon="💰" title="No revenue data" />
+            ) : (
+              <ResponsiveContainer width="100%" height={240}>
+                <PieChart>
+                  <Pie
+                    data={revenueByService}
+                    dataKey="revenue"
+                    nameKey="name"
+                    cx="50%"
+                    cy="45%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={3}
+                    strokeWidth={0}
+                  >
+                    {revenueByService.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(v: unknown, name: unknown) => [formatCurrency(v as number, currency), name as string]}
+                    contentStyle={tooltipStyle}
+                  />
+                  <Legend
+                    iconType="circle"
+                    iconSize={7}
+                    wrapperStyle={{ fontSize: "11px", fontFamily: "'DM Sans', sans-serif" }}
+                    formatter={(v) => <span style={{ fontSize: "11px", color: "#5F6577" }}>{v}</span>}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
-        {/* Booking Status Pie */}
+        {/* Booking Status */}
         <Card style={{ gridColumn: "1 / -1" }}>
           <CardHeader>
-            <span style={{ fontWeight: 600, fontSize: "13px" }}>📋 Bookings by Status</span>
+            <div style={chartHeaderStyle}>
+              <ClipboardList size={14} color="#5F6577" />
+              <span>Bookings by Status</span>
+            </div>
           </CardHeader>
           <CardContent>
-            {isLoading ? <Skeleton style={{ height: "220px" }} /> :
-             statusData.length === 0 ? <EmptyState icon="📋" title="No booking data for this period" /> :
-            <div style={{ display: "flex", alignItems: "center", gap: "32px", flexWrap: "wrap" }}>
-              <ResponsiveContainer width={260} height={220}>
-                <PieChart>
-                  <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
-                    {statusData.map((s, i) => <Cell key={i} fill={s.color} />)}
-                  </Pie>
-                  <Tooltip formatter={(v: unknown, name: unknown) => [String(v), name as string]} contentStyle={{ fontSize: "12px", borderRadius: "8px" }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {statusData.map((s) => (
-                  <div key={s.name} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: s.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: "13px", color: "var(--color-ink)", fontWeight: 500, minWidth: "90px" }}>{s.name}</span>
-                    <span style={{ fontSize: "13px", color: "var(--color-sub)", fontWeight: 600 }}>{s.value}</span>
-                    <span style={{ fontSize: "11px", color: "var(--color-sub)" }}>
-                      ({Math.round(s.value / statusData.reduce((t, x) => t + x.value, 0) * 100)}%)
+            {isLoading ? (
+              <Skeleton style={{ height: "220px" }} />
+            ) : statusData.length === 0 ? (
+              <EmptyState icon="📋" title="No booking data for this period" />
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: "40px", flexWrap: "wrap" }}>
+                <ResponsiveContainer width={240} height={220}>
+                  <PieChart>
+                    <Pie
+                      data={statusData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={90}
+                      paddingAngle={3}
+                      strokeWidth={0}
+                    >
+                      {statusData.map((s, i) => (
+                        <Cell key={i} fill={s.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(v: unknown, name: unknown) => [String(v), name as string]}
+                      contentStyle={tooltipStyle}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {statusData.map((s) => {
+                    const pct = statusTotal > 0 ? Math.round((s.value / statusTotal) * 100) : 0;
+                    return (
+                      <div key={s.name} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div style={{
+                          width: "10px",
+                          height: "10px",
+                          borderRadius: "50%",
+                          background: s.color,
+                          flexShrink: 0,
+                        }} />
+                        <span style={{
+                          fontSize: "13px",
+                          color: "#1A1D23",
+                          fontWeight: 500,
+                          minWidth: "90px",
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}>
+                          {s.name}
+                        </span>
+                        <span style={{
+                          fontSize: "14px",
+                          color: "#1A1D23",
+                          fontWeight: 700,
+                          fontFamily: "'Space Grotesk', sans-serif",
+                          minWidth: "40px",
+                          textAlign: "right",
+                        }}>
+                          {s.value}
+                        </span>
+                        <div style={{ flex: 1, maxWidth: "80px" }}>
+                          <div style={pctBarOuter}>
+                            <div style={{ ...pctBarInner, width: `${pct}%`, background: s.color }} />
+                          </div>
+                        </div>
+                        <span style={{
+                          fontSize: "11px",
+                          color: "#9CA3B4",
+                          fontWeight: 600,
+                          minWidth: "36px",
+                          textAlign: "right",
+                          fontFamily: "'Space Grotesk', sans-serif",
+                        }}>
+                          {pct}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div style={{
+                    borderTop: "1px solid #E6E4DF",
+                    marginTop: "4px",
+                    paddingTop: "10px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}>
+                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1D23" }}>Total</span>
+                    <span style={{
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      color: "#1A1D23",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }}>
+                      {statusTotal}
                     </span>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>}
+            )}
           </CardContent>
         </Card>
       </div>
@@ -256,22 +467,149 @@ export default function ReportsPage() {
   );
 }
 
-function KpiTile({ label, value, color, small, loading }: {
-  label: string; value: string; color?: string; small?: boolean; loading?: boolean;
+/* ── KPI Tile ── */
+
+function KpiTile({
+  label,
+  sublabel,
+  value,
+  accent,
+  small,
+  loading,
+}: {
+  label: string;
+  sublabel?: string;
+  value: string;
+  accent?: boolean;
+  small?: boolean;
+  loading?: boolean;
 }) {
   return (
-    <div style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", padding: "20px 24px" }}>
-      <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-sub)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{label}</div>
-      {loading ? <Skeleton style={{ height: "28px", width: "60%" }} /> :
-      <div style={{ fontSize: small ? "14px" : "26px", fontWeight: 700, color: color ?? "var(--color-ink)" }}>{value}</div>}
+    <div style={kpiStyle}>
+      <div style={{ marginBottom: "6px" }}>
+        <div style={{
+          fontSize: "10px",
+          fontWeight: 600,
+          color: "#5F6577",
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+          fontFamily: "'DM Sans', sans-serif",
+        }}>
+          {label}
+        </div>
+        {sublabel && (
+          <div style={{ fontSize: "10px", color: "#9CA3B4", marginTop: "1px" }}>
+            {sublabel}
+          </div>
+        )}
+      </div>
+      {loading ? (
+        <Skeleton style={{ height: small ? "18px" : "26px", width: "70%" }} />
+      ) : (
+        <div style={{
+          fontSize: small ? "14px" : "24px",
+          fontWeight: 700,
+          color: accent ? "#b5484b" : "#1A1D23",
+          lineHeight: 1.2,
+          fontFamily: "'Space Grotesk', sans-serif",
+          letterSpacing: "-0.01em",
+        }}>
+          {value}
+        </div>
+      )}
     </div>
   );
 }
 
-const selectStyle: React.CSSProperties = {
-  padding: "7px 12px",
-  border: "1px solid var(--color-border)",
+/* ── Styles ── */
+
+const filterInputStyle: React.CSSProperties = {
+  padding: "8px 14px",
+  border: "1px solid #E6E4DF",
   borderRadius: "8px",
   fontSize: "13px",
-  background: "var(--color-surface)",
+  background: "#fff",
+  color: "#1A1D23",
+  outline: "none",
+  fontFamily: "'DM Sans', sans-serif",
+  transition: "border-color 0.2s, box-shadow 0.2s",
+  boxSizing: "border-box",
+};
+
+const customRangeStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "calc(100% + 6px)",
+  right: 0,
+  background: "#fff",
+  border: "1px solid #E6E4DF",
+  borderRadius: "10px",
+  padding: "10px 14px",
+  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  zIndex: 50,
+  whiteSpace: "nowrap",
+};
+
+const dateInputStyle: React.CSSProperties = {
+  padding: "6px 10px",
+  border: "1px solid #E6E4DF",
+  borderRadius: "6px",
+  fontSize: "12px",
+  background: "#fff",
+  color: "#1A1D23",
+  outline: "none",
+  fontFamily: "'DM Sans', sans-serif",
+  transition: "border-color 0.15s",
+};
+
+const closeRangeBtn: React.CSSProperties = {
+  padding: "5px",
+  borderRadius: "5px",
+  border: "none",
+  background: "transparent",
+  cursor: "pointer",
+  color: "#9CA3B4",
+  display: "flex",
+  alignItems: "center",
+  transition: "background 0.15s",
+};
+
+const chartHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "7px",
+  fontSize: "12px",
+  fontWeight: 600,
+  color: "#5F6577",
+  fontFamily: "'DM Sans', sans-serif",
+};
+
+const tooltipStyle: React.CSSProperties = {
+  fontSize: "12px",
+  borderRadius: "8px",
+  border: "1px solid #E6E4DF",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  fontFamily: "'DM Sans', sans-serif",
+};
+
+const kpiStyle: React.CSSProperties = {
+  background: "#F8F8F6",
+  border: "1px solid #E6E4DF",
+  borderRadius: "10px",
+  padding: "18px 20px",
+};
+
+const pctBarOuter: React.CSSProperties = {
+  height: "4px",
+  borderRadius: "2px",
+  background: "#E6E4DF",
+  overflow: "hidden",
+};
+
+const pctBarInner: React.CSSProperties = {
+  height: "100%",
+  borderRadius: "2px",
+  transition: "width 0.4s ease",
 };

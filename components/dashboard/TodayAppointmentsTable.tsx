@@ -1,5 +1,7 @@
+// components/dashboard/TodayAppointmentsTable.tsx
 "use client";
 
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchBookings, QK } from "@/lib/queries";
 import type { Booking } from "@/lib/types";
@@ -9,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { formatTime } from "@/lib/utils";
+import { CalendarCheck, UserX, Archive, Check, UserMinus } from "lucide-react";
 
 function getTodayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -61,7 +64,6 @@ export default function TodayAppointmentsTable() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // Group by branch
   const byBranch = bookings
     .filter((b) => b.status !== "archived")
     .reduce<Record<string, Booking[]>>((acc, b) => {
@@ -72,55 +74,84 @@ export default function TodayAppointmentsTable() {
   const branchEntries = Object.entries(byBranch);
 
   return (
-    <div
-      style={{
-        background: "var(--color-surface)",
-        border: "1px solid var(--color-border)",
-        borderRadius: "var(--radius-md)",
-        boxShadow: "var(--shadow-sm)",
-      }}
-    >
-      <div
-        style={{
-          padding: "16px 20px",
-          borderBottom: "1px solid var(--color-border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <h3 style={{ fontSize: "14px", fontWeight: 600, margin: 0 }}>
-          Today's Appointments
-        </h3>
+    <div style={{
+      background: "#fff",
+      border: "1px solid #E6E4DF",
+      borderRadius: "10px",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      overflow: "hidden",
+    }}>
+      <div style={{
+        padding: "16px 20px",
+        borderBottom: "1px solid #E6E4DF",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{
+            width: "32px",
+            height: "32px",
+            borderRadius: "8px",
+            background: "linear-gradient(135deg, rgba(181,72,75,0.12), rgba(107,48,87,0.08))",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <CalendarCheck size={16} color="#b5484b" strokeWidth={2} />
+          </div>
+          <div>
+            <h3 style={{
+              fontSize: "14px",
+              fontWeight: 700,
+              margin: 0,
+              fontFamily: "'Space Grotesk', sans-serif",
+              color: "#1A1D23",
+              letterSpacing: "-0.01em",
+            }}>
+              Today&apos;s Appointments
+            </h3>
+            <span style={{ fontSize: "11px", color: "#9CA3B4" }}>
+              {bookings.filter(b => b.status !== "archived").length} scheduled
+            </span>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          {[1, 2, 3].map((i) => <Skeleton key={i} style={{ height: "40px" }} />)}
+          {[1, 2, 3].map((i) => <Skeleton key={i} style={{ height: "48px" }} />)}
         </div>
       ) : branchEntries.length === 0 ? (
         <EmptyState
           icon="📅"
           title="No appointments today"
-          description="Today's bookings will appear here."
+          description="Today's bookings will appear here as they are confirmed."
         />
       ) : (
         branchEntries.map(([branch, rows]) => (
           <div key={branch}>
-            <div
-              style={{
-                padding: "8px 20px",
-                background: "#f8f7f6",
-                borderTop: "1px solid var(--color-border)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-rose)" }}>
-                🏪 {branch}
+            <div style={{
+              padding: "8px 20px",
+              background: "#F8F8F6",
+              borderTop: "1px solid #E6E4DF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}>
+              <span style={{
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#b5484b",
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}>
+                {branch}
               </span>
-              <span style={{ fontSize: "11px", color: "var(--color-sub)" }}>
+              <span style={{
+                fontSize: "11px",
+                color: "#9CA3B4",
+                fontWeight: 500,
+              }}>
                 {rows.length} booking{rows.length !== 1 ? "s" : ""}
               </span>
             </div>
@@ -128,20 +159,7 @@ export default function TodayAppointmentsTable() {
               <thead>
                 <tr>
                   {["Client", "Service", "Time", "Status", "Actions"].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        padding: "10px 16px",
-                        textAlign: "left",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        color: "var(--color-sub)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                        background: "#fafafa",
-                        borderBottom: "1px solid var(--color-border)",
-                      }}
-                    >
+                    <th key={h} style={tableHeaderStyle}>
                       {h}
                     </th>
                   ))}
@@ -152,48 +170,93 @@ export default function TodayAppointmentsTable() {
                   <tr
                     key={b.id}
                     style={{
-                      borderBottom: "1px solid var(--color-border)",
-                      background: b.status === "completed" ? "#f0fdf4" : "transparent",
+                      borderBottom: "1px solid #F0EEED",
+                      background:
+                        b.status === "completed"
+                          ? "#F8FDF8"
+                          : b.status === "no_show"
+                          ? "#FFF8F8"
+                          : "transparent",
+                      transition: "background 0.15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (b.status === "confirmed") {
+                        e.currentTarget.style.background = "#FDFCFC";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
                     }}
                   >
-                    <td style={{ padding: "10px 16px", fontWeight: 500 }}>
-                      {b.customer_name.toUpperCase()}
+                    <td style={cellStyle}>
+                      <div style={{ fontWeight: 600, color: "#1A1D23", fontSize: "13px" }}>
+                        {b.customer_name}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#9CA3B4", marginTop: "1px" }}>
+                        {b.phone || "—"}
+                      </div>
                     </td>
-                    <td style={{ padding: "10px 16px", color: "var(--color-sub)" }}>
+                    <td style={{ ...cellStyle, color: "#5F6577", fontSize: "13px" }}>
                       {b.service}
                     </td>
-                    <td style={{ padding: "10px 16px", fontFamily: "monospace", fontSize: "12px" }}>
-                      {formatTime(b.time)}
-                      {b.endTime ? ` → ${formatTime(b.endTime)}` : ""}
+                    <td style={cellStyle}>
+                      <span style={{
+                        fontFamily: "'Space Grotesk', monospace",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#1A1D23",
+                        background: "#F8F8F6",
+                        padding: "3px 8px",
+                        borderRadius: "5px",
+                        whiteSpace: "nowrap",
+                      }}>
+                        {formatTime(b.time)}
+                      </span>
+                      {b.endTime && (
+                        <span style={{
+                          fontFamily: "'Space Grotesk', monospace",
+                          fontSize: "11px",
+                          color: "#9CA3B4",
+                          marginLeft: "4px",
+                        }}>
+                          → {formatTime(b.endTime)}
+                        </span>
+                      )}
                     </td>
-                    <td style={{ padding: "10px 16px" }}>
+                    <td style={cellStyle}>
                       <Badge status={b.status} />
                     </td>
-                    <td style={{ padding: "10px 16px" }}>
+                    <td style={cellStyle}>
                       <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                         {b.status === "confirmed" && (
                           <>
-                            <ActionBtn
-                              label="✓ Done"
-                              color="#dbeafe"
-                              textColor="#1d4ed8"
+                            <TableAction
+                              icon={<Check size={11} strokeWidth={2.5} />}
+                              label="Done"
+                              bg="#DCFCE7"
+                              color="#15803D"
+                              hoverBg="#BBF7D0"
                               onClick={() => completeMutation.mutate(b.id)}
                               disabled={completeMutation.isPending}
                             />
-                            <ActionBtn
+                            <TableAction
+                              icon={<UserMinus size={11} strokeWidth={2} />}
                               label="No-Show"
-                              color="#fef3c7"
-                              textColor="#d97706"
+                              bg="#FEF3C7"
+                              color="#92400E"
+                              hoverBg="#FDE68A"
                               onClick={() => noShowMutation.mutate(b.id)}
                               disabled={noShowMutation.isPending}
                             />
                           </>
                         )}
                         {(b.status === "confirmed" || b.status === "completed") && (
-                          <ActionBtn
+                          <TableAction
+                            icon={<Archive size={11} strokeWidth={2} />}
                             label="Archive"
-                            color="#fee2e2"
-                            textColor="#dc2626"
+                            bg="#FEF2F2"
+                            color="#DC2626"
+                            hoverBg="#FEE2E2"
                             onClick={() => archiveMutation.mutate(b.id)}
                             disabled={archiveMutation.isPending}
                           />
@@ -211,37 +274,69 @@ export default function TodayAppointmentsTable() {
   );
 }
 
-function ActionBtn({
+function TableAction({
+  icon,
   label,
+  bg,
   color,
-  textColor,
+  hoverBg,
   onClick,
   disabled,
 }: {
+  icon: React.ReactNode;
   label: string;
+  bg: string;
   color: string;
-  textColor: string;
+  hoverBg: string;
   onClick: () => void;
   disabled?: boolean;
 }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <button
       onClick={onClick}
       disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        background: color,
-        color: textColor,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "4px",
+        background: disabled ? bg : hovered ? hoverBg : bg,
+        color: color,
         border: "none",
         borderRadius: "6px",
-        padding: "4px 10px",
+        padding: "5px 10px",
         fontSize: "11px",
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
+        opacity: disabled ? 0.5 : 1,
         whiteSpace: "nowrap",
+        fontFamily: "'DM Sans', sans-serif",
+        transition: "background 0.15s",
       }}
     >
+      {icon}
       {label}
     </button>
   );
 }
+
+const tableHeaderStyle: React.CSSProperties = {
+  padding: "10px 16px",
+  textAlign: "left",
+  fontSize: "11px",
+  fontWeight: 600,
+  color: "#5F6577",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  background: "#F8F8F6",
+  borderBottom: "1px solid #E6E4DF",
+  whiteSpace: "nowrap",
+  fontFamily: "'DM Sans', sans-serif",
+};
+
+const cellStyle: React.CSSProperties = {
+  padding: "12px 16px",
+  verticalAlign: "middle",
+};

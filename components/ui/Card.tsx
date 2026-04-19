@@ -1,3 +1,4 @@
+// components/ui/Card.tsx
 import { cn } from "@/lib/utils";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -12,10 +13,10 @@ export function Card({ children, className, style }: CardProps) {
     <div
       className={cn(className)}
       style={{
-        background: "var(--color-surface)",
-        border: "1px solid var(--color-border)",
-        borderRadius: "var(--radius-md)",
-        boxShadow: "var(--shadow-sm)",
+        background: "#fff",
+        border: "1px solid #E6E4DF",
+        borderRadius: "10px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         ...style,
       }}
     >
@@ -34,7 +35,7 @@ export function CardHeader({
       className={cn(className)}
       style={{
         padding: "16px 20px",
-        borderBottom: "1px solid var(--color-border)",
+        borderBottom: "1px solid #E6E4DF",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",

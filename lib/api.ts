@@ -21,8 +21,27 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (res.status === 401) {
-    // Redirect to login
-    window.location.href = "/login";
+    // Don't redirect/logout for change-password endpoint
+    const isChangePasswordEndpoint = path.includes("/change-password");
+    
+    if (!isChangePasswordEndpoint) {
+      // Call logout endpoint to clear session on server
+      try {
+        await fetch("/api/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch (e) {
+        // Ignore logout errors
+      }
+      
+      // Clear any client-side auth state
+      localStorage.removeItem("auth_token");
+      sessionStorage.clear();
+      
+      // Redirect to login
+      window.location.href = "/login";
+    }
     throw new ApiError(401, "Unauthorized");
   }
 

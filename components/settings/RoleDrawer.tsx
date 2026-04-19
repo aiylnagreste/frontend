@@ -19,7 +19,6 @@ export function RoleDrawer({ open, onClose }: RoleDrawerProps) {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset form when modal opens/closes
   useEffect(() => {
     if (open) {
       setName("");
@@ -29,7 +28,7 @@ export function RoleDrawer({ open, onClose }: RoleDrawerProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
+
     if (!name.trim()) {
       setError("Role name is required");
       return;
@@ -53,7 +52,7 @@ export function RoleDrawer({ open, onClose }: RoleDrawerProps) {
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <div>
           <label style={labelStyle}>
-            Role Name *
+            Role Name <span style={{ color: "#b5484b" }}>*</span>
           </label>
           <input
             type="text"
@@ -65,28 +64,63 @@ export function RoleDrawer({ open, onClose }: RoleDrawerProps) {
             placeholder="e.g., Senior Stylist"
             style={{
               ...inputStyle,
-              borderColor: error ? "#DC2626" : "#E8E3E0",
+              borderColor: error ? "#DC2626" : undefined,
+              boxShadow: error ? "0 0 0 3px rgba(220,38,38,0.1)" : undefined,
             }}
-            onFocus={(e) => e.target.style.borderColor = error ? "#DC2626" : "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = error ? "#DC2626" : "#E8E3E0"}
+            onFocus={(e) => {
+              if (!error) {
+                e.target.style.borderColor = "#b5484b";
+                e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)";
+              }
+            }}
+            onBlur={(e) => {
+              if (!error) {
+                e.target.style.borderColor = "#E6E4DF";
+                e.target.style.boxShadow = "none";
+              }
+            }}
             autoFocus
           />
           {error && <span style={errorStyle}>{error}</span>}
         </div>
 
-        <div style={{ 
-          display: "flex", 
-          gap: "12px", 
+        <div style={{
+          display: "flex",
+          gap: "10px",
           justifyContent: "flex-end",
-          borderTop: "1px solid #E8E3E0",
+          borderTop: "1px solid #E6E4DF",
           paddingTop: "20px",
-          marginTop: "8px"
+          marginTop: "4px",
         }}>
-          <button type="button" onClick={onClose} style={secondaryBtn}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              ...secondaryBtn,
+              transition: "background 0.15s, color 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#F8F8F6";
+              e.currentTarget.style.color = "#1A1D23";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "#5F6577";
+            }}
+          >
             Cancel
           </button>
-          <button type="submit" disabled={isSubmitting} style={primaryBtn}>
-            {isSubmitting ? "Creating..." : "Create Role"}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            style={{
+              ...primaryBtn,
+              opacity: isSubmitting ? 0.7 : 1,
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+              transition: "opacity 0.2s",
+            }}
+          >
+            {isSubmitting ? "Creating…" : "Create Role"}
           </button>
         </div>
       </form>
@@ -96,48 +130,56 @@ export function RoleDrawer({ open, onClose }: RoleDrawerProps) {
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: "13px",
-  fontWeight: 500,
-  color: "#1A1A2E",
-  marginBottom: "6px",
+  fontSize: "12px",
+  fontWeight: 600,
+  color: "#5F6577",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  marginBottom: "8px",
+  fontFamily: "'DM Sans', sans-serif",
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "10px 14px",
-  border: "1.5px solid #E8E3E0",
+  border: "1.5px solid #E6E4DF",
   borderRadius: "8px",
   fontSize: "14px",
   outline: "none",
-  backgroundColor: "#FFFFFF",
-  color: "#1A1A2E",
+  backgroundColor: "#fff",
+  color: "#1A1D23",
+  fontFamily: "'DM Sans', sans-serif",
+  transition: "border-color 0.2s, box-shadow 0.2s",
+  boxSizing: "border-box",
 };
 
 const errorStyle: React.CSSProperties = {
   display: "block",
   fontSize: "12px",
   color: "#DC2626",
-  marginTop: "4px",
+  marginTop: "5px",
+  fontWeight: 500,
 };
 
 const primaryBtn: React.CSSProperties = {
   padding: "10px 24px",
-  backgroundColor: "#B5484B",
-  color: "#FFFFFF",
+  background: "linear-gradient(135deg, #b5484b, #6b3057)",
+  color: "#fff",
   border: "none",
   borderRadius: "8px",
   fontSize: "13px",
   fontWeight: 600,
-  cursor: "pointer",
+  fontFamily: "'DM Sans', sans-serif",
 };
 
 const secondaryBtn: React.CSSProperties = {
   padding: "10px 20px",
   backgroundColor: "transparent",
-  border: "1px solid #E8E3E0",
+  border: "1px solid #E6E4DF",
   borderRadius: "8px",
   fontSize: "13px",
   fontWeight: 500,
-  color: "#6B7280",
+  color: "#5F6577",
   cursor: "pointer",
+  fontFamily: "'DM Sans', sans-serif",
 };

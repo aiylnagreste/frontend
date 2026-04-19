@@ -336,7 +336,7 @@ export default function SuperDashboardPage() {
                           >
                             <Power size={14} />
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => setSetPasswordFor({ id: tid, name: t.salon_name })}
                             title="Set Password"
                             style={{
@@ -348,7 +348,7 @@ export default function SuperDashboardPage() {
                             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.text3; }}
                           >
                             <Key size={14} />
-                          </button>
+                          </button> */}
                           <button
                             onClick={() => setEditPlanFor({
                               tenantId: t.tenant_id,
@@ -384,13 +384,13 @@ export default function SuperDashboardPage() {
           onCreated={() => { refetchTenants(); refetchStats(); setShowModal(false); }}
         />
       )}
-      {setPasswordFor && (
+      {/* {setPasswordFor && (
         <SetPasswordModal
           tenantId={setPasswordFor.id} salonName={setPasswordFor.name}
           onClose={() => setSetPasswordFor(null)}
           onSaved={() => { refetchResets(); setSetPasswordFor(null); }}
         />
-      )}
+      )} */}
       {editPlanFor && (
         <EditPlanModal
           tenantId={editPlanFor.tenantId}

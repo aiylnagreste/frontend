@@ -11,6 +11,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CHART_COLORS } from "@/lib/utils";
+import { StaffDrawer } from "@/components/settings/StaffDrawer";
 
 type Period = "today" | "week" | "month";
 
@@ -29,13 +30,14 @@ function getPeriodDates(period: Period): { dateFrom: string; dateTo: string } {
 
 const PERIOD_LABELS: Record<Period, string> = {
   today: "Today",
-  week: "Week",
-  month: "Month",
+  week: "This Week",
+  month: "This Month",
 };
 
 export default function StaffPage() {
   const [branchFilter, setBranchFilter] = useState("");
   const [period, setPeriod] = useState<Period>("today");
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const { data: branches = [] } = useQuery<Branch[]>({
     queryKey: QK.branches(),
@@ -75,50 +77,81 @@ export default function StaffPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {/* Header row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
         <h3 style={{ fontSize: "18px", fontWeight: 700, margin: 0 }}>
           Staff Management & Availability
         </h3>
-        <div style={{ display: "flex", gap: "6px" }}>
-          {(["today", "week", "month"] as Period[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              style={{
-                padding: "6px 16px",
-                borderRadius: "8px",
-                fontSize: "13px",
-                fontWeight: 500,
-                border: period === p ? "1.5px solid var(--color-rose)" : "1.5px solid var(--color-border)",
-                background: period === p ? "var(--color-rose-dim)" : "var(--color-surface)",
-                color: period === p ? "var(--color-rose)" : "var(--color-sub)",
-                cursor: "pointer",
-              }}
-            >
-              {PERIOD_LABELS[p]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Branch filter */}
-      <div>
-        <select
-          value={branchFilter}
-          onChange={(e) => setBranchFilter(e.target.value)}
+        <button
+          onClick={() => setDrawerOpen(true)}
           style={{
-            padding: "8px 12px",
-            border: "1px solid var(--color-border)",
+            padding: "6px 16px",
             borderRadius: "8px",
             fontSize: "13px",
-            background: "var(--color-surface)",
+            fontWeight: 600,
+            border: "none",
+            background: "var(--color-rose)",
+            color: "#fff",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            height: "36px",
           }}
         >
-          <option value="">All Branches</option>
-          {branches.map((b) => (
-            <option key={b.id} value={b.name}>{b.name}</option>
-          ))}
-        </select>
+          + Add Staff
+        </button>
+      </div>
+
+      {/* Controls row - Branch filter on left, Period buttons on right */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
+        {/* Branch filter - Left side */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <label style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-sub)" }}>Branch:</label>
+          <select
+            value={branchFilter}
+            onChange={(e) => setBranchFilter(e.target.value)}
+            style={{
+              padding: "0 12px",
+              height: "36px",
+              border: "1px solid var(--color-border)",
+              borderRadius: "8px",
+              fontSize: "13px",
+              background: "var(--color-surface)",
+              cursor: "pointer",
+            }}
+          >
+            <option value="">All Branches</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.name}>{b.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Period buttons - Right side */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-sub)" }}>Period:</span>
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            {(["today", "week", "month"] as Period[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                style={{
+                  padding: "0 16px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  height: "36px",
+                  border: period === p ? "1.5px solid var(--color-rose)" : "1.5px solid var(--color-border)",
+                  background: period === p ? "var(--color-rose-dim)" : "var(--color-surface)",
+                  color: period === p ? "var(--color-rose)" : "var(--color-sub)",
+                  cursor: "pointer",
+                }}
+              >
+                {PERIOD_LABELS[p]}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* 2-column grid of branch cards */}
@@ -329,6 +362,12 @@ export default function StaffPage() {
           );
         })}
       </div>
+
+      <StaffDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        editing={null}
+      />
     </div>
   );
 }

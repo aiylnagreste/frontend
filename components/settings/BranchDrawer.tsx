@@ -29,7 +29,6 @@ export function BranchDrawer({ open, onClose, editing, onSaved }: BranchDrawerPr
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset form when modal opens/closes
   useEffect(() => {
     if (open) {
       if (editing) {
@@ -63,7 +62,6 @@ export function BranchDrawer({ open, onClose, editing, onSaved }: BranchDrawerPr
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -72,7 +70,7 @@ export function BranchDrawer({ open, onClose, editing, onSaved }: BranchDrawerPr
         ...form,
         number: parseInt(form.number) || 0,
       };
-      
+
       if (editing) {
         await api.put(`/salon-admin/api/settings/branches/${editing.id}`, payload);
         toast.success("Branch updated");
@@ -80,7 +78,7 @@ export function BranchDrawer({ open, onClose, editing, onSaved }: BranchDrawerPr
         await api.post("/salon-admin/api/settings/branches", payload);
         toast.success("Branch created");
       }
-      
+
       qc.invalidateQueries({ queryKey: QK.branches() });
       onClose();
       onSaved?.();
@@ -91,127 +89,129 @@ export function BranchDrawer({ open, onClose, editing, onSaved }: BranchDrawerPr
     }
   }
 
-  return (
-    <ModalShell 
-      open={open} 
-      onClose={onClose} 
-      title={editing ? "Edit Branch" : "New Branch"} 
-      width={480}
-    >
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-        {/* Branch Number */}
-        {/* <div>
-          <label style={labelStyle}>
-            Branch Number
-          </label>
-          <input
-            type="number"
-            value={form.number}
-            onChange={(e) => setForm({ ...form, number: e.target.value })}
-            placeholder="e.g., 1"
-            style={inputStyle}
-            onFocus={(e) => e.target.style.borderColor = "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = "#E8E3E0"}
-          />
-        </div> */}
+  const hasError = (field: string) => !!errors[field];
 
-        {/* Branch Name */}
+  const focusInput = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
+    if (!hasError(field)) {
+      e.target.style.borderColor = "#b5484b";
+      e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)";
+    }
+  };
+
+  const blurInput = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
+    if (!hasError(field)) {
+      e.target.style.borderColor = "#E6E4DF";
+      e.target.style.boxShadow = "none";
+    }
+  };
+
+  const errorInputStyle = (field: string): React.CSSProperties => ({
+    borderColor: hasError(field) ? "#DC2626" : undefined,
+    boxShadow: hasError(field) ? "0 0 0 3px rgba(220,38,38,0.1)" : undefined,
+  });
+
+  return (
+    <ModalShell open={open} onClose={onClose} title={editing ? "Edit Branch" : "New Branch"} width={480}>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <div>
           <label style={labelStyle}>
-            Branch Name *
+            Branch Name <span style={{ color: "#b5484b" }}>*</span>
           </label>
           <input
             type="text"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="e.g., Main Branch"
-            style={{
-              ...inputStyle,
-              borderColor: errors.name ? "#DC2626" : "#E8E3E0",
-            }}
-            onFocus={(e) => e.target.style.borderColor = errors.name ? "#DC2626" : "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = errors.name ? "#DC2626" : "#E8E3E0"}
+            style={{ ...inputStyle, ...errorInputStyle("name") }}
+            onFocus={(e) => focusInput(e, "name")}
+            onBlur={(e) => blurInput(e, "name")}
             autoFocus
           />
           {errors.name && <span style={errorStyle}>{errors.name}</span>}
         </div>
 
-        {/* Address */}
         <div>
-          <label style={labelStyle}>
-            Address
-          </label>
+          <label style={labelStyle}>Address</label>
           <textarea
             value={form.address}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
-            placeholder="Full address"
+            placeholder="Full street address"
             rows={3}
-            style={{
-              ...inputStyle,
-              fontFamily: "inherit",
-              resize: "vertical",
-              borderColor: errors.address ? "#DC2626" : "#E8E3E0",
-            }}
-            onFocus={(e) => e.target.style.borderColor = errors.address ? "#DC2626" : "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = errors.address ? "#DC2626" : "#E8E3E0"}
+            style={{ ...inputStyle, fontFamily: "'DM Sans', sans-serif", resize: "vertical", lineHeight: 1.6, ...errorInputStyle("address") }}
+            onFocus={(e) => focusInput(e, "address")}
+            onBlur={(e) => blurInput(e, "address")}
           />
           {errors.address && <span style={errorStyle}>{errors.address}</span>}
         </div>
 
-        {/* Map Link */}
         <div>
-          <label style={labelStyle}>
-            Map Link (Google Maps URL)
-          </label>
-          <input
-            type="text"
-            value={form.map_link}
-            onChange={(e) => setForm({ ...form, map_link: e.target.value })}
-            placeholder="https://maps.google.com/..."
-            style={{
-              ...inputStyle,
-              borderColor: errors.map_link ? "#DC2626" : "#E8E3E0",
-            }}
-            onFocus={(e) => e.target.style.borderColor = errors.map_link ? "#DC2626" : "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = errors.map_link ? "#DC2626" : "#E8E3E0"}
-          />
-          {errors.map_link && <span style={errorStyle}>{errors.map_link}</span>}
-        </div>
-
-        {/* Phone */}
-        <div>
-          <label style={labelStyle}>
-            Phone
-          </label>
+          <label style={labelStyle}>Phone</label>
           <input
             type="tel"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             placeholder="+92 300 1234567"
-            style={{
-              ...inputStyle,
-              borderColor: errors.phone ? "#DC2626" : "#E8E3E0",
-            }}
-            onFocus={(e) => e.target.style.borderColor = errors.phone ? "#DC2626" : "#B5484B"}
-            onBlur={(e) => e.target.style.borderColor = errors.phone ? "#DC2626" : "#E8E3E0"}
+            style={{ ...inputStyle, ...errorInputStyle("phone") }}
+            onFocus={(e) => focusInput(e, "phone")}
+            onBlur={(e) => blurInput(e, "phone")}
           />
           {errors.phone && <span style={errorStyle}>{errors.phone}</span>}
         </div>
 
-        {/* Actions */}
-        <div style={{ 
-          display: "flex", 
-          gap: "12px", 
+        <div>
+          <label style={labelStyle}>Map Link</label>
+          <input
+            type="text"
+            value={form.map_link}
+            onChange={(e) => setForm({ ...form, map_link: e.target.value })}
+            placeholder="https://maps.google.com/..."
+            style={{ ...inputStyle, ...errorInputStyle("map_link") }}
+            onFocus={(e) => focusInput(e, "map_link")}
+            onBlur={(e) => blurInput(e, "map_link")}
+          />
+          {errors.map_link && <span style={errorStyle}>{errors.map_link}</span>}
+          <span style={{ fontSize: "11px", color: "#9CA3B4", marginTop: "4px", display: "block" }}>
+            Paste a Google Maps URL for branch location
+          </span>
+        </div>
+
+        <div style={{
+          display: "flex",
+          gap: "10px",
           justifyContent: "flex-end",
-          borderTop: "1px solid #E8E3E0",
+          borderTop: "1px solid #E6E4DF",
           paddingTop: "20px",
-          marginTop: "8px"
+          marginTop: "4px",
         }}>
-          <button type="button" onClick={onClose} style={secondaryBtn}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              ...secondaryBtn,
+              transition: "background 0.15s, color 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#F8F8F6";
+              e.currentTarget.style.color = "#1A1D23";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "#5F6577";
+            }}
+          >
             Cancel
           </button>
-          <button type="submit" disabled={isSubmitting} style={primaryBtn}>
-            {isSubmitting ? "Saving..." : editing ? "Update Branch" : "Create Branch"}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            style={{
+              ...primaryBtn,
+              opacity: isSubmitting ? 0.7 : 1,
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+              transition: "opacity 0.2s",
+            }}
+          >
+            {isSubmitting ? "Saving…" : editing ? "Update Branch" : "Create Branch"}
           </button>
         </div>
       </form>
@@ -221,48 +221,56 @@ export function BranchDrawer({ open, onClose, editing, onSaved }: BranchDrawerPr
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: "13px",
-  fontWeight: 500,
-  color: "#1A1A2E",
-  marginBottom: "6px",
+  fontSize: "12px",
+  fontWeight: 600,
+  color: "#5F6577",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  marginBottom: "8px",
+  fontFamily: "'DM Sans', sans-serif",
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "10px 14px",
-  border: "1.5px solid #E8E3E0",
+  border: "1.5px solid #E6E4DF",
   borderRadius: "8px",
   fontSize: "14px",
   outline: "none",
-  backgroundColor: "#FFFFFF",
-  color: "#1A1A2E",
+  backgroundColor: "#fff",
+  color: "#1A1D23",
+  fontFamily: "'DM Sans', sans-serif",
+  transition: "border-color 0.2s, box-shadow 0.2s",
+  boxSizing: "border-box",
 };
 
 const errorStyle: React.CSSProperties = {
   display: "block",
   fontSize: "12px",
   color: "#DC2626",
-  marginTop: "4px",
+  marginTop: "5px",
+  fontWeight: 500,
 };
 
 const primaryBtn: React.CSSProperties = {
   padding: "10px 24px",
-  backgroundColor: "#B5484B",
-  color: "#FFFFFF",
+  background: "linear-gradient(135deg, #b5484b, #6b3057)",
+  color: "#fff",
   border: "none",
   borderRadius: "8px",
   fontSize: "13px",
   fontWeight: 600,
-  cursor: "pointer",
+  fontFamily: "'DM Sans', sans-serif",
 };
 
 const secondaryBtn: React.CSSProperties = {
   padding: "10px 20px",
   backgroundColor: "transparent",
-  border: "1px solid #E8E3E0",
+  border: "1px solid #E6E4DF",
   borderRadius: "8px",
   fontSize: "13px",
   fontWeight: 500,
-  color: "#6B7280",
+  color: "#5F6577",
   cursor: "pointer",
+  fontFamily: "'DM Sans', sans-serif",
 };

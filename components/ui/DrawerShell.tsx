@@ -12,21 +12,25 @@ interface DrawerShellProps {
   width?: number;
 }
 
-export function DrawerShell({ open, onClose, title, children, width = 520 }: DrawerShellProps) {
-  // Handle escape key
+export function DrawerShell({
+  open,
+  onClose,
+  title,
+  children,
+  width = 520,
+}: DrawerShellProps) {
   useEffect(() => {
     if (!open) return;
-    
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
       }
     };
-    
+
     document.addEventListener("keydown", handleEscape);
-    // Prevent body scroll when drawer is open
     document.body.style.overflow = "hidden";
-    
+
     return () => {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "";
@@ -37,7 +41,7 @@ export function DrawerShell({ open, onClose, title, children, width = 520 }: Dra
 
   return (
     <>
-      {/* Backdrop - solid dark overlay */}
+      {/* Backdrop */}
       <div
         style={{
           position: "fixed",
@@ -45,14 +49,14 @@ export function DrawerShell({ open, onClose, title, children, width = 520 }: Dra
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
+          backgroundColor: "rgba(17, 19, 24, 0.55)",
           zIndex: 9999,
-          backdropFilter: "blur(2px)",
+          backdropFilter: "blur(3px)",
         }}
         onClick={onClose}
       />
-      
-      {/* Drawer - solid white background */}
+
+      {/* Drawer */}
       <div
         style={{
           position: "fixed",
@@ -61,13 +65,13 @@ export function DrawerShell({ open, onClose, title, children, width = 520 }: Dra
           bottom: 0,
           width: `${width}px`,
           maxWidth: "100vw",
-          backgroundColor: "#FFFFFF",
-          boxShadow: "-8px 0 30px rgba(0, 0, 0, 0.3)",
+          backgroundColor: "#fff",
+          boxShadow: "-12px 0 40px rgba(0, 0, 0, 0.2)",
           zIndex: 10000,
           display: "flex",
           flexDirection: "column",
           transform: open ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 0.3s ease-out",
+          transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
         {/* Header */}
@@ -76,48 +80,61 @@ export function DrawerShell({ open, onClose, title, children, width = 520 }: Dra
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "20px 24px",
-            borderBottom: "1px solid #E8E3E0",
+            padding: "20px 28px",
+            borderBottom: "1px solid #E6E4DF",
             flexShrink: 0,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "#fff",
           }}
         >
-          <h3 style={{ 
-            fontSize: "18px", 
-            fontWeight: 700, 
-            margin: 0, 
-            color: "#1A1A2E" 
-          }}>
+          <h3
+            style={{
+              fontSize: "17px",
+              fontWeight: 700,
+              margin: 0,
+              color: "#1A1D23",
+              fontFamily: "'Space Grotesk', sans-serif",
+              letterSpacing: "-0.01em",
+            }}
+          >
             {title}
           </h3>
           <button
             onClick={onClose}
             style={{
               background: "transparent",
-              border: "none",
+              border: "1px solid #E6E4DF",
               cursor: "pointer",
-              padding: "8px",
+              padding: "6px",
               borderRadius: "6px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#6B7280",
-              transition: "background-color 0.2s",
+              color: "#5F6577",
+              transition: "all 0.15s",
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#F3F4F6"}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#F8F8F6";
+              e.currentTarget.style.borderColor = "#D1D5DB";
+              e.currentTarget.style.color = "#1A1D23";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = "#E6E4DF";
+              e.currentTarget.style.color = "#5F6577";
+            }}
+            aria-label="Close drawer"
           >
-            <X size={20} />
+            <X size={16} strokeWidth={2} />
           </button>
         </div>
-        
-        {/* Content - solid white background */}
+
+        {/* Content */}
         <div
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: "24px",
-            backgroundColor: "#FFFFFF",
+            padding: "28px",
+            backgroundColor: "#fff",
           }}
         >
           {children}

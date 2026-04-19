@@ -424,6 +424,7 @@ function GeneralTab() {
         {/* RIGHT COLUMN - Preview and Embed Code */}
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Live Preview Card */}
+        {showCorsCard && (
           <div
             style={{
               background: "var(--color-surface)",
@@ -503,7 +504,7 @@ function GeneralTab() {
               </div>
             </div>
           </div>
-
+          )}
           {/* Embed Code Card */}
           {showCorsCard && (
           <div
@@ -1196,31 +1197,48 @@ function AccountTab() {
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
   const [currentPasswordError, setCurrentPasswordError] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const getPasswordStrength = (pw: string) => {
+    if (!pw) return { score: 0, label: "", color: "" };
+    let score = 0;
+    if (pw.length >= 6) score++;
+    if (pw.length >= 10) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    if (score <= 1) return { score, label: "Weak", color: "#EF4444" };
+    if (score <= 2) return { score, label: "Fair", color: "#F59E0B" };
+    if (score <= 3) return { score, label: "Good", color: "#3B82F6" };
+    return { score, label: "Strong", color: "#22C55E" };
+  };
+
+  const strength = getPasswordStrength(form.newPassword);
+  const confirmMismatch = form.confirmPassword.length > 0 && form.newPassword !== form.confirmPassword;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
-    // Reset error
+    e.stopPropagation();
+
     setCurrentPasswordError("");
-    
-    // Validate current password is provided
+
     if (!form.currentPassword) {
       setCurrentPasswordError("Current password is required");
       return;
     }
-    
-    // Validate new password length
+
     if (form.newPassword.length < 6) {
       toast.error("New password must be at least 6 characters");
       return;
     }
-    
-    // Validate passwords match
+
     if (form.newPassword !== form.confirmPassword) {
       toast.error("New passwords do not match");
       return;
     }
-    
+
     setLoading(true);
     try {
       await api.put("/salon-admin/api/change-password", {
@@ -1231,7 +1249,6 @@ function AccountTab() {
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setCurrentPasswordError("");
     } catch (e: unknown) {
-      // Check if error is due to incorrect current password
       if (e instanceof Error && e.message.toLowerCase().includes("current password")) {
         setCurrentPasswordError("Current password is incorrect");
       } else {
@@ -1242,129 +1259,354 @@ function AccountTab() {
     }
   }
 
+  const baseInput: React.CSSProperties = {
+    width: "100%",
+    padding: "12px 52px 12px 16px",
+    border: "1.5px solid #E6E4DF",
+    borderRadius: 8,
+    fontSize: 14,
+    color: "#1A1D23",
+    outline: "none",
+    fontFamily: "'DM Sans', sans-serif",
+    transition: "border-color 0.2s, box-shadow 0.2s",
+    boxSizing: "border-box",
+    background: "#fff",
+  };
+
+  function handleFocus(e: React.FocusEvent<HTMLInputElement>, error: boolean) {
+    e.target.style.borderColor = error ? "#EF4444" : "#b5484b";
+    e.target.style.boxShadow = error
+      ? "0 0 0 3px rgba(239,68,68,0.1)"
+      : "0 0 0 3px rgba(181,72,75,0.1)";
+  }
+
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>, error: boolean) {
+    e.target.style.borderColor = error ? "#EF4444" : "#E6E4DF";
+    e.target.style.boxShadow = "none";
+  }
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "11px",
+    fontWeight: 600,
+    color: "#5F6577",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.06em",
+    marginBottom: "8px",
+  };
+
+  const toggleBtn: React.CSSProperties = {
+    position: "absolute",
+    right: "4px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: "#9CA3B4",
+    fontSize: "11px",
+    fontWeight: 600,
+    padding: "6px 10px",
+    borderRadius: "6px",
+    fontFamily: "'DM Sans', sans-serif",
+    letterSpacing: "0.02em",
+    textTransform: "uppercase" as const,
+    transition: "color 0.15s, background 0.15s",
+  };
+
+  const errorMsg: React.CSSProperties = {
+    background: "#FEF2F2",
+    color: "#DC2626",
+    padding: "8px 12px",
+    borderRadius: 6,
+    fontSize: "12px",
+    fontWeight: 500,
+    marginTop: "8px",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    borderLeft: "3px solid #EF4444",
+  };
+
   return (
-    <div style={{ maxWidth: "560px" }}>
+    <div style={{ maxWidth: "520px" }}>
+      {/* Header */}
+      <div style={{ marginBottom: "28px" }}>
+        <h4
+          style={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: "20px",
+            fontWeight: 700,
+            color: "#1A1D23",
+            letterSpacing: "-0.02em",
+            marginBottom: "6px",
+          }}
+        >
+          Change Password
+        </h4>
+        <p style={{ fontSize: "13px", color: "#5F6577", lineHeight: 1.6 }}>
+          Update your login credentials. You'll need to enter your current
+          password to make changes.
+        </p>
+      </div>
+
+      {/* Form Card */}
       <div
         style={{
-          background: "var(--color-surface)",
-          border: "1px solid var(--color-border)",
-          borderRadius: "var(--radius-md)",
-          padding: "24px",
+          background: "#fff",
+          border: "1px solid #E6E4DF",
+          borderRadius: 12,
+          padding: "28px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <span style={{ fontSize: "24px" }}>🔐</span>
-          <div>
-            <h4 style={{ fontWeight: 600, marginBottom: "4px" }}>Change Password</h4>
-            <p style={{ fontSize: "13px", color: "var(--color-sub)", margin: 0 }}>
-              Update your login password. You will need your current password to confirm.
-            </p>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit}>
           {/* Current Password */}
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ fontSize: "13px", fontWeight: 500, display: "block", marginBottom: "6px", color: "var(--color-ink)" }}>
-              Current Password
-            </label>
-            <input
-              type="password"
-              required
-              value={form.currentPassword}
-              onChange={(e) => {
-                setForm((f) => ({ ...f, currentPassword: e.target.value }));
-                setCurrentPasswordError(""); // Clear error when user types
-              }}
-              placeholder="Enter your current password"
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                border: `1.5px solid ${currentPasswordError ? "var(--color-danger)" : "var(--color-border)"}`,
-                borderRadius: "8px",
-                fontSize: "14px",
-                background: "var(--color-surface)",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-              onFocus={(e) => e.target.style.borderColor = currentPasswordError ? "var(--color-danger)" : "var(--color-rose)"}
-              onBlur={(e) => e.target.style.borderColor = currentPasswordError ? "var(--color-danger)" : "var(--color-border)"}
-            />
+          <div style={{ marginBottom: "24px" }}>
+            <label style={labelStyle}>Current Password</label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={showCurrent ? "text" : "password"}
+                value={form.currentPassword}
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, currentPassword: e.target.value }));
+                  setCurrentPasswordError("");
+                }}
+                placeholder="Enter your current password"
+                style={{
+                  ...baseInput,
+                  borderColor: currentPasswordError ? "#EF4444" : undefined,
+                }}
+                onFocus={(e) => handleFocus(e, !!currentPasswordError)}
+                onBlur={(e) => handleBlur(e, !!currentPasswordError)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                style={toggleBtn}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#1A1D23";
+                  e.currentTarget.style.background = "#F4F3F0";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#9CA3B4";
+                  e.currentTarget.style.background = "none";
+                }}
+              >
+                {showCurrent ? "Hide" : "Show"}
+              </button>
+            </div>
             {currentPasswordError && (
-              <p style={{ fontSize: "12px", color: "var(--color-danger)", marginTop: "5px" }}>
-                {currentPasswordError}
-              </p>
+              <div style={errorMsg}>
+                <span>⚠</span>
+                <span>{currentPasswordError}</span>
+              </div>
             )}
           </div>
 
+          {/* Divider */}
+          <div
+            style={{
+              height: "1px",
+              background:
+                "linear-gradient(to right, transparent, #E6E4DF, transparent)",
+              margin: "4px 0 24px",
+            }}
+          />
+
           {/* New Password */}
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ fontSize: "13px", fontWeight: 500, display: "block", marginBottom: "6px", color: "var(--color-ink)" }}>
-              New Password
-            </label>
-            <input
-              type="password"
-              required
-              value={form.newPassword}
-              onChange={(e) => setForm((f) => ({ ...f, newPassword: e.target.value }))}
-              placeholder="Enter new password (min. 6 characters)"
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                border: "1.5px solid var(--color-border)",
-                borderRadius: "8px",
-                fontSize: "14px",
-                background: "var(--color-surface)",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-              onFocus={(e) => e.target.style.borderColor = "var(--color-rose)"}
-              onBlur={(e) => e.target.style.borderColor = "var(--color-border)"}
-            />
+          <div style={{ marginBottom: "24px" }}>
+            <label style={labelStyle}>New Password</label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={showNew ? "text" : "password"}
+                value={form.newPassword}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, newPassword: e.target.value }))
+                }
+                placeholder="Create a new password"
+                style={baseInput}
+                onFocus={(e) => handleFocus(e, false)}
+                onBlur={(e) => handleBlur(e, false)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                style={toggleBtn}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#1A1D23";
+                  e.currentTarget.style.background = "#F4F3F0";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#9CA3B4";
+                  e.currentTarget.style.background = "none";
+                }}
+              >
+                {showNew ? "Hide" : "Show"}
+              </button>
+            </div>
+            {/* Strength indicator */}
+            {form.newPassword && (
+              <div style={{ marginTop: "10px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "4px",
+                    marginBottom: "5px",
+                  }}
+                >
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        flex: 1,
+                        height: "3px",
+                        borderRadius: "2px",
+                        background:
+                          i <= strength.score ? strength.color : "#E6E4DF",
+                        transition: "background 0.3s",
+                      }}
+                    />
+                  ))}
+                </div>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: strength.color,
+                    transition: "color 0.3s",
+                  }}
+                >
+                  {strength.label}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Confirm New Password */}
-          <div style={{ marginBottom: "24px" }}>
-            <label style={{ fontSize: "13px", fontWeight: 500, display: "block", marginBottom: "6px", color: "var(--color-ink)" }}>
-              Confirm New Password
-            </label>
-            <input
-              type="password"
-              required
-              value={form.confirmPassword}
-              onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
-              placeholder="Re-enter your new password"
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                border: "1.5px solid var(--color-border)",
-                borderRadius: "8px",
-                fontSize: "14px",
-                background: "var(--color-surface)",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-              onFocus={(e) => e.target.style.borderColor = "var(--color-rose)"}
-              onBlur={(e) => e.target.style.borderColor = "var(--color-border)"}
-            />
+          <div style={{ marginBottom: "28px" }}>
+            <label style={labelStyle}>Confirm New Password</label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={showConfirm ? "text" : "password"}
+                value={form.confirmPassword}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    confirmPassword: e.target.value,
+                  }))
+                }
+                placeholder="Re-enter your new password"
+                style={{
+                  ...baseInput,
+                  borderColor: confirmMismatch ? "#EF4444" : undefined,
+                }}
+                onFocus={(e) => handleFocus(e, confirmMismatch)}
+                onBlur={(e) => handleBlur(e, confirmMismatch)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                style={toggleBtn}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#1A1D23";
+                  e.currentTarget.style.background = "#F4F3F0";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#9CA3B4";
+                  e.currentTarget.style.background = "none";
+                }}
+              >
+                {showConfirm ? "Hide" : "Show"}
+              </button>
+            </div>
+            {confirmMismatch && (
+              <div style={errorMsg}>
+                <span>⚠</span>
+                <span>Passwords do not match</span>
+              </div>
+            )}
+            {form.confirmPassword &&
+              form.newPassword === form.confirmPassword && (
+                <div
+                  style={{
+                    color: "#16A34A",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    marginTop: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <span>✓</span>
+                  <span>Passwords match</span>
+                </div>
+              )}
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", borderTop: "1px solid var(--color-border)", paddingTop: "20px" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "flex-end",
+            }}
+          >
             <button
               type="button"
               onClick={() => {
-                setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                setForm({
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
                 setCurrentPasswordError("");
               }}
-              style={outlineBtn}
+              style={{
+                padding: "12px 20px",
+                background: "transparent",
+                color: "#5F6577",
+                border: "1.5px solid #E6E4DF",
+                borderRadius: 8,
+                fontSize: "13px",
+                fontWeight: 500,
+                cursor: "pointer",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "#b5484b";
+                e.currentTarget.style.color = "#b5484b";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "#E6E4DF";
+                e.currentTarget.style.color = "#5F6577";
+              }}
             >
               Clear
             </button>
             <button
               type="submit"
               disabled={loading}
-              style={{ ...primaryBtn, opacity: loading ? 0.7 : 1 }}
+              style={{
+                padding: "12px 24px",
+                background: loading
+                  ? "#9CA3B4"
+                  : "linear-gradient(135deg, #b5484b, #6b3057)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: loading ? "not-allowed" : "pointer",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "opacity 0.2s",
+                boxShadow: loading
+                  ? "none"
+                  : "0 4px 14px rgba(181,72,75,0.3)",
+                opacity: loading ? 0.7 : 1,
+              }}
             >
               {loading ? "Updating..." : "Update Password"}
             </button>
@@ -1372,26 +1614,82 @@ function AccountTab() {
         </form>
       </div>
 
-      {/* Password Tips Card */}
+      {/* Security Tips */}
       <div
         style={{
-          background: "var(--color-canvas)",
-          border: "1px solid var(--color-border)",
-          borderRadius: "var(--radius-md)",
-          padding: "16px 20px",
-          marginTop: "16px",
+          background:
+            "linear-gradient(135deg, rgba(181,72,75,0.03), rgba(107,48,87,0.03))",
+          border: "1px solid rgba(181,72,75,0.1)",
+          borderRadius: 12,
+          padding: "20px 24px",
+          marginTop: "20px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-          <span style={{ fontSize: "16px" }}>💡</span>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-ink)" }}>Password Tips</span>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginBottom: "16px",
+          }}
+        >
+          <div
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              background:
+                "linear-gradient(135deg, rgba(181,72,75,0.12), rgba(107,48,87,0.12))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "14px",
+              flexShrink: 0,
+            }}
+          >
+            🛡️
+          </div>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: 600,
+              color: "#1A1D23",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            Security Tips
+          </span>
         </div>
-        <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "12px", color: "var(--color-sub)" }}>
-          <li>Use at least 6 characters</li>
-          <li>Use a mix of letters, numbers, and symbols</li>
-          <li>Avoid using common words or personal information</li>
-          <li>Never share your password with anyone</li>
-        </ul>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "10px 16px",
+          }}
+        >
+          {[
+            { icon: "📐", text: "Use at least 6 characters" },
+            { icon: "🔤", text: "Mix letters, numbers & symbols" },
+            { icon: "🚫", text: "Avoid common words" },
+            { icon: "🔒", text: "Never share your password" },
+          ].map((tip, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "12px",
+                color: "#5F6577",
+              }}
+            >
+              <span style={{ fontSize: "12px", opacity: 0.65 }}>
+                {tip.icon}
+              </span>
+              <span>{tip.text}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

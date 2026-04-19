@@ -13,17 +13,40 @@ export function EmptyState({ icon = "📭", title, description, action }: EmptyS
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "48px 24px",
-        gap: "8px",
+        padding: "64px 24px",
+        gap: "6px",
         textAlign: "center",
       }}
     >
-      <div style={{ fontSize: "32px", lineHeight: 1, marginBottom: "4px" }}>{icon}</div>
-      <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-ink)" }}>
+      <div
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 16,
+          background: "#F8F8F6",
+          border: "1px solid #E6E4DF",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "26px",
+          marginBottom: "8px",
+        }}
+      >
+        {icon}
+      </div>
+      <div
+        style={{
+          fontSize: "15px",
+          fontWeight: 600,
+          color: "#1A1D23",
+          fontFamily: "'Space Grotesk', sans-serif",
+          letterSpacing: "-0.01em",
+        }}
+      >
         {title}
       </div>
       {description && (
-        <div style={{ fontSize: "13px", color: "var(--color-sub)", maxWidth: "280px" }}>
+        <div style={{ fontSize: "13px", color: "#5F6577", maxWidth: "300px", lineHeight: 1.6 }}>
           {description}
         </div>
       )}
@@ -31,16 +54,20 @@ export function EmptyState({ icon = "📭", title, description, action }: EmptyS
         <button
           onClick={action.onClick}
           style={{
-            marginTop: "8px",
-            padding: "8px 18px",
-            background: "var(--color-rose)",
+            marginTop: "12px",
+            padding: "9px 20px",
+            background: "linear-gradient(135deg, #b5484b, #6b3057)",
             color: "#fff",
             border: "none",
             borderRadius: "8px",
             fontSize: "13px",
-            fontWeight: 500,
+            fontWeight: 600,
             cursor: "pointer",
+            fontFamily: "'DM Sans', sans-serif",
+            transition: "opacity 0.2s",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
         >
           {action.label}
         </button>

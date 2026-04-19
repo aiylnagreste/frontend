@@ -8,6 +8,7 @@ import type { Branch, Staff, Service } from "@/lib/types";
 import { BranchDrawer } from "@/components/settings/BranchDrawer";
 import { StaffDrawer } from "@/components/settings/StaffDrawer";
 import { ServiceDrawer } from "@/components/services/ServiceDrawer";
+import { AlertTriangle, Bot } from "lucide-react";
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -56,81 +57,48 @@ export default function Topbar() {
 
   return (
     <>
-      <header
-        style={{
-          height: "var(--topbar-height)",
-          background: "var(--color-surface)",
-          borderBottom: "1px solid var(--color-border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 28px",
-          position: "sticky",
-          top: 0,
-          zIndex: 30,
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "16px",
-            fontWeight: 600,
-            color: "var(--color-ink)",
-            margin: 0,
-          }}
-        >
-          {title}
-        </h2>
+      <header style={styles.header}>
+        <h2 style={styles.title}>{title}</h2>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={styles.actions}>
           {warnings.map((w) => (
             <button
               key={w.label}
               onClick={w.onClick}
               title={`Click to add ${w.label.replace("No ", "").toLowerCase()}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                background: "#fef3c7",
-                color: "#92400e",
-                border: "1px solid #fcd34d",
-                fontSize: "11px",
-                fontWeight: 600,
-                padding: "3px 10px",
-                borderRadius: "100px",
-                cursor: "pointer",
+              style={styles.warningBtn}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#FFE4E6";
+                e.currentTarget.style.borderColor = "#FDA4AF";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#FFF1F2";
+                e.currentTarget.style.borderColor = "#FECDD3";
               }}
             >
-              <span>⚠</span> {w.label}
+              <AlertTriangle size={12} strokeWidth={2.5} />
+              <span>{w.label}</span>
             </button>
           ))}
 
-          <span
-            style={{
-              background: "#dcfce7",
-              color: "#16a34a",
-              fontSize: "11px",
-              fontWeight: 600,
-              padding: "3px 10px",
-              borderRadius: "100px",
-            }}
-          >
-            Live
-          </span>
-          <span
-            style={{
-              background: "#1a1a2e",
-              color: "#fff",
-              fontSize: "11px",
-              fontWeight: 500,
-              padding: "4px 12px",
-              borderRadius: "100px",
-            }}
-          >
-            AI Receptionist Active
-          </span>
+          <div style={styles.livePill}>
+            <span style={styles.liveDot} />
+            <span>Live</span>
+          </div>
+
+          <div style={styles.aiPill}>
+            <Bot size={12} strokeWidth={2} />
+            <span>AI Active</span>
+          </div>
         </div>
       </header>
+
+      <style>{`
+        @keyframes pulse-live {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+          50% { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+        }
+      `}</style>
 
       <BranchDrawer
         open={showBranchDrawer}
@@ -150,3 +118,80 @@ export default function Topbar() {
     </>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  header: {
+    height: "var(--topbar-height)",
+    background: "#fff",
+    borderBottom: "1px solid #E6E4DF",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "0 28px",
+    position: "sticky",
+    top: 0,
+    zIndex: 30,
+  },
+  title: {
+    fontSize: "16px",
+    fontWeight: 700,
+    color: "#1A1D23",
+    margin: 0,
+    fontFamily: "'Space Grotesk', sans-serif",
+    letterSpacing: "-0.01em",
+  },
+  actions: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  warningBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "5px",
+    background: "#FFF1F2",
+    color: "#E11D48",
+    border: "1px solid #FECDD3",
+    fontSize: "11px",
+    fontWeight: 600,
+    padding: "4px 12px",
+    borderRadius: "100px",
+    cursor: "pointer",
+    fontFamily: "'DM Sans', sans-serif",
+    transition: "all 0.15s",
+    lineHeight: 1,
+  },
+  livePill: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    background: "#F0FDF4",
+    color: "#15803d",
+    fontSize: "11px",
+    fontWeight: 600,
+    padding: "4px 12px",
+    borderRadius: "100px",
+    fontFamily: "'DM Sans', sans-serif",
+    lineHeight: 1,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: "50%",
+    background: "#22c55e",
+    animation: "pulse-live 2s ease-in-out infinite",
+  },
+  aiPill: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    background: "#111318",
+    color: "rgba(255,255,255,0.9)",
+    fontSize: "11px",
+    fontWeight: 500,
+    padding: "5px 14px",
+    borderRadius: "100px",
+    fontFamily: "'DM Sans', sans-serif",
+    lineHeight: 1,
+  },
+};

@@ -1,3 +1,4 @@
+// components/Sidebar.tsx
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -8,116 +9,9 @@ import type { Branch, Staff } from "@/lib/types";
 import { BranchDrawer } from "@/components/settings/BranchDrawer";
 import { StaffDrawer } from "@/components/settings/StaffDrawer";
 
-const s = {
-  sidebar: {
-    width: "var(--sidebar-width)",
-    minHeight: "100vh",
-    background: "#1a1a2e",
-    display: "flex" as const,
-    flexDirection: "column" as const,
-    position: "fixed" as const,
-    top: 0,
-    left: 0,
-    bottom: 0,
-    zIndex: 40,
-    overflowY: "auto" as const,
-  },
-  brand: {
-    padding: "20px 20px 12px",
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
-  },
-  brandTitle: {
-    fontSize: "16px",
-    fontWeight: 700,
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  brandSub: {
-    fontSize: "11px",
-    color: "rgba(255,255,255,0.4)",
-    marginTop: "2px",
-    paddingLeft: "28px",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.08em",
-  },
-  nav: { flex: 1, padding: "12px 8px" },
-  sectionLabel: {
-    fontSize: "10px",
-    fontWeight: 600,
-    color: "rgba(255,255,255,0.3)",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.1em",
-    padding: "12px 12px 4px",
-  },
-  navItem: (active: boolean) => ({
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "9px 12px",
-    borderRadius: "8px",
-    fontSize: "13.5px",
-    fontWeight: 500,
-    cursor: "pointer",
-    color: active ? "#fff" : "rgba(255,255,255,0.6)",
-    background: active ? "rgba(181,72,75,0.25)" : "transparent",
-    border: "none",
-    width: "100%",
-    textAlign: "left" as const,
-    transition: "all 0.15s",
-    marginBottom: "1px",
-  }),
-  subItem: (active: boolean) => ({
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    padding: "7px 12px 7px 32px",
-    borderRadius: "6px",
-    fontSize: "12.5px",
-    cursor: "pointer",
-    color: active ? "#fff" : "rgba(255,255,255,0.5)",
-    background: active ? "rgba(181,72,75,0.2)" : "transparent",
-    border: "none",
-    width: "100%",
-    textAlign: "left" as const,
-    transition: "all 0.15s",
-    marginBottom: "1px",
-  }),
-  footer: {
-    padding: "12px 8px",
-    borderTop: "1px solid rgba(255,255,255,0.08)",
-  },
-};
-
-interface NavItem {
-  label: string;
-  icon: string;
-  href: string;
-}
-
-const MAIN_NAV: NavItem[] = [
-  { label: "Dashboard", icon: "⊞", href: "/dashboard" },
- // { label: "Clients", icon: "👥", href: "/clients" },
-  { label: "Staff", icon: "💼", href: "/staff" },
-];
-
-const CATALOGUE_NAV: NavItem[] = [
-  { label: "Packages & Prices", icon: "✨", href: "/packages" },
-  { label: "Deals & Offers", icon: "🎁", href: "/deals" },
-];
-
-const SYSTEM_NAV: NavItem[] = [
-  { label: "Reports", icon: "📊", href: "/reports" },
-  { label: "Settings", icon: "⚙️", href: "/settings" },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
-  const [bookingsOpen, setBookingsOpen] = useState(
-    pathname.startsWith("/bookings"),
-  );
-
+  const [bookingsOpen, setBookingsOpen] = useState(pathname.startsWith("/bookings"));
   const [showBranchDrawer, setShowBranchDrawer] = useState(false);
   const [showStaffDrawer, setShowStaffDrawer] = useState(false);
 
@@ -154,98 +48,99 @@ export default function Sidebar() {
   }
 
   return (
-    <aside style={s.sidebar}>
+    <aside style={styles.sidebar}>
+      {/* Background glow */}
+      <div style={styles.glow1} />
+      <div style={styles.glow2} />
+
       {/* Brand */}
-      <div style={s.brand}>
-        <div style={s.brandTitle}>
-          <span>✨</span>
-          <span>
-            <span style={{ color: "#ec8fa3" }}>Salon</span> Admin
-          </span>
+      <div style={styles.brand}>
+        <div style={styles.brandIcon}>
+          ✨
         </div>
-        <div style={s.brandSub}>Management Portal</div>
+        <div>
+          <div style={styles.brandTitle}>
+            <span style={{ color: "#ec8fa3" }}>Salon</span> Admin
+          </div>
+          <div style={styles.brandSub}>Management Portal</div>
+        </div>
       </div>
 
-      {/* Nav */}
-      <nav style={s.nav}>
-        <div style={s.sectionLabel}>Main</div>
+      {/* Navigation */}
+      <nav style={styles.nav}>
+        <div style={styles.sectionLabel}>Main</div>
 
-        <button
-          style={s.navItem(isActive("/dashboard"))}
+        <NavItem
+          icon="⊞"
+          label="Dashboard"
+          active={isActive("/dashboard")}
           onClick={() => navigate("/dashboard")}
-        >
-          <span>⊞</span> Dashboard
-        </button>
+        />
 
-        {/* Bookings with branch sub-menu */}
-        <button
-          style={s.navItem(isActive("/bookings"))}
-          onClick={handleBookingsClick}
-        >
-          <span>📅</span>
-          <span style={{ flex: 1 }}>Bookings</span>
-          <span style={{ fontSize: "11px", opacity: 0.5 }}>
-            {bookingsOpen ? "▾" : "›"}
-          </span>
-        </button>
+        {/* Bookings with sub-menu */}
+        <div>
+          <NavItem
+            icon="📅"
+            label="Bookings"
+            active={isActive("/bookings")}
+            onClick={handleBookingsClick}
+            suffix={
+              <span style={{ fontSize: "10px", opacity: 0.4, transition: "transform 0.2s", transform: bookingsOpen ? "rotate(0deg)" : "rotate(-90deg)" }}>
+                ▾
+              </span>
+            }
+          />
 
-        {bookingsOpen && (
-          <div>
-            {/* <button
-              style={s.subItem(pathname === "/bookings")}
-              onClick={() => navigate("/bookings")}
-            >
-              <span style={{ opacity: 0.4 }}>◈</span> All Branches
-            </button> */}
-            {branches.map((b) => (
-              <button
-                key={b.id}
-                style={s.subItem(pathname === `/bookings/${b.id}`)}
-                onClick={() => navigate(`/bookings/${b.id}`)}
-              >
-                <span style={{ opacity: 0.4 }}>◈</span> {b.name}
-              </button>
-            ))}
-          </div>
-        )}
+          {bookingsOpen && (
+            <div style={{ overflow: "hidden" }}>
+              {branches.map((b) => (
+                <SubItem
+                  key={b.id}
+                  label={b.name}
+                  active={pathname === `/bookings/${b.id}`}
+                  onClick={() => navigate(`/bookings/${b.id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
-        {/* <button
-          style={s.navItem(isActive("/clients"))}
-          onClick={() => navigate("/clients")}
-        >
-          <span>👥</span> Clients
-        </button> */}
-
-        <button
-          style={s.navItem(isActive("/staff"))}
+        <NavItem
+          icon="💼"
+          label="Staff"
+          active={isActive("/staff")}
           onClick={() => navigate("/staff")}
-        >
-          <span>💼</span> Staff
-        </button>
+        />
 
-        <div style={s.sectionLabel}>Catalogue</div>
+        <div style={styles.sectionLabel}>Catalogue</div>
 
-        {CATALOGUE_NAV.map((item) => (
-          <button
-            key={item.href}
-            style={s.navItem(isActive(item.href))}
-            onClick={() => navigate(item.href)}
-          >
-            <span>{item.icon}</span> {item.label}
-          </button>
-        ))}
+        <NavItem
+          icon="✨"
+          label="Packages & Prices"
+          active={isActive("/packages")}
+          onClick={() => navigate("/packages")}
+        />
+        <NavItem
+          icon="🎁"
+          label="Deals & Offers"
+          active={isActive("/deals")}
+          onClick={() => navigate("/deals")}
+        />
 
-        <div style={s.sectionLabel}>System</div>
+        <div style={styles.sectionLabel}>System</div>
 
-        {SYSTEM_NAV.map((item) => (
-          <button
-            key={item.href}
-            style={s.navItem(isActive(item.href))}
-            onClick={() => navigate(item.href)}
-          >
-            <span>{item.icon}</span> {item.label}
-          </button>
-        ))}
+        <NavItem
+          icon="📊"
+          label="Reports"
+          active={isActive("/reports")}
+          onClick={() => navigate("/reports")}
+        />
+        <NavItem
+          icon="⚙️"
+          label="Settings"
+          active={isActive("/settings")}
+          onClick={() => navigate("/settings")}
+        />
       </nav>
 
       {/* Setup Drawers */}
@@ -262,31 +157,243 @@ export default function Sidebar() {
       />
 
       {/* Footer */}
-      <div style={s.footer}>
+      <div style={styles.footer}>
         <button
           onClick={async () => {
             await fetch("/salon-admin/logout", { credentials: "include" }).catch(() => {});
             window.location.href = "/login";
           }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            padding: "9px 12px",
-            borderRadius: "8px",
-            fontSize: "13px",
-            color: "rgba(255,255,255,0.5)",
-            background: "none",
-            border: "none",
-            width: "100%",
-            textAlign: "left",
-            cursor: "pointer",
-            transition: "all 0.15s",
+          style={styles.logoutBtn}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+            e.currentTarget.style.color = "rgba(255,255,255,0.8)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "rgba(255,255,255,0.4)";
           }}
         >
-          <span>↩</span> Logout
+          <span style={{ fontSize: "14px" }}>↩</span>
+          <span>Logout</span>
         </button>
       </div>
     </aside>
   );
 }
+
+/* ── NavItem ── */
+function NavItem({
+  icon,
+  label,
+  active,
+  onClick,
+  suffix,
+}: {
+  icon: string;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  suffix?: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        ...styles.navItem,
+        color: active ? "#fff" : "rgba(255,255,255,0.55)",
+        background: active ? "rgba(181,72,75,0.2)" : "transparent",
+        fontWeight: active ? 600 : 400,
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+          e.currentTarget.style.color = "rgba(255,255,255,0.85)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "rgba(255,255,255,0.55)";
+        }
+      }}
+    >
+      <span style={{ fontSize: "15px", width: "20px", textAlign: "center", flexShrink: 0 }}>{icon}</span>
+      <span style={{ flex: 1, textAlign: "left" }}>{label}</span>
+      {suffix}
+    </button>
+  );
+}
+
+/* ── SubItem ── */
+function SubItem({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        ...styles.subItem,
+        color: active ? "#fff" : "rgba(255,255,255,0.4)",
+        background: active ? "rgba(181,72,75,0.15)" : "transparent",
+        fontWeight: active ? 500 : 400,
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+          e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+        }
+      }}
+    >
+      <span style={{ fontSize: "15px", opacity: 0.35, width: "20px", textAlign: "center", flexShrink: 0 }}>◈</span>
+      <span style={{ textAlign: "left" }}>{label}</span>
+    </button>
+  );
+}
+
+/* ── Styles ── */
+const styles: Record<string, React.CSSProperties> = {
+  sidebar: {
+    width: "var(--sidebar-width)",
+    minHeight: "100vh",
+    background: "#111318",
+    display: "flex",
+    flexDirection: "column",
+    position: "fixed",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    zIndex: 40,
+    overflowY: "auto",
+    overflowX: "hidden",
+  },
+  glow1: {
+    position: "absolute",
+    width: 300,
+    height: 300,
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(181,72,75,0.1) 0%, transparent 70%)",
+    top: -80,
+    left: -80,
+    pointerEvents: "none",
+  },
+  glow2: {
+    position: "absolute",
+    width: 250,
+    height: 250,
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(107,48,87,0.08) 0%, transparent 70%)",
+    bottom: 40,
+    right: -60,
+    pointerEvents: "none",
+  },
+  brand: {
+    padding: "24px 20px 20px",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    position: "relative",
+  },
+  brandIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: "linear-gradient(135deg, #b5484b, #6b3057)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 16,
+    flexShrink: 0,
+    boxShadow: "0 4px 16px rgba(181,72,75,0.3)",
+  },
+  brandTitle: {
+    fontSize: "15px",
+    fontWeight: 700,
+    color: "#fff",
+    fontFamily: "'Space Grotesk', sans-serif",
+    letterSpacing: "-0.01em",
+    lineHeight: 1.2,
+  },
+  brandSub: {
+    fontSize: "10px",
+    color: "rgba(255,255,255,0.35)",
+    marginTop: "2px",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    fontWeight: 500,
+  },
+  nav: {
+    flex: 1,
+    padding: "12px 8px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+    position: "relative",
+  },
+  sectionLabel: {
+    fontSize: "10px",
+    fontWeight: 600,
+    color: "rgba(255,255,255,0.25)",
+    textTransform: "uppercase",
+    letterSpacing: "0.1em",
+    padding: "16px 12px 6px",
+  },
+  navItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "9px 12px",
+    borderRadius: "8px",
+    fontSize: "13px",
+    cursor: "pointer",
+    border: "none",
+    width: "100%",
+    transition: "all 0.15s",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  subItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "7px 12px 7px 28px",
+    borderRadius: "6px",
+    fontSize: "12px",
+    cursor: "pointer",
+    border: "none",
+    width: "100%",
+    transition: "all 0.15s",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  footer: {
+    padding: "12px 8px 16px",
+    borderTop: "1px solid rgba(255,255,255,0.06)",
+    position: "relative",
+  },
+  logoutBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "9px 12px",
+    borderRadius: "8px",
+    fontSize: "13px",
+    color: "rgba(255,255,255,0.4)",
+    background: "transparent",
+    border: "none",
+    width: "100%",
+    cursor: "pointer",
+    transition: "all 0.15s",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+};

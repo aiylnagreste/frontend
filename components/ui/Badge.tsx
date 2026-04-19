@@ -1,15 +1,17 @@
+
 import { cn } from "@/lib/utils";
 
-const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
-  confirmed:  { bg: "#dcfce7", color: "#16a34a" },
-  completed:  { bg: "#dbeafe", color: "#1d4ed8" },
-  canceled:   { bg: "#fee2e2", color: "#dc2626" },
-  no_show:    { bg: "#f3f4f6", color: "#6b7280" },
-  archived:   { bg: "#f3f4f6", color: "#9ca3af" },
-  active:     { bg: "#dcfce7", color: "#16a34a" },
-  inactive:   { bg: "#fee2e2", color: "#dc2626" },
-  suspended:  { bg: "#fee2e2", color: "#dc2626" },
-  pending:    { bg: "#fef3c7", color: "#d97706" },
+const STATUS_STYLES: Record<string, { bg: string; color: string; dot: string }> = {
+  confirmed:  { bg: "#dcfce7", color: "#15803d", dot: "#22c55e" },
+  completed:  { bg: "#dbeafe", color: "#1e40af", dot: "#3b82f6" },
+  canceled:   { bg: "#fee2e2", color: "#b91c1c", dot: "#ef4444" },
+  no_show:    { bg: "#f1f5f9", color: "#475569", dot: "#94a3b8" },
+  archived:   { bg: "#f1f5f9", color: "#64748b", dot: "#94a3b8" },
+  active:     { bg: "#dcfce7", color: "#15803d", dot: "#22c55e" },
+  inactive:   { bg: "#fee2e2", color: "#b91c1c", dot: "#ef4444" },
+  suspended:  { bg: "#fef3c7", color: "#92400e", dot: "#f59e0b" },
+  pending:    { bg: "#fef3c7", color: "#92400e", dot: "#f59e0b" },
+  frozen:     { bg: "#f1f5f9", color: "#475569", dot: "#94a3b8" },
 };
 
 interface BadgeProps {
@@ -19,8 +21,8 @@ interface BadgeProps {
 }
 
 export function Badge({ status, label, className }: BadgeProps) {
-  const style = STATUS_STYLES[status] ?? { bg: "#f3f4f6", color: "#6b7280" };
-  const text = label ?? status.replace("_", "-");
+  const style = STATUS_STYLES[status] ?? { bg: "#f1f5f9", color: "#475569", dot: "#94a3b8" };
+  const text = label ?? status.replace(/_/g, " ");
 
   return (
     <span
@@ -34,9 +36,21 @@ export function Badge({ status, label, className }: BadgeProps) {
         borderRadius: "100px",
         textTransform: "capitalize",
         whiteSpace: "nowrap",
-        display: "inline-block",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "5px",
+        letterSpacing: "0.01em",
       }}
     >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: style.dot,
+          flexShrink: 0,
+        }}
+      />
       {text}
     </span>
   );
