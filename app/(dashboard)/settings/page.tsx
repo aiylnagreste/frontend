@@ -10,6 +10,8 @@ import {
   fetchGeneral,
   fetchWebhookConfig,
   fetchPlanFeatures,
+  fetchCorsOrigin,
+  saveCorsOrigin,
   QK,
 } from "@/lib/queries";
 import type { Branch, Staff, Role, SalonTimings, WebhookConfig, PlanFeatures } from "@/lib/types";
@@ -105,6 +107,33 @@ function GeneralTab() {
     queryKey: QK.planFeatures(),
     queryFn: fetchPlanFeatures,
     staleTime: 60_000,
+  });
+
+  const showCorsCard = planFeatures?.widget_access === 1 || planFeatures?.ai_calls_access === 1;
+
+  const { data: corsOriginData } = useQuery({
+    queryKey: QK.corsOrigin(),
+    queryFn: fetchCorsOrigin,
+    staleTime: 60_000,
+    enabled: !!planFeatures,
+  });
+
+  const [corsUrl, setCorsUrl] = useState("");
+
+  // Sync corsUrl once data loads
+  useEffect(() => {
+    if (corsOriginData !== undefined && corsOriginData !== null) {
+      setCorsUrl(corsOriginData);
+    }
+  }, [corsOriginData]);
+
+  const corsOriginMutation = useMutation({
+    mutationFn: () => saveCorsOrigin(corsUrl.trim() || null),
+    onSuccess: () => {
+      toast.success("Website URL saved");
+      qc.invalidateQueries({ queryKey: QK.corsOrigin() });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const [currency, setCurrency] = useState(general?.currency ?? "Rs.");
@@ -229,6 +258,63 @@ function GeneralTab() {
               {saveMutation.isPending ? "Saving…" : "Save Settings"}
             </button>
           </div>
+
+          {/* Website & CORS Card */}
+          {showCorsCard && (
+          <div
+            style={{
+              background: "var(--color-surface)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-md)",
+              padding: "24px",
+            }}
+          >
+            <h4 style={{ fontWeight: 600, marginBottom: "4px" }}>🌐 Website &amp; CORS</h4>
+            <p
+              style={{
+                fontSize: "12px",
+                color: "var(--color-sub)",
+                marginBottom: "16px",
+              }}
+            >
+              Add your website&apos;s URL so the chat widget and voice call can work on your site. This URL will be used for CORS.
+            </p>
+            <label
+              style={{
+                fontSize: "13px",
+                fontWeight: 500,
+                display: "block",
+                marginBottom: "6px",
+                color: "var(--color-ink)",
+              }}
+            >
+              Your Website URL
+            </label>
+            <input
+              type="url"
+              value={corsUrl}
+              onChange={(e) => setCorsUrl(e.target.value)}
+              placeholder="https://yoursalon.com"
+              style={{
+                width: "100%",
+                padding: "9px 12px",
+                border: "1px solid var(--color-border)",
+                borderRadius: "8px",
+                fontSize: "13px",
+                background: "var(--color-surface)",
+                marginBottom: "16px",
+                boxSizing: "border-box",
+              }}
+            />
+            <button
+              onClick={() => corsOriginMutation.mutate()}
+              disabled={corsOriginMutation.isPending}
+              style={primaryBtn}
+            >
+              {corsOriginMutation.isPending ? "Saving…" : "Save Website URL"}
+            </button>
+          </div>
+          )}
 
           {/* Widget Customization Card */}
           {planFeatures?.widget_access === 1 && (
