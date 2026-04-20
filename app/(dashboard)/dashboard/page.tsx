@@ -80,7 +80,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!branchesLoaded || !staffLoaded || !servicesLoaded) return;
-    const t = setTimeout(() => setSetupReady(true), 1200);
+    const t = setTimeout(() => setSetupReady(true), 2000);
     return () => clearTimeout(t);
   }, [branchesLoaded, staffLoaded, servicesLoaded]);
 

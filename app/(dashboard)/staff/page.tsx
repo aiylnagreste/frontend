@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CHART_COLORS } from "@/lib/utils";
 import { StaffDrawer } from "@/components/settings/StaffDrawer";
+import { Plus } from "lucide-react";
 
 type Period = "today" | "week" | "month";
 
@@ -57,7 +58,6 @@ export default function StaffPage() {
 
   const { dateFrom, dateTo } = getPeriodDates(period);
 
-  // Confirmed + completed bookings in period with a staff member assigned
   const periodBookings = bookings.filter(
     (b) =>
       b.staff_name &&
@@ -66,58 +66,125 @@ export default function StaffPage() {
       (b.status === "confirmed" || b.status === "completed"),
   );
 
-  // Completed only — for the completed bookings bar chart
   const completedInRange = periodBookings.filter(
     (b) => b.status === "completed",
   );
 
-  // Explicitly requested only — staffRequested is stored as 1 in DB when customer chose the staff
   const requestedInRange = periodBookings.filter((b) => b.staffRequested);
 
+  // --- Design System Styles ---
+  const selectStyle: React.CSSProperties = {
+    padding: "0 12px",
+    height: "32px",
+    border: "1px solid #E6E4DF",
+    borderRadius: "8px",
+    fontSize: "13px",
+    background: "#fff",
+    cursor: "pointer",
+    color: "#1A1D23",
+    fontFamily: "'DM Sans', sans-serif",
+    outline: "none",
+    transition: "border-color 0.2s, box-shadow 0.2s",
+  };
+
+  const tooltipStyle: React.CSSProperties = {
+    fontSize: "12px",
+    borderRadius: "8px",
+    border: "1px solid #E6E4DF",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    fontFamily: "'DM Sans', sans-serif",
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {/* Header row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
-        <h3 style={{ fontSize: "18px", fontWeight: 700, margin: 0 }}>
-          Staff Management & Availability
-        </h3>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "16px" }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <div style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              background: "linear-gradient(135deg, rgba(181,72,75,0.12), rgba(107,48,87,0.08))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "16px",
+            }}>
+              👥
+            </div>
+            <h3
+              style={{
+                fontSize: "20px",
+                fontWeight: 700,
+                margin: 0,
+                fontFamily: "'Space Grotesk', sans-serif",
+                color: "#1A1D23",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Staff Management
+            </h3>
+          </div>
+          <p style={{ fontSize: "13px", color: "#5F6577", margin: 0, paddingLeft: "40px" }}>
+            Track performance, bookings, and availability
+          </p>
+        </div>
         <button
           onClick={() => setDrawerOpen(true)}
           style={{
-            padding: "6px 16px",
+            padding: "9px 18px",
+            background: "linear-gradient(135deg, #b5484b, #6b3057)",
+            color: "#fff",
+            border: "none",
             borderRadius: "8px",
             fontSize: "13px",
             fontWeight: 600,
-            border: "none",
-            background: "var(--color-rose)",
-            color: "#fff",
             cursor: "pointer",
+            fontFamily: "'DM Sans', sans-serif",
             display: "flex",
             alignItems: "center",
-            gap: "6px",
-            height: "36px",
+            gap: "7px",
+            transition: "opacity 0.2s",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
         >
-          + Add Staff
+          <Plus size={14} strokeWidth={2.5} />
+          Add Staff Member
         </button>
       </div>
 
-      {/* Controls row - Branch filter on left, Period buttons on right */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
-        {/* Branch filter - Left side */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <label style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-sub)" }}>Branch:</label>
+      {/* Controls Bar - Updated to match reference pill style */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "16px",
+          background: "#F9F8F6",
+          padding: "14px 18px",
+          borderRadius: 12,
+          border: "1px solid #E6E4DF",
+        }}
+      >
+        {/* Branch filter */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <label style={{ fontSize: "11px", fontWeight: 600, color: "#5F6577", textTransform: "uppercase", letterSpacing: "0.06em" }}>Branch</label>
           <select
             value={branchFilter}
             onChange={(e) => setBranchFilter(e.target.value)}
-            style={{
-              padding: "0 12px",
-              height: "36px",
-              border: "1px solid var(--color-border)",
-              borderRadius: "8px",
-              fontSize: "13px",
-              background: "var(--color-surface)",
-              cursor: "pointer",
+            style={selectStyle}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "#b5484b";
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "#E6E4DF";
+              e.currentTarget.style.boxShadow = "none";
             }}
           >
             <option value="">All Branches</option>
@@ -127,9 +194,9 @@ export default function StaffPage() {
           </select>
         </div>
 
-        {/* Period buttons - Right side */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-sub)" }}>Period:</span>
+        {/* Period buttons - Individual floating pills matching reference */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "11px", fontWeight: 600, color: "#5F6577", textTransform: "uppercase", letterSpacing: "0.06em" }}>Period</span>
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
             {(["today", "week", "month"] as Period[]).map((p) => (
               <button
@@ -139,12 +206,27 @@ export default function StaffPage() {
                   padding: "0 16px",
                   borderRadius: "8px",
                   fontSize: "13px",
-                  fontWeight: 500,
-                  height: "36px",
-                  border: period === p ? "1.5px solid var(--color-rose)" : "1.5px solid var(--color-border)",
-                  background: period === p ? "var(--color-rose-dim)" : "var(--color-surface)",
-                  color: period === p ? "var(--color-rose)" : "var(--color-sub)",
+                  fontWeight: period === p ? 600 : 500,
+                  height: "32px",
+                  border: "none",
+                  background: period === p ? "#1A1D23" : "#F4F3F0",
+                  color: period === p ? "#fff" : "#5F6577",
                   cursor: "pointer",
+                  fontFamily: "'DM Sans', sans-serif",
+                  transition: "all 0.2s",
+                  boxShadow: period === p ? "0 2px 8px rgba(0,0,0,0.15)" : "none",
+                }}
+                onMouseEnter={(e) => {
+                  if(period !== p) {
+                    e.currentTarget.style.background = "#E6E4DF";
+                    e.currentTarget.style.color = "#1A1D23";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if(period !== p) {
+                    e.currentTarget.style.background = "#F4F3F0";
+                    e.currentTarget.style.color = "#5F6577";
+                  }
                 }}
               >
                 {PERIOD_LABELS[p]}
@@ -157,200 +239,177 @@ export default function StaffPage() {
       {/* 2-column grid of branch cards */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         {filteredBranches.map((branch, branchIndex) => {
-          const branchCompleted = completedInRange.filter(
-            (b) => b.branch === branch.name,
-          );
-          const branchPeriod = periodBookings.filter(
-            (b) => b.branch === branch.name,
-          );
-          const branchRequested = requestedInRange.filter(
-            (b) => b.branch === branch.name,
-          );
+          const branchCompleted = completedInRange.filter((b) => b.branch === branch.name);
+          const branchPeriod = periodBookings.filter((b) => b.branch === branch.name);
+          const branchRequested = requestedInRange.filter((b) => b.branch === branch.name);
 
-          // Group completed bookings by staff for completed chart
-          const completedByStaff = branchCompleted.reduce<Record<string, number>>(
-            (acc, b) => {
-              const key = b.staff_name!;
-              acc[key] = (acc[key] ?? 0) + 1;
-              return acc;
-            },
-            {},
-          );
+          const completedByStaff = branchCompleted.reduce<Record<string, number>>((acc, b) => {
+            const key = b.staff_name!;
+            acc[key] = (acc[key] ?? 0) + 1;
+            return acc;
+          }, {});
 
           const chartData = Object.entries(completedByStaff)
             .sort((a, b) => b[1] - a[1])
             .map(([name, count]) => ({ name, count }));
 
-          // Group explicitly requested bookings by staff for requested chart
-          const requestedByStaff = branchRequested.reduce<Record<string, number>>(
-            (acc, b) => {
-              const key = b.staff_name!;
-              acc[key] = (acc[key] ?? 0) + 1;
-              return acc;
-            },
-            {},
-          );
+          const requestedByStaff = branchRequested.reduce<Record<string, number>>((acc, b) => {
+            const key = b.staff_name!;
+            acc[key] = (acc[key] ?? 0) + 1;
+            return acc;
+          }, {});
 
           const requestedChartData = Object.entries(requestedByStaff)
             .sort((a, b) => b[1] - a[1])
             .map(([name, count]) => ({ name, count }));
 
-          // Group all period bookings by staff for detail list
-          const allByStaff = branchPeriod.reduce<Record<string, Booking[]>>(
-            (acc, b) => {
-              const key = b.staff_name!;
-              if (!acc[key]) acc[key] = [];
-              acc[key].push(b);
-              return acc;
-            },
-            {},
-          );
+          const allByStaff = branchPeriod.reduce<Record<string, Booking[]>>((acc, b) => {
+            const key = b.staff_name!;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(b);
+            return acc;
+          }, {});
 
           const staffEntries = Object.entries(allByStaff).sort(
-            (a, b) => b[1].filter((x) => x.status === "completed").length
-                    - a[1].filter((x) => x.status === "completed").length,
+            (a, b) => b[1].filter((x) => x.status === "completed").length - a[1].filter((x) => x.status === "completed").length,
           );
 
           const showDate = dateFrom !== dateTo;
 
           return (
-            <Card key={branch.id}>
-              <CardHeader>
-                <span style={{ fontWeight: 600, fontSize: "14px" }}>
-                  🏪 {branch.name}
-                </span>
-                <span style={{ fontSize: "11px", color: "var(--color-sub)" }}>
-                  {PERIOD_LABELS[period]} · completed &amp; scheduled
-                </span>
+            <Card key={branch.id} style={{ background: "#fff", border: "1px solid #E6E4DF", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", overflow: "hidden" }}>
+              {/* Card Header with flex-end */}
+              <CardHeader style={{ borderBottom: "1px solid #E6E4DF", padding: "16px 20px", background: "#F9F8F6" }}>
+                <div style={{ 
+                  display: "flex", 
+                  alignItems: "flex-end", 
+                  justifyContent: "space-between",
+                  width: "100%"
+                }}>
+                  <div>
+                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: "14px", color: "#1A1D23", display: "block", marginBottom: "2px" }}>
+                      🏪 {branch.name}
+                    </span>
+                    <span style={{ fontSize: "11px", color: "#5F6577", fontWeight: 500 }}>
+                      {PERIOD_LABELS[period]} · completed &amp; scheduled
+                    </span>
+                  </div>
+                  <div style={{ 
+                    fontSize: "11px", 
+                    fontWeight: 600, 
+                    color: "#fff", 
+                    background: "linear-gradient(135deg, #b5484b, #6b3057)", 
+                    padding: "4px 10px", 
+                    borderRadius: "20px", 
+                    boxShadow: "0 2px 8px rgba(181,72,75,0.2)",
+                    flexShrink: 0
+                  }}>
+                    {branchPeriod.length} bookings
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
+              
+              <CardContent style={{ padding: "20px" }}>
                 {isLoading ? (
                   <Skeleton style={{ height: "200px" }} />
                 ) : staffEntries.length === 0 ? (
                   <EmptyState icon="📊" title="No bookings in this period" />
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    {/* Bar chart — completed count per staff */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    
                     {chartData.length > 0 && (
                       <div>
-                        <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-sub)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        <div style={{ fontSize: "10px", fontWeight: 600, color: "#5F6577", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                           Completed Bookings
                         </div>
-                        <ResponsiveContainer
-                          width="100%"
-                          height={Math.max(80, chartData.length * 30)}
-                        >
-                          <BarChart
-                            data={chartData}
-                            layout="vertical"
-                            margin={{ left: 0, right: 16, top: 0, bottom: 0 }}
-                          >
-                            <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-                            <YAxis
-                              type="category"
-                              dataKey="name"
-                              width={110}
-                              tick={{ fontSize: 11 }}
-                            />
-                            <Tooltip
-                              formatter={(v: unknown) => [String(v ?? 0), "Completed"]}
-                              contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
-                            />
-                            <Bar
-                              dataKey="count"
-                              fill={CHART_COLORS[branchIndex % CHART_COLORS.length]}
-                              radius={[0, 4, 4, 0]}
-                            />
-                          </BarChart>
-                        </ResponsiveContainer>
+                        <div style={{ background: "#F9F8F6", padding: "12px", borderRadius: 8, border: "1px solid #E6E4DF" }}>
+                          <ResponsiveContainer width="100%" height={Math.max(80, chartData.length * 30)}>
+                            <BarChart data={chartData} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
+                              <XAxis type="number" tick={{ fontSize: 11, fill: "#5F6577" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                              <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12, fill: "#1A1D23", fontWeight: 500 }} axisLine={false} tickLine={false} />
+                              <Tooltip formatter={(v: unknown) => [String(v ?? 0), "Completed"]} contentStyle={tooltipStyle} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                              <Bar dataKey="count" fill={CHART_COLORS[branchIndex % CHART_COLORS.length]} radius={[0, 4, 4, 0]} barSize={18} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     )}
 
-                    {/* Bar chart — most requested staff */}
                     {requestedChartData.length > 0 && (
                       <div>
-                        <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-sub)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        <div style={{ fontSize: "10px", fontWeight: 600, color: "#5F6577", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                           Most Requested
                         </div>
-                        <ResponsiveContainer
-                          width="100%"
-                          height={Math.max(80, requestedChartData.length * 30)}
-                        >
-                          <BarChart
-                            data={requestedChartData}
-                            layout="vertical"
-                            margin={{ left: 0, right: 16, top: 0, bottom: 0 }}
-                          >
-                            <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-                            <YAxis
-                              type="category"
-                              dataKey="name"
-                              width={110}
-                              tick={{ fontSize: 11 }}
-                            />
-                            <Tooltip
-                              formatter={(v: unknown) => [String(v ?? 0), "Requests"]}
-                              contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
-                            />
-                            <Bar
-                              dataKey="count"
-                              fill={CHART_COLORS[(branchIndex + 2) % CHART_COLORS.length]}
-                              radius={[0, 4, 4, 0]}
-                            />
-                          </BarChart>
-                        </ResponsiveContainer>
+                        <div style={{ background: "#F9F8F6", padding: "12px", borderRadius: 8, border: "1px solid #E6E4DF" }}>
+                          <ResponsiveContainer width="100%" height={Math.max(80, requestedChartData.length * 30)}>
+                            <BarChart data={requestedChartData} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
+                              <XAxis type="number" tick={{ fontSize: 11, fill: "#5F6577" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                              <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12, fill: "#1A1D23", fontWeight: 500 }} axisLine={false} tickLine={false} />
+                              <Tooltip formatter={(v: unknown) => [String(v ?? 0), "Requests"]} contentStyle={tooltipStyle} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                              <Bar dataKey="count" fill={CHART_COLORS[(branchIndex + 2) % CHART_COLORS.length]} radius={[0, 4, 4, 0]} barSize={18} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     )}
 
-                    {/* Booking detail list per staff */}
-                    <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <div style={{ borderTop: "1px solid #E6E4DF", paddingTop: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
                       {staffEntries.map(([staffName, bks]) => {
                         const completedCount = bks.filter((b) => b.status === "completed").length;
                         return (
                           <div
                             key={staffName}
                             style={{
-                              border: "1px solid var(--color-border)",
-                              borderRadius: "8px",
-                              padding: "10px 14px",
-                              background: "var(--color-canvas)",
+                              border: "1px solid #E6E4DF",
+                              borderRadius: 10,
+                              padding: "12px 16px",
+                              background: "#fff",
+                              transition: "box-shadow 0.2s",
                             }}
+                            onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)"}
+                            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "none"}
                           >
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
-                              <span style={{ fontWeight: 600, fontSize: "13px" }}>{staffName}</span>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: "13px", color: "#1A1D23" }}>{staffName}</span>
                               {completedCount > 0 && (
-                                <span style={{ fontSize: "11px", color: "var(--color-sub)", background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: "12px", padding: "2px 8px" }}>
+                                <span style={{ fontSize: "11px", color: "#5F6577", background: "#F4F3F0", border: "1px solid #E6E4DF", borderRadius: "20px", padding: "3px 10px", fontWeight: 500 }}>
                                   {completedCount} completed
                                 </span>
                               )}
                             </div>
-                            {[...bks]
-                              .sort((a, b) => {
-                                if (a.date !== b.date) return a.date.localeCompare(b.date);
-                                return a.time.localeCompare(b.time);
-                              })
-                              .map((b) => (
-                                <div
-                                  key={b.id}
-                                  style={{
-                                    fontSize: "12px",
-                                    color: b.status === "completed" ? "var(--color-rose)" : "var(--color-sub)",
-                                    marginBottom: "2px",
-                                    display: "flex",
-                                    gap: "4px",
-                                    alignItems: "baseline",
-                                  }}
-                                >
-                                  {showDate && (
-                                    <span style={{ color: "var(--color-muted)", fontSize: "11px", flexShrink: 0 }}>
-                                      {b.date} ·
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                              {[...bks]
+                                .sort((a, b) => {
+                                  if (a.date !== b.date) return a.date.localeCompare(b.date);
+                                  return a.time.localeCompare(b.time);
+                                })
+                                .map((b) => (
+                                  <div
+                                    key={b.id}
+                                    style={{
+                                      fontSize: "12px",
+                                      color: b.status === "completed" ? "#6b3057" : "#5F6577",
+                                      display: "flex",
+                                      gap: "6px",
+                                      alignItems: "baseline",
+                                      lineHeight: 1.5,
+                                    }}
+                                  >
+                                    {showDate && (
+                                      <span style={{ color: "#9CA3B4", fontSize: "11px", flexShrink: 0 }}>
+                                        {b.date} ·
+                                      </span>
+                                    )}
+                                    <span style={{ fontWeight: 500 }}>
+                                      {b.time} – {b.endTime ?? "?"}
                                     </span>
-                                  )}
-                                  <span>
-                                    {b.time} – {b.endTime ?? "?"} · {b.service} · {b.customer_name}
-                                  </span>
-                                </div>
-                              ))}
+                                    <span style={{ color: "#9CA3B4" }}>·</span>
+                                    <span>{b.service}</span>
+                                    <span style={{ color: "#9CA3B4" }}>·</span>
+                                    <span>{b.customer_name}</span>
+                                  </div>
+                                ))}
+                            </div>
                           </div>
                         );
                       })}

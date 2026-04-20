@@ -11,13 +11,16 @@ import { useState, useEffect } from "react";
 import { validateName, validateEmail, validatePhoneRequired } from "@/lib/validation";
 import {
   Search, Plus, Store, CheckCircle, XCircle,
-  DollarSign, Key, Users, Mail, Calendar, Power, X, ArrowUp, ArrowDown, TriangleAlert, CreditCard,
+  DollarSign, Key, Users, Mail, Calendar, Power, X,
+  ArrowUp, ArrowDown, TriangleAlert, CreditCard, Loader2,
+  LayoutDashboard,
 } from "lucide-react";
 
 const C = {
   bg: "#F4F3EF",
   surface: "#FFFFFF",
   primary: "#0D9488",
+  primaryHover: "#0F766E",
   primaryLight: "#CCFBF1",
   primaryGlow: "rgba(13,148,136,0.12)",
   accent: "#E8913A",
@@ -46,41 +49,55 @@ interface ResetRequest {
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ title, value, change, iconEl, accent, trend }: {
   title: string; value: string | number; change: string;
-  iconEl: React.ReactNode; accent: "teal"|"green"|"red"|"amber"; trend?: "up"|"down"|"neutral";
+  iconEl: React.ReactNode; accent: "teal" | "green" | "red" | "amber"; trend?: "up" | "down" | "neutral";
 }) {
-  const colors: Record<string, { icon: string; iconBg: string }> = {
-    teal:  { icon: C.primary,  iconBg: C.primaryLight },
-    green: { icon: C.success,  iconBg: C.successBg },
-    red:   { icon: C.error,    iconBg: C.errorBg },
-    amber: { icon: C.accent,   iconBg: C.accentLight },
+  const palette: Record<string, { icon: string; iconBg: string }> = {
+    teal:  { icon: C.primary, iconBg: C.primaryLight },
+    green: { icon: C.success, iconBg: C.successBg },
+    red:   { icon: C.error,   iconBg: C.errorBg },
+    amber: { icon: C.accent,  iconBg: C.accentLight },
   };
-  const { icon, iconBg } = colors[accent];
+  const p = palette[accent];
 
   return (
-    <div className={`gd-stat-card ${accent}`} style={{
+    <div style={{
       background: C.surface,
       border: `1px solid ${C.border2}`,
-      borderRadius: 12,
-      padding: 20,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: C.text2 }}>{title}</span>
+      borderRadius: 14,
+      padding: "20px 22px",
+      boxShadow: "0 1px 3px rgba(26,29,35,0.04)",
+      transition: "box-shadow 0.2s, transform 0.2s",
+      cursor: "default",
+    }}
+      onMouseEnter={e => {
+        e.currentTarget.style.boxShadow = "0 4px 16px rgba(26,29,35,0.07)";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.boxShadow = "0 1px 3px rgba(26,29,35,0.04)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <span style={{ fontSize: 12.5, fontWeight: 500, color: C.text2, letterSpacing: "0.01em" }}>{title}</span>
         <div style={{
-          width: 40, height: 40, borderRadius: 10,
-          background: iconBg, color: icon,
+          width: 40, height: 40, borderRadius: 11,
+          background: p.iconBg, color: p.icon,
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>{iconEl}</div>
       </div>
-      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 700, color: C.text, marginBottom: 6 }}>{value}</div>
-      <div style={{
-        display: "inline-flex", alignItems: "center", gap: 4,
-        fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 99,
-        background: trend === "up" ? C.successBg : trend === "down" ? C.errorBg : C.border2,
-        color: trend === "up" ? "#059669" : trend === "down" ? "#DC2626" : C.text3,
-      }}>
-        {trend === "up" && <ArrowUp size={11} />}
-        {trend === "down" && <ArrowDown size={11} />}
-        {change}
+      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 30, fontWeight: 700, color: C.text, letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
+      <div style={{ marginTop: 10 }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 4,
+          fontSize: 11.5, fontWeight: 600, padding: "3px 9px", borderRadius: 99,
+          background: trend === "up" ? C.successBg : trend === "down" ? C.errorBg : C.border2,
+          color: trend === "up" ? "#059669" : trend === "down" ? "#DC2626" : C.text3,
+        }}>
+          {trend === "up" && <ArrowUp size={10.5} />}
+          {trend === "down" && <ArrowDown size={10.5} />}
+          {change}
+        </span>
       </div>
     </div>
   );
@@ -92,12 +109,16 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 5,
-      padding: "4px 10px", borderRadius: 99,
-      fontSize: 12, fontWeight: 600,
+      padding: "4px 11px", borderRadius: 99,
+      fontSize: 11.5, fontWeight: 600, letterSpacing: "0.01em",
       background: active ? C.successBg : C.errorBg,
       color: active ? "#059669" : "#DC2626",
     }}>
-      {active ? <CheckCircle size={11} /> : <XCircle size={11} />}
+      <span style={{
+        width: 6, height: 6, borderRadius: "50%",
+        background: active ? "#059669" : "#DC2626",
+        boxShadow: active ? "0 0 0 2px rgba(5,150,105,0.2)" : "0 0 0 2px rgba(220,38,38,0.2)",
+      }} />
       {active ? "Active" : "Suspended"}
     </span>
   );
@@ -147,35 +168,61 @@ export default function SuperDashboardPage() {
   });
 
   const tenantsArray = Array.isArray(tenants) ? tenants : [];
-  const activeTenants = tenantsArray.filter(t => t.status === "active").length;
   const suspendedTenants = tenantsArray.filter(t => t.status !== "active").length;
   const isLoading = tenantsLoading || statsLoading;
 
   const totalSalons = stats?.total_tenants ?? tenantsArray.length;
-  const activeSalons = stats?.active_tenants ?? activeTenants;
+  const activeSalons = stats?.active_tenants ?? tenantsArray.filter(t => t.status === "active").length;
   const activePercentage = totalSalons > 0 ? Math.round((activeSalons / totalSalons) * 100) : 0;
 
-  const filteredTenants = tenantsArray.filter(t =>
-    t.salon_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.owner_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTenants = tenantsArray
+    .filter(t =>
+      t.salon_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.owner_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    // Oldest first, newest at the bottom
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateA - dateB;
+    });
 
   return (
-    <div style={{ padding: "32px 36px", background: C.bg, minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" }}>
-      {/* Header */}
+    <div style={{ padding: "28px 36px", background: C.bg, minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" }}>
+
+      {/* Page Header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, fontWeight: 700, color: C.text, letterSpacing: "-0.02em" }}>Dashboard</h1>
-        <p style={{ fontSize: 14, color: C.text2, marginTop: 4 }}>Super Admin · System Overview</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 14,
+            background: `linear-gradient(135deg, ${C.primary}, #0F766E)`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: `0 4px 14px ${C.primaryGlow}`,
+          }}>
+            <LayoutDashboard size={22} style={{ color: "#fff" }} />
+          </div>
+          <div>
+            <h1 style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 24, fontWeight: 700, color: C.text,
+              letterSpacing: "-0.025em", lineHeight: 1.2,
+            }}>Dashboard</h1>
+            <p style={{ fontSize: 14, color: C.text2, marginTop: 2 }}>
+              Super Admin · System Overview
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Stat Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
         {isLoading ? (
-          [1,2,3,4].map(i => (
-            <div key={i} style={{ background: C.surface, borderRadius: 12, padding: 20, border: `1px solid ${C.border2}` }}>
-              <Skeleton style={{ height: 10, width: "40%", marginBottom: 12 }} />
-              <Skeleton style={{ height: 32, width: "50%" }} />
+          [1, 2, 3, 4].map(i => (
+            <div key={i} style={{ background: C.surface, borderRadius: 14, padding: 20, border: `1px solid ${C.border2}` }}>
+              <Skeleton style={{ height: 10, width: "40%", marginBottom: 14, borderRadius: 6 }} />
+              <Skeleton style={{ height: 30, width: "55%", borderRadius: 6 }} />
+              <Skeleton style={{ height: 20, width: "35%", marginTop: 10, borderRadius: 99 }} />
             </div>
           ))
         ) : (
@@ -183,32 +230,36 @@ export default function SuperDashboardPage() {
             <StatCard title="Total Salons" value={totalSalons} change={`+${stats?.new_this_month || 0} this month`} iconEl={<Store size={16} />} accent="teal" trend="up" />
             <StatCard title="Active" value={activeSalons} change={`${activePercentage}% uptime`} iconEl={<CheckCircle size={16} />} accent="green" trend="up" />
             <StatCard title="Suspended" value={suspendedTenants} change="needs attention" iconEl={<XCircle size={16} />} accent="red" trend="down" />
-            <StatCard title="Monthly Revenue" value={`$${((stats?.mrr || 0) / 100).toLocaleString()}`} change={`${stats?.revenue_change || 0}% vs last month`} iconEl={<DollarSign size={16} />} accent="amber" trend={stats?.revenue_change >= 0 ? "up" : "down"} />
+            <StatCard title="Monthly Revenue" value={`$${((stats?.mrr || 0) / 100).toLocaleString()}`} change={`${stats?.revenue_change || 0}% vs last month`} iconEl={<DollarSign size={16} />} accent="amber" trend={(stats?.revenue_change ?? 0) >= 0 ? "up" : "down"} />
           </>
         )}
       </div>
 
       {/* Reset Requests */}
       {resetRequests.length > 0 && (
-        <div style={{ background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
+        <div style={{
+          background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 14,
+          overflow: "hidden", marginBottom: 20,
+          boxShadow: "0 1px 3px rgba(26,29,35,0.04)",
+        }}>
           <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "16px 24px", borderBottom: `1px solid ${C.border2}`,
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "16px 22px", borderBottom: `1px solid ${C.border2}`,
+            background: "linear-gradient(180deg, rgba(239,68,68,0.04), transparent)",
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: C.errorBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Key size={14} style={{ color: C.error }} />
-              </div>
-              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, color: C.text }}>Password Reset Requests</h3>
-              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: C.error, color: "#fff" }}>
-                {resetRequests.length}
-              </span>
+            <div style={{ width: 32, height: 32, borderRadius: 9, background: C.errorBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Key size={14} style={{ color: C.error }} />
             </div>
+            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14.5, fontWeight: 600, color: C.text }}>Password Reset Requests</h3>
+            <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 9px", borderRadius: 99, background: C.error, color: "#fff", letterSpacing: "0.02em" }}>
+              {resetRequests.length}
+            </span>
           </div>
-          {resetRequests.map(r => (
+          {resetRequests.map((r, idx) => (
             <div key={r.tenantId} style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "14px 24px", borderBottom: `1px solid ${C.border2}`,
+              padding: "14px 22px",
+              borderBottom: idx < resetRequests.length - 1 ? `1px solid ${C.border2}` : "none",
               transition: "background 0.15s",
             }}
               onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.02)")}
@@ -222,7 +273,7 @@ export default function SuperDashboardPage() {
                     { icon: <Mail size={11} />, text: r.email },
                     { icon: <Calendar size={11} />, text: new Date(r.requestedAt).toLocaleDateString() },
                   ].map((m, i) => (
-                    <span key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.text3 }}>
+                    <span key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.text3 }}>
                       {m.icon}{m.text}
                     </span>
                   ))}
@@ -231,12 +282,25 @@ export default function SuperDashboardPage() {
               <button
                 onClick={() => setSetPasswordFor({ id: r.tenantId, name: r.salonName })}
                 style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "7px 14px", background: C.primary, color: "#fff",
-                  border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "7px 14px",
+                  background: `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
+                  color: "#fff", border: "none", borderRadius: 9,
+                  fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+                  fontFamily: "'DM Sans', sans-serif",
+                  boxShadow: `0 2px 8px ${C.primaryGlow}`,
+                  transition: "box-shadow 0.18s, transform 0.15s",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.boxShadow = "0 4px 14px rgba(13,148,136,0.25)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.boxShadow = `0 2px 8px ${C.primaryGlow}`;
+                  e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
-                <Key size={13} /> Set Password
+                <Key size={12} /> Set Password
               </button>
             </div>
           ))}
@@ -244,29 +308,38 @@ export default function SuperDashboardPage() {
       )}
 
       {/* Salons Table */}
-      <div style={{ background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 12, overflow: "hidden" }}>
+      <div style={{
+        background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 14,
+        overflow: "hidden",
+        boxShadow: "0 1px 3px rgba(26,29,35,0.04)",
+      }}>
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "18px 24px", borderBottom: `1px solid ${C.border2}`,
+          padding: "18px 22px", borderBottom: `1px solid ${C.border2}`,
           flexWrap: "wrap", gap: 12,
+          background: "linear-gradient(180deg, rgba(13,148,136,0.04), transparent)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Store size={14} style={{ color: C.primary }} />
             </div>
-            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, color: C.text }}>Managed Salons</h3>
+            <div>
+              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14.5, fontWeight: 600, color: C.text }}>Managed Salons</h3>
+              <p style={{ fontSize: 11.5, color: C.text3, marginTop: 1 }}>{filteredTenants.length} of {tenantsArray.length} shown</p>
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ position: "relative" }}>
-              <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: C.text3 }} />
+              <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.text3 }} />
               <input
                 type="text" placeholder="Search salons..."
                 value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                 style={{
-                  paddingLeft: 34, paddingRight: 14, paddingTop: 9, paddingBottom: 9,
-                  border: `1.5px solid ${C.border}`, borderRadius: 8,
+                  paddingLeft: 36, paddingRight: 14, paddingTop: 9, paddingBottom: 9,
+                  border: `1.5px solid ${C.border}`, borderRadius: 10,
                   fontSize: 13, width: 240, outline: "none", color: C.text,
                   fontFamily: "'DM Sans', sans-serif",
+                  transition: "border-color 0.2s, box-shadow 0.2s",
                 }}
                 onFocus={e => { e.target.style.borderColor = C.primary; e.target.style.boxShadow = `0 0 0 3px ${C.primaryGlow}`; }}
                 onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = "none"; }}
@@ -275,19 +348,32 @@ export default function SuperDashboardPage() {
             <button
               onClick={() => setShowModal(true)}
               style={{
-                display: "flex", alignItems: "center", gap: 8,
-                padding: "8px 16px", background: C.primary, color: "#fff",
-                border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "9px 16px",
+                background: `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
+                color: "#fff", border: "none", borderRadius: 10,
+                fontSize: 13, fontWeight: 650, cursor: "pointer",
+                fontFamily: "'DM Sans', sans-serif",
+                boxShadow: `0 2px 8px ${C.primaryGlow}`,
+                transition: "box-shadow 0.18s, transform 0.15s",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.boxShadow = "0 4px 16px rgba(13,148,136,0.25)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = `0 2px 8px ${C.primaryGlow}`;
+                e.currentTarget.style.transform = "translateY(0)";
               }}
             >
-              <Plus size={14} /> New Salon
+              <Plus size={15} strokeWidth={2.5} /> New Salon
             </button>
           </div>
         </div>
 
         {isLoading ? (
-          <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 10 }}>
-            {[1,2,3,4,5].map(i => <Skeleton key={i} style={{ height: 44, borderRadius: 8 }} />)}
+          <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 8 }}>
+            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} style={{ height: 48, borderRadius: 8 }} />)}
           </div>
         ) : filteredTenants.length === 0 ? (
           <EmptyState icon="🏪" title="No salons found" description={searchTerm ? "Try a different search term" : 'Click "New Salon" to get started.'} />
@@ -295,9 +381,14 @@ export default function SuperDashboardPage() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ borderBottom: `1px solid ${C.border2}`, background: C.bg }}>
+                <tr style={{ borderBottom: `1px solid ${C.border2}` }}>
                   {["Salon", "Owner", "Contact", "Status", "Actions"].map(h => (
-                    <th key={h} style={{ padding: "12px 24px", textAlign: "left", fontSize: 11, fontWeight: 600, color: C.text3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
+                    <th key={h} style={{
+                      padding: "11px 22px", textAlign: "left",
+                      fontSize: 10.5, fontWeight: 600, color: C.text3,
+                      textTransform: "uppercase", letterSpacing: "0.08em",
+                      background: C.bg,
+                    }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -309,17 +400,17 @@ export default function SuperDashboardPage() {
                       onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,148,136,0.02)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
-                      <td style={{ padding: "14px 24px" }}>
+                      <td style={{ padding: "14px 22px" }}>
                         <div style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{t.salon_name}</div>
-                        <div style={{ fontSize: 11, color: C.text3, marginTop: 2, fontFamily: "'Space Grotesk', monospace" }}>{tid.slice(0, 12)}...</div>
+                        <div style={{ fontSize: 10.5, color: C.text3, marginTop: 2, fontFamily: "'Space Grotesk', monospace", letterSpacing: "0.02em" }}>{tid.slice(0, 12)}…</div>
                       </td>
-                      <td style={{ padding: "14px 24px", fontSize: 13, fontWeight: 500, color: C.text }}>{t.owner_name}</td>
-                      <td style={{ padding: "14px 24px" }}>
+                      <td style={{ padding: "14px 22px", fontSize: 13, fontWeight: 500, color: C.text2 }}>{t.owner_name}</td>
+                      <td style={{ padding: "14px 22px" }}>
                         <div style={{ fontSize: 13, color: C.text2 }}>{t.email}</div>
-                        <div style={{ fontSize: 12, color: C.text3, marginTop: 2 }}>{t.phone}</div>
+                        <div style={{ fontSize: 12, color: C.text3, marginTop: 1 }}>{t.phone}</div>
                       </td>
-                      <td style={{ padding: "14px 24px" }}><StatusBadge status={t.status} /></td>
-                      <td style={{ padding: "14px 24px" }}>
+                      <td style={{ padding: "14px 22px" }}><StatusBadge status={t.status} /></td>
+                      <td style={{ padding: "14px 22px" }}>
                         <div style={{ display: "flex", gap: 4 }}>
                           <button
                             onClick={() => toggleMutation.mutate({ id: tid, status: t.status })}
@@ -327,43 +418,38 @@ export default function SuperDashboardPage() {
                             title={t.status === "active" ? "Suspend" : "Activate"}
                             style={{
                               width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
-                              background: "transparent", border: "none", borderRadius: 8, cursor: "pointer",
+                              background: "transparent", border: "1.5px solid transparent", borderRadius: 9, cursor: "pointer",
                               color: t.status === "active" ? C.error : C.success,
-                              transition: "background 0.15s",
+                              transition: "all 0.15s",
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.background = t.status === "active" ? C.errorBg : C.successBg; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = t.status === "active" ? C.errorBg : C.successBg;
+                              e.currentTarget.style.borderColor = t.status === "active" ? "rgba(239,68,68,0.2)" : "rgba(16,185,129,0.2)";
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = "transparent";
+                              e.currentTarget.style.borderColor = "transparent";
+                            }}
                           >
                             <Power size={14} />
                           </button>
-                          {/* <button
-                            onClick={() => setSetPasswordFor({ id: tid, name: t.salon_name })}
-                            title="Set Password"
-                            style={{
-                              width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
-                              background: "transparent", border: "none", borderRadius: 8, cursor: "pointer", color: C.text3,
-                              transition: "background 0.15s",
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.background = C.border2; e.currentTarget.style.color = C.text2; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.text3; }}
-                          >
-                            <Key size={14} />
-                          </button> */}
                           <button
-                            onClick={() => setEditPlanFor({
-                              tenantId: t.tenant_id,
-                              salonName: t.salon_name,
-                              currentPlan: t.subscription_plan,
-                            })}
+                            onClick={() => setEditPlanFor({ tenantId: t.tenant_id, salonName: t.salon_name, currentPlan: t.subscription_plan })}
                             title="Edit Plan"
                             style={{
                               width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
-                              background: "transparent", border: "none", cursor: "pointer",
-                              color: C.primary, borderRadius: 8,
-                              transition: "background 0.15s",
+                              background: "transparent", border: "1.5px solid transparent", borderRadius: 9, cursor: "pointer",
+                              color: C.primary,
+                              transition: "all 0.15s",
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.background = C.primaryLight; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = C.primaryLight;
+                              e.currentTarget.style.borderColor = "rgba(13,148,136,0.2)";
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = "transparent";
+                              e.currentTarget.style.borderColor = "transparent";
+                            }}
                           >
                             <CreditCard size={14} />
                           </button>
@@ -376,6 +462,23 @@ export default function SuperDashboardPage() {
             </table>
           </div>
         )}
+
+        {/* Table footer */}
+        {filteredTenants.length > 0 && (
+          <div style={{
+            padding: "12px 22px",
+            borderTop: `1px solid ${C.border2}`,
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <span style={{ fontSize: 11.5, color: C.text3 }}>
+              Showing {filteredTenants.length} salon{filteredTenants.length !== 1 ? "s" : ""}
+              {searchTerm ? ` matching "${searchTerm}"` : ""}
+            </span>
+            <span style={{ fontSize: 11.5, color: C.text3 }}>
+              Oldest → Newest
+            </span>
+          </div>
+        )}
       </div>
 
       {showModal && (
@@ -384,62 +487,210 @@ export default function SuperDashboardPage() {
           onCreated={() => { refetchTenants(); refetchStats(); setShowModal(false); }}
         />
       )}
-      {/* {setPasswordFor && (
+      {setPasswordFor && (
         <SetPasswordModal
           tenantId={setPasswordFor.id} salonName={setPasswordFor.name}
           onClose={() => setSetPasswordFor(null)}
           onSaved={() => { refetchResets(); setSetPasswordFor(null); }}
         />
-      )} */}
+      )}
       {editPlanFor && (
         <EditPlanModal
           tenantId={editPlanFor.tenantId}
           salonName={editPlanFor.salonName}
           currentPlan={editPlanFor.currentPlan}
-          onClose={() => setEditPlanFor(null)}
+          onClose={() => { setEditPlanFor(null); refetchTenants(); refetchStats(); }}
         />
       )}
     </div>
   );
 }
 
-// ── Shared modal styles ───────────────────────────────────────────────────────
-const C2 = C; // alias
-
+// ── Shared Modal Input ────────────────────────────────────────────────────────
 function ModalInput({ label, type = "text", value, onChange, placeholder, error }: {
   label: string; type?: string; value: string;
   onChange: (v: string) => void; placeholder?: string; error?: string;
 }) {
+  const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: C2.text2, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{label}</label>
+      <label style={{
+        display: "block", fontSize: 11.5, fontWeight: 600,
+        color: focused ? C.primary : C.text2,
+        textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 7,
+        transition: "color 0.2s",
+      }}>{label}</label>
       <input
         type={type} value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         style={{
           width: "100%", padding: "11px 14px",
-          border: `1.5px solid ${error ? C2.error : C2.border}`, borderRadius: 8,
-          fontSize: 14, color: C2.text, outline: "none",
+          border: `1.5px solid ${error ? C.error : focused ? C.primary : C.border}`,
+          borderRadius: 10,
+          fontSize: 14, color: C.text, outline: "none",
           fontFamily: "'DM Sans', sans-serif",
-          background: C2.surface,
+          background: C.surface,
           transition: "border-color 0.2s, box-shadow 0.2s",
+          boxShadow: error ? `0 0 0 3px rgba(239,68,68,0.08)` : focused ? `0 0 0 3px ${C.primaryGlow}` : "none",
         }}
-        onFocus={e => { e.target.style.borderColor = C2.primary; e.target.style.boxShadow = `0 0 0 3px ${C2.primaryGlow}`; }}
-        onBlur={e => { e.target.style.borderColor = error ? C2.error : C2.border; e.target.style.boxShadow = "none"; }}
       />
-      {error && <p style={{ fontSize: 12, color: C2.error, marginTop: 5 }}>{error}</p>}
+      {error && <p style={{ fontSize: 12, color: C.error, marginTop: 5, display: "flex", alignItems: "center", gap: 4 }}>
+        <X size={11} /> {error}
+      </p>}
     </div>
   );
 }
 
+// ── Modal Shell ───────────────────────────────────────────────────────────────
+function ModalShell({ children, maxWidth }: { children: React.ReactNode; maxWidth?: number }) {
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0,
+        background: "rgba(14,16,21,0.55)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        zIndex: 1000,
+      }}
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          window.dispatchEvent(new CustomEvent("close-modal"));
+        }
+      }}
+    >
+      <div style={{
+        background: C.surface, borderRadius: 18,
+        width: "92%", maxWidth: maxWidth || 480,
+        boxShadow: "0 24px 60px rgba(14,16,21,0.18), 0 0 0 1px rgba(255,255,255,0.05)",
+        overflow: "hidden",
+        animation: "modalIn 0.2s ease-out",
+      }}>
+        {children}
+      </div>
+      <style>{`
+        @keyframes modalIn {
+          from { opacity: 0; transform: translateY(12px) scale(0.97); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function ModalHeader({ icon, iconBg, iconColor, title, subtitle, onClose }: {
+  icon: React.ReactNode; iconBg: string; iconColor: string;
+  title: string; subtitle?: React.ReactNode; onClose: () => void;
+}) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "22px 26px 18px",
+      borderBottom: `1px solid ${C.border2}`,
+      background: "linear-gradient(180deg, rgba(13,148,136,0.04), transparent)",
+    }}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 10,
+        background: iconBg, display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+      }}>
+        <span style={{ color: iconColor }}>{icon}</span>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 16, fontWeight: 600, color: C.text, letterSpacing: "-0.01em" }}>{title}</h3>
+        {subtitle && <p style={{ fontSize: 12.5, color: C.text3, marginTop: 2 }}>{subtitle}</p>}
+      </div>
+      <button
+        onClick={onClose}
+        style={{
+          width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
+          background: C.bg, border: `1px solid ${C.border}`,
+          cursor: "pointer", color: C.text3, borderRadius: 8,
+          transition: "all 0.15s",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = C.text; e.currentTarget.style.borderColor = C.text3; }}
+        onMouseLeave={e => { e.currentTarget.style.color = C.text3; e.currentTarget.style.borderColor = C.border; }}
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
+
+function ModalFooter({ onCancel, onConfirm, confirmLabel, confirmDisabled, loading }: {
+  onCancel: () => void; onConfirm: () => void;
+  confirmLabel: string; confirmDisabled?: boolean; loading?: boolean;
+}) {
+  return (
+    <div style={{
+      display: "flex", justifyContent: "flex-end", gap: 8,
+      padding: "16px 26px",
+      background: C.bg,
+      borderTop: `1px solid ${C.border2}`,
+    }}>
+      <button
+        onClick={onCancel}
+        style={{
+          padding: "10px 20px", background: C.surface,
+          border: `1.5px solid ${C.border}`, borderRadius: 10,
+          fontSize: 13, fontWeight: 600, color: C.text2, cursor: "pointer",
+          fontFamily: "'DM Sans', sans-serif",
+          transition: "all 0.15s",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = C.border2; e.currentTarget.style.borderColor = C.text3; }}
+        onMouseLeave={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = C.border; }}
+      >Cancel</button>
+      <button
+        onClick={onConfirm}
+        disabled={confirmDisabled || loading}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 7,
+          padding: "10px 20px",
+          background: loading || confirmDisabled
+            ? "#9CA3B4"
+            : `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
+          border: "none", borderRadius: 10,
+          fontSize: 13, fontWeight: 700, color: "#fff",
+          cursor: loading || confirmDisabled ? "not-allowed" : "pointer",
+          fontFamily: "'DM Sans', sans-serif",
+          boxShadow: loading || confirmDisabled ? "none" : `0 2px 8px ${C.primaryGlow}`,
+          transition: "all 0.18s",
+        }}
+        onMouseEnter={e => {
+          if (!loading && !confirmDisabled) {
+            e.currentTarget.style.boxShadow = "0 4px 16px rgba(13,148,136,0.25)";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }
+        }}
+        onMouseLeave={e => {
+          if (!loading && !confirmDisabled) {
+            e.currentTarget.style.boxShadow = `0 2px 8px ${C.primaryGlow}`;
+            e.currentTarget.style.transform = "translateY(0)";
+          }
+        }}
+      >
+        {loading && <Loader2 size={13} style={{ animation: "spin 0.8s linear infinite" }} />}
+        {confirmLabel}
+      </button>
+    </div>
+  );
+}
+
+// ── Create Tenant Modal ───────────────────────────────────────────────────────
+// ── Create Tenant Modal ───────────────────────────────────────────────────────
 function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [form, setForm] = useState({ salon_name: "", owner_name: "", email: "", phone: "", password: "", plan_id: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const { data: plans, isLoading: plansLoading } = useQuery({
-    queryKey: QK.plans(),
-    queryFn: fetchPlans,
-  });
+  const { data: plans, isLoading: plansLoading } = useQuery({ queryKey: QK.plans(), queryFn: fetchPlans });
+
+  useEffect(() => {
+    const handler = () => onClose();
+    window.addEventListener("close-modal", handler);
+    return () => window.removeEventListener("close-modal", handler);
+  }, [onClose]);
 
   function set(key: string, value: string) {
     setForm(f => ({ ...f, [key]: value }));
@@ -458,6 +709,7 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
     if (phoneErr) errs.phone = phoneErr;
     if (!form.password.trim()) errs.password = "Password is required";
     else if (form.password.length < 6) errs.password = "Password must be at least 6 characters";
+    if (!form.plan_id) errs.plan_id = "Please select a plan";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -476,110 +728,120 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
     }
   }
 
+  const activePlans = (plans || []).filter((p: Plan) => p.is_active === true || p.is_active === 1 || p.is_active === "1");
+
   return (
-    <div
-      style={{ position: "fixed", inset: 0, background: "rgba(17,19,24,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{ background: C2.surface, borderRadius: 20, width: "90%", maxWidth: 480, boxShadow: "0 24px 60px rgba(26,29,35,0.14)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 28px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* <div style={{ width: 32, height: 32, borderRadius: 8, background: C2.primaryLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Plus size={14} style={{ color: C2.primary }} />
-            </div> */}
-            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 17, fontWeight: 600, color: C2.text }}>Create New Salon</h3>
-          </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: C2.text3, borderRadius: 8 }}>
-            <X size={16} />
-          </button>
-        </div>
-        <div style={{ padding: "0 28px 24px" }}>
-          <ModalInput label="Salon Name" value={form.salon_name} onChange={v => set("salon_name", v)} placeholder="e.g., Royal Glam Studio" error={errors.salon_name} />
-          <ModalInput label="Owner Name" value={form.owner_name} onChange={v => set("owner_name", v)} placeholder="Full name" error={errors.owner_name} />
-          <ModalInput label="Email Address" type="email" value={form.email} onChange={v => set("email", v)} placeholder="salon@example.com" error={errors.email} />
-          <ModalInput label="Phone Number" type="tel" value={form.phone} onChange={v => set("phone", v)} placeholder="+92 300 1234567" error={errors.phone} />
-          <ModalInput label="Password" type="password" value={form.password} onChange={v => set("password", v)} placeholder="Min 6 characters" error={errors.password} />
-          <div style={{ marginBottom: 16 }}>
-            <label style={{
-              display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
-              letterSpacing: "0.06em", color: C2.text2, marginBottom: 6,
-            }}>
-              Plan <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span>
-            </label>
-            <select
-              value={form.plan_id}
-              onChange={e => set("plan_id", e.target.value)}
-              disabled={plansLoading}
-              style={{
-                width: "100%", padding: "11px 14px",
-                border: `1.5px solid ${C2.border}`,
-                borderRadius: 8, fontSize: 14, color: C2.text,
-                fontFamily: "'DM Sans', sans-serif",
-                background: C2.surface, outline: "none",
-              }}
-            >
-              <option value="">{plansLoading ? "Loading plans…" : "No plan (assign later)"}</option>
-              {(plans || []).map((p: Plan) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "16px 28px", background: C2.bg, borderRadius: "0 0 20px 20px", borderTop: `1px solid ${C2.border2}` }}>
-          <button onClick={onClose} style={{ padding: "9px 18px", background: C2.surface, border: `1.5px solid ${C2.border}`, borderRadius: 8, fontSize: 13, fontWeight: 500, color: C2.text2, cursor: "pointer" }}>Cancel</button>
-          <button onClick={handleCreate} disabled={loading} style={{ padding: "9px 18px", background: C2.primary, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
-            {loading ? "Creating…" : "Create Salon"}
-          </button>
+    <ModalShell maxWidth={490}>
+      <ModalHeader
+        icon={<Plus size={15} />}
+        iconBg={C.primaryLight}
+        iconColor={C.primary}
+        title="Create New Salon"
+        subtitle="Add a new salon to the platform"
+        onClose={onClose}
+      />
+      <div style={{ padding: "22px 26px", maxHeight: "60vh", overflowY: "auto" }}>
+        <ModalInput label="Salon Name" value={form.salon_name} onChange={v => set("salon_name", v)} placeholder="e.g., Royal Glam Studio" error={errors.salon_name} />
+        <ModalInput label="Owner Name" value={form.owner_name} onChange={v => set("owner_name", v)} placeholder="Full name" error={errors.owner_name} />
+        <ModalInput label="Email Address" type="email" value={form.email} onChange={v => set("email", v)} placeholder="salon@example.com" error={errors.email} />
+        <ModalInput label="Phone Number" type="tel" value={form.phone} onChange={v => set("phone", v)} placeholder="+92 300 1234567" error={errors.phone} />
+        <ModalInput label="Password" type="password" value={form.password} onChange={v => set("password", v)} placeholder="Min 6 characters" error={errors.password} />
+        <div style={{ marginBottom: 4 }}>
+          <label style={{
+            display: "block", fontSize: 11.5, fontWeight: 600, textTransform: "uppercase",
+            letterSpacing: "0.06em", color: C.text2, marginBottom: 7,
+          }}>
+            Plan <span style={{ color: C.error }}>*</span>
+          </label>
+          <select
+            value={form.plan_id}
+            onChange={e => set("plan_id", e.target.value)}
+            disabled={plansLoading}
+            style={{
+              width: "100%", padding: "11px 14px",
+              border: `1.5px solid ${errors.plan_id ? C.error : C.border}`,
+              borderRadius: 10,
+              fontSize: 14, color: form.plan_id ? C.text : C.text3,
+              fontFamily: "'DM Sans', sans-serif",
+              background: C.surface, outline: "none",
+              boxShadow: errors.plan_id ? `0 0 0 3px rgba(239,68,68,0.08)` : "none",
+              transition: "border-color 0.2s, box-shadow 0.2s",
+              cursor: plansLoading ? "not-allowed" : "pointer",
+            }}
+            onFocus={e => { if (!errors.plan_id) { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.boxShadow = `0 0 0 3px ${C.primaryGlow}`; } }}
+            onBlur={e => { if (!errors.plan_id) { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = "none"; } }}
+          >
+            <option value="" disabled>
+              {plansLoading ? "Loading plans…" : activePlans.length === 0 ? "No active plans available" : "Select a plan"}
+            </option>
+            {activePlans.map((p: Plan) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+          {errors.plan_id && (
+            <p style={{ fontSize: 12, color: C.error, marginTop: 5, display: "flex", alignItems: "center", gap: 4 }}>
+              <X size={11} /> {errors.plan_id}
+            </p>
+          )}
+          {!plansLoading && activePlans.length === 0 && (
+            <p style={{ fontSize: 12, color: C.warning, marginTop: 6, display: "flex", alignItems: "center", gap: 4 }}>
+              <TriangleAlert size={12} /> No active plans available. Create a plan first.
+            </p>
+          )}
         </div>
       </div>
-    </div>
+      <ModalFooter
+        onCancel={onClose}
+        onConfirm={handleCreate}
+        confirmLabel={loading ? "Creating…" : "Create Salon"}
+        confirmDisabled={activePlans.length === 0}
+        loading={loading}
+      />
+    </ModalShell>
   );
 }
 
-function EditPlanModal({
-  tenantId,
-  salonName,
-  currentPlan,
-  onClose,
-}: {
-  tenantId: string;
-  salonName: string;
-  currentPlan: string | null;
-  onClose: () => void;
+// ── Edit Plan Modal ───────────────────────────────────────────────────────────
+function EditPlanModal({ tenantId, salonName, currentPlan, onClose }: {
+  tenantId: string; salonName: string; currentPlan: string | null; onClose: () => void;
 }) {
   const qc = useQueryClient();
-
   const { data: plans, isLoading: plansLoading } = useQuery({
     queryKey: QK.plans(),
     queryFn: fetchPlans,
   });
 
+  const availablePlans = (plans || []).filter((plan: Plan) => {
+    const isActive = plan.is_active === true || plan.is_active === 1 || plan.is_active === "1";
+    return isActive;
+  });
+
   const initialPlanId = (() => {
-    if (!plans || !currentPlan) return "";
-    const match = plans.find((p: Plan) => p.name === currentPlan);
+    if (!availablePlans.length || !currentPlan) return "";
+    const match = availablePlans.find((p: Plan) => p.name === currentPlan);
     return match ? String(match.id) : "";
   })();
 
-  const [form, setForm] = useState({
-    plan_id: initialPlanId,
-  });
+  const [form, setForm] = useState({ plan_id: initialPlanId });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (plans && currentPlan && !form.plan_id) {
-      const match = plans.find((p: Plan) => p.name === currentPlan);
+    if (availablePlans.length && currentPlan && !form.plan_id) {
+      const match = availablePlans.find((p: Plan) => p.name === currentPlan);
       if (match) setForm(f => ({ ...f, plan_id: String(match.id) }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plans]);
+  }, [availablePlans, currentPlan]);
+
+  useEffect(() => {
+    const handler = () => onClose();
+    window.addEventListener("close-modal", handler);
+    return () => window.removeEventListener("close-modal", handler);
+  }, [onClose]);
 
   const mutation = useMutation({
     mutationFn: (body: { plan_id: number }) =>
-      api.patch<{ ok: boolean; error?: string }>(
-        `/super-admin/api/tenants/${encodeURIComponent(tenantId)}/plan`,
-        body
-      ),
-    onSuccess: (resp) => {
+      api.patch<{ ok: boolean; error?: string }>(`/super-admin/api/tenants/${encodeURIComponent(tenantId)}/plan`, body),
+    onSuccess: resp => {
       if (resp && resp.ok === false) {
         toast.error(resp.error || "Failed to update plan");
         return;
@@ -588,148 +850,119 @@ function EditPlanModal({
       toast.success(`Plan updated for ${salonName}`);
       onClose();
     },
-    onError: (err: { message?: string }) => {
-      toast.error(err.message || "Failed to update plan");
-    },
+    onError: (err: { message?: string }) => toast.error(err.message || "Failed to update plan"),
   });
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit() {
     const newErrors: Record<string, string> = {};
     if (!form.plan_id) newErrors.plan_id = "Please select a plan";
     setErrors(newErrors);
     if (Object.keys(newErrors).length) return;
-
-    mutation.mutate({
-      plan_id: parseInt(form.plan_id, 10),
-    });
+    mutation.mutate({ plan_id: parseInt(form.plan_id, 10) });
   }
 
+  const isLoading = plansLoading;
+
+  const getPlanDisplayText = (plan: Plan) => {
+    let text = plan.name;
+    if (currentPlan === plan.name) text += " (current)";
+    if (plan.price_cents === 0) {
+      text += " (Free)";
+    } else {
+      const price = (plan.price_cents / 100).toFixed(2);
+      const cycle = plan.billing_cycle === 'monthly' ? 'mo' : plan.billing_cycle === 'yearly' ? 'yr' : 'one-time';
+      text += ` ($${price}/${cycle})`;
+    }
+    return text;
+  };
+
   return (
-    <div
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{
-        position: "fixed", inset: 0,
-        background: "rgba(17,19,24,0.5)", backdropFilter: "blur(4px)",
-        zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          background: C.surface, borderRadius: 20, width: "90%", maxWidth: 440,
-          boxShadow: "0 24px 60px rgba(26,29,35,0.14)",
-          fontFamily: "'DM Sans', sans-serif",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px 16px" }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8, background: C.primaryLight,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <CreditCard size={14} style={{ color: C.primary }} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 17, fontWeight: 600, fontFamily: "'Space Grotesk', sans-serif", color: C.text }}>
-              Edit Plan
-            </div>
-            <div style={{ fontSize: 13, color: C.text2, marginTop: 2 }}>{salonName}</div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
+    <ModalShell maxWidth={440}>
+      <ModalHeader
+        icon={<CreditCard size={15} />}
+        iconBg={C.primaryLight}
+        iconColor={C.primary}
+        title="Edit Plan"
+        subtitle={
+          currentPlan
+            ? <span>Current plan: <strong style={{ color: C.primary }}>{currentPlan}</strong></span>
+            : salonName
+        }
+        onClose={onClose}
+      />
+      <div style={{ padding: "22px 26px" }}>
+        <div style={{ marginBottom: 4 }}>
+          <label style={{
+            display: "block", fontSize: 11.5, fontWeight: 600, textTransform: "uppercase",
+            letterSpacing: "0.06em", color: C.text2, marginBottom: 7,
+          }}>Select New Plan</label>
+          <select
+            value={form.plan_id}
+            onChange={e => { setForm(f => ({ ...f, plan_id: e.target.value })); setErrors({}); }}
+            disabled={isLoading}
             style={{
-              width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
-              background: "none", border: "none", cursor: "pointer", color: C.text3, borderRadius: 8,
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        <div style={{ padding: "0 24px 24px" }}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{
-              display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
-              letterSpacing: "0.06em", color: C.text2, marginBottom: 6,
-            }}>
-              Plan
-            </label>
-            <select
-              value={form.plan_id}
-              onChange={e => setForm(f => ({ ...f, plan_id: e.target.value }))}
-              disabled={plansLoading}
-              style={{
-                width: "100%", padding: "11px 14px",
-                border: `1.5px solid ${errors.plan_id ? C.error : C.border}`,
-                borderRadius: 8, fontSize: 14, color: C.text,
-                fontFamily: "'DM Sans', sans-serif",
-                background: C.surface, outline: "none",
-              }}
-              onFocus={e => {
-                e.currentTarget.style.borderColor = C.primary;
-                e.currentTarget.style.boxShadow = `0 0 0 3px ${C.primaryGlow}`;
-              }}
-              onBlur={e => {
-                e.currentTarget.style.borderColor = errors.plan_id ? C.error : C.border;
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <option value="">{plansLoading ? "Loading plans…" : "Select a plan"}</option>
-              {(plans || []).map((p: Plan) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-            {errors.plan_id && (
-              <div style={{ fontSize: 12, color: C.error, marginTop: 6 }}>{errors.plan_id}</div>
-            )}
-          </div>
-
-        </div>
-
-        <div style={{
-          padding: "16px 24px", background: C.bg,
-          borderRadius: "0 0 20px 20px", borderTop: `1px solid ${C.border2}`,
-          display: "flex", justifyContent: "flex-end", gap: 8,
-        }}>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              padding: "10px 18px", background: "transparent",
-              border: `1px solid ${C.border}`, borderRadius: 8,
-              fontSize: 13, fontWeight: 500, color: C.text2, cursor: "pointer",
+              width: "100%", padding: "11px 14px",
+              border: `1.5px solid ${errors.plan_id ? C.error : C.border}`,
+              borderRadius: 10, fontSize: 14, color: C.text,
               fontFamily: "'DM Sans', sans-serif",
+              background: C.surface, outline: "none",
+              boxShadow: errors.plan_id ? `0 0 0 3px rgba(239,68,68,0.08)` : "none",
+              transition: "border-color 0.2s, box-shadow 0.2s",
+              cursor: isLoading ? "not-allowed" : "pointer",
             }}
+            onFocus={e => { if (!errors.plan_id) { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.boxShadow = `0 0 0 3px ${C.primaryGlow}`; } }}
+            onBlur={e => { if (!errors.plan_id) { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = "none"; } }}
           >
-            Discard Changes
-          </button>
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            style={{
-              padding: "10px 18px",
-              background: C.primary, border: "none", borderRadius: 8,
-              fontSize: 13, fontWeight: 600, color: "#FFFFFF",
-              cursor: mutation.isPending ? "not-allowed" : "pointer",
-              opacity: mutation.isPending ? 0.7 : 1,
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
-            {mutation.isPending ? "Saving…" : "Save Plan"}
-          </button>
+            <option value="" disabled>
+              {isLoading ? "Loading plans…" : availablePlans.length === 0 ? "No active plans available" : "Select a plan"}
+            </option>
+            {availablePlans.map((p: Plan) => (
+              <option key={p.id} value={p.id}>
+                {getPlanDisplayText(p)}
+              </option>
+            ))}
+          </select>
+          {errors.plan_id && (
+            <p style={{ fontSize: 12, color: C.error, marginTop: 5, display: "flex", alignItems: "center", gap: 4 }}>
+              <X size={11} /> {errors.plan_id}
+            </p>
+          )}
+          {!isLoading && availablePlans.length === 0 && (
+            <p style={{ fontSize: 12, color: C.warning, marginTop: 6, display: "flex", alignItems: "center", gap: 4 }}>
+              <TriangleAlert size={12} /> No active plans available. Create a new plan first.
+            </p>
+          )}
+          {!isLoading && availablePlans.length > 0 && currentPlan && (
+            <p style={{ fontSize: 11.5, color: C.text3, marginTop: 10, paddingTop: 8, borderTop: `1px solid ${C.border2}` }}>
+              💡 Changing the plan will immediately update the salon's features and limits.
+            </p>
+          )}
         </div>
-      </form>
-    </div>
+      </div>
+      <ModalFooter
+        onCancel={onClose}
+        onConfirm={handleSubmit}
+        confirmLabel={mutation.isPending ? "Saving…" : "Save Plan"}
+        confirmDisabled={availablePlans.length === 0}
+        loading={mutation.isPending}
+      />
+    </ModalShell>
   );
 }
 
+// ── Set Password Modal ────────────────────────────────────────────────────────
 function SetPasswordModal({ tenantId, salonName, onClose, onSaved }: {
   tenantId: string; salonName: string; onClose: () => void; onSaved: () => void;
 }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const handler = () => onClose();
+    window.addEventListener("close-modal", handler);
+    return () => window.removeEventListener("close-modal", handler);
+  }, [onClose]);
 
   async function handleSave() {
     if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
@@ -747,34 +980,28 @@ function SetPasswordModal({ tenantId, salonName, onClose, onSaved }: {
   }
 
   return (
-    <div
-      style={{ position: "fixed", inset: 0, background: "rgba(17,19,24,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{ background: C2.surface, borderRadius: 20, width: "90%", maxWidth: 420, boxShadow: "0 24px 60px rgba(26,29,35,0.14)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 28px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: C2.accentLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Key size={14} style={{ color: C2.accent }} />
-            </div>
-            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 17, fontWeight: 600, color: C2.text }}>Set New Password</h3>
-          </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: C2.text3, borderRadius: 8 }}>
-            <X size={16} />
-          </button>
-        </div>
-        <div style={{ padding: "0 28px 24px" }}>
-          <p style={{ fontSize: 13, color: C2.text2, marginBottom: 18 }}>{salonName}</p>
-          <ModalInput label="New Password" type="password" value={newPassword} onChange={setNewPassword} placeholder="Min 6 characters" />
-          <ModalInput label="Confirm Password" type="password" value={confirm} onChange={setConfirm} placeholder="Re-enter new password" />
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "16px 28px", background: C2.bg, borderRadius: "0 0 20px 20px", borderTop: `1px solid ${C2.border2}` }}>
-          <button onClick={onClose} style={{ padding: "9px 18px", background: C2.surface, border: `1.5px solid ${C2.border}`, borderRadius: 8, fontSize: 13, fontWeight: 500, color: C2.text2, cursor: "pointer" }}>Cancel</button>
-          <button onClick={handleSave} disabled={loading} style={{ padding: "9px 18px", background: C2.primary, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
-            {loading ? "Saving…" : "Set Password"}
-          </button>
-        </div>
+    <ModalShell maxWidth={420}>
+      <ModalHeader
+        icon={<Key size={15} />}
+        iconBg={C.accentLight}
+        iconColor={C.accent}
+        title="Set New Password"
+        subtitle={salonName}
+        onClose={onClose}
+      />
+      <div style={{ padding: "22px 26px" }}>
+        <p style={{ fontSize: 13, color: C.text2, marginBottom: 18, lineHeight: 1.5 }}>
+          Set a temporary password for this salon. The owner should change it after their first login.
+        </p>
+        <ModalInput label="New Password" type="password" value={newPassword} onChange={setNewPassword} placeholder="Min 6 characters" />
+        <ModalInput label="Confirm Password" type="password" value={confirm} onChange={setConfirm} placeholder="Re-enter new password" />
       </div>
-    </div>
+      <ModalFooter
+        onCancel={onClose}
+        onConfirm={handleSave}
+        confirmLabel={loading ? "Saving…" : "Set Password"}
+        loading={loading}
+      />
+    </ModalShell>
   );
 }
