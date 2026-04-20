@@ -122,6 +122,20 @@ export interface WebhookConfig {
   };
 }
 
+export interface PublicPlan {
+  id: string;
+  name: string;
+  description?: string;
+  price_cents: number;
+  billing_cycle: "monthly" | "yearly";
+  max_services: number;
+  whatsapp_access: boolean;
+  instagram_access: boolean;
+  facebook_access: boolean;
+  ai_calls_access: boolean;
+  highlight?: boolean;  // Add this line
+}
+
 export interface Tenant {
   tenant_id: string;
   id?: string;
@@ -130,6 +144,7 @@ export interface Tenant {
   email: string;
   phone: string;
   status: "active" | "suspended";
+  created_at?: string;
   subscription_plan: string | null;
   subscription_expires: string | null;
 }
@@ -157,11 +172,23 @@ export interface CorsOriginResponse {
   ok: boolean;
   cors_origin: string | null;
 }
+export type SuspensionReason =
+  | "active"
+  | "suspended"
+  | "subscription_expired"
+  | "plan_deactivated"
+  | "not_found";
 
 export interface TenantStatus {
   tenant_id: string;
   status: "active" | "suspended";
+  reason?: SuspensionReason;  
   salon_name: string;
+}
+
+export interface BrandingSettings {
+  logo_data_uri: string | null;   // data:image/png;base64,...
+  salon_name: string | null;
 }
 
 export interface Subscription {

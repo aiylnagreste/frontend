@@ -76,7 +76,16 @@ export const fetchStaff = () => api.get<Staff[]>(`${BASE}/settings/staff`);
 export const fetchRoles = () => api.get<Role[]>(`${BASE}/settings/roles`);
 export const fetchTimings = () => api.get<SalonTimings>(`${BASE}/settings/timings`);
 export const fetchGeneral = () =>
-  api.get<{ currency: string; timezone?: string; tenantId?: string; owner_name?: string | null }>(`${BASE}/settings/general`);
+  api.get<{
+    currency: string;
+    timezone?: string;
+    tenantId?: string;
+    owner_name?: string | null;
+    salon_name?: string | null;       // for Sidebar branding — LHB-01
+    logo_data_uri?: string | null;    // for Sidebar branding — LHB-01
+    bot_name?: string | null;
+    primary_color?: string | null;
+  }>(`${BASE}/settings/general`);
 export const fetchClients = () => api.get<Client[]>(`${BASE}/clients`);
 
 export const fetchSalonConfig = (tenantId: string) =>

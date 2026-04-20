@@ -25,12 +25,14 @@ import { BranchDrawer } from "@/components/settings/BranchDrawer";
 import { StaffDrawer } from "@/components/settings/StaffDrawer";
 import { RoleDrawer } from "@/components/settings/RoleDrawer";
 import {IntegrationsTab} from "@/components/settings/IntegrationsTab";
+import { Lock , TriangleAlert} from 'lucide-react';
 
 import { ModalShell } from "@/components/ui/ModalShell";
-type SettingsTab = "general" | "branches" | "staff" | "roles" | "timings" | "integrations" | "account";
+type SettingsTab = "general" | "branding" | "branches" | "staff" | "roles" | "timings" | "integrations" | "account";
 
 const TABS: { id: SettingsTab; label: string }[] = [
   { id: "general", label: "⚙️ General" },
+  { id: "branding", label: "🎨 Branding" },
   { id: "branches", label: "🏪 Branches" },
   { id: "staff", label: "👥 Staff" },
   { id: "roles", label: "🏷️ Roles" },
@@ -85,6 +87,7 @@ export default function SettingsPage() {
       </div>
 
       {activeTab === "general" && <GeneralTab />}
+      {activeTab === "branding" && <BrandingTab />}
       {activeTab === "branches" && <BranchesTab />}
       {activeTab === "staff" && <StaffTab />}
       {activeTab === "roles" && <RolesTab />}
@@ -623,6 +626,228 @@ const inlineCode: React.CSSProperties = {
   borderRadius: 4,
   color: "#6b3057",
 };
+
+/* ─── Branding Tab ─── */
+function BrandingTab() {
+  const qc = useQueryClient();
+  const { data: general } = useQuery({
+    queryKey: QK.general(),
+    queryFn: fetchGeneral,
+    staleTime: 10 * 60_000,
+  });
+
+  const [salonName, setSalonName] = useState("");
+  const [logoDataUri, setLogoDataUri] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState("");
+
+  // Hydrate form once when data arrives
+  useEffect(() => {
+    if (general) {
+      setSalonName(general.salon_name ?? "");
+      setLogoDataUri(general.logo_data_uri ?? null);
+    }
+  }, [general]);
+
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      api.put("/salon-admin/api/settings/branding", {
+        salon_name: salonName.trim(),
+        logo_data_uri: logoDataUri, // null clears the logo
+      }),
+    onSuccess: () => {
+      toast.success("Branding saved");
+      qc.invalidateQueries({ queryKey: QK.general() });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    setUploadError("");
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!/^image\/(png|jpe?g|gif|webp|svg\+xml)$/.test(file.type)) {
+      setUploadError("Please upload a PNG, JPG, GIF, WEBP, or SVG image.");
+      return;
+    }
+    // 1MB raw cap — matches backend ~1.5MB encoded guard
+    if (file.size > 1 * 1024 * 1024) {
+      setUploadError("Image must be 1 MB or smaller.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") setLogoDataUri(reader.result);
+    };
+    reader.onerror = () => setUploadError("Failed to read file.");
+    reader.readAsDataURL(file);
+  }
+
+  function clearLogo() {
+    setLogoDataUri(null);
+  }
+
+  const cardStyle: React.CSSProperties = {
+    background: "#fff",
+    border: "1px solid #E6E4DF",
+    borderRadius: 12,
+    padding: "24px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+    maxWidth: "640px",
+  };
+  const titleStyle: React.CSSProperties = {
+    fontFamily: "'Space Grotesk', sans-serif",
+    fontSize: "15px",
+    fontWeight: 700,
+    color: "#1A1D23",
+    letterSpacing: "-0.01em",
+    marginBottom: "4px",
+  };
+  const descStyle: React.CSSProperties = {
+    fontSize: "12px",
+    color: "#5F6577",
+    lineHeight: 1.6,
+    marginBottom: "20px",
+  };
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "11px",
+    fontWeight: 600,
+    color: "#5F6577",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.06em",
+    marginBottom: "8px",
+  };
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 14px",
+    border: "1.5px solid #E6E4DF",
+    borderRadius: 8,
+    fontSize: "13px",
+    color: "#1A1D23",
+    outline: "none",
+    fontFamily: "'DM Sans', sans-serif",
+    background: "#fff",
+    boxSizing: "border-box" as const,
+    transition: "border-color 0.2s, box-shadow 0.2s",
+  };
+  const btnPrimary: React.CSSProperties = {
+    padding: "10px 20px",
+    background: "linear-gradient(135deg, #b5484b, #6b3057)",
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+    fontSize: "13px",
+    fontWeight: 600,
+    cursor: "pointer",
+    fontFamily: "'DM Sans', sans-serif",
+    boxShadow: "0 4px 14px rgba(181,72,75,0.2)",
+    transition: "all 0.2s",
+  };
+
+  const disabled = saveMutation.isPending || !salonName.trim();
+
+  return (
+    <div style={cardStyle}>
+      <h4 style={titleStyle}>🎨 Branding</h4>
+      <p style={descStyle}>
+        Upload your salon logo and set your salon name. Both appear in the
+        sidebar so your dashboard feels like your brand.
+      </p>
+
+      {/* Salon Name */}
+      <label style={labelStyle}>Salon Name</label>
+      <input
+        type="text"
+        value={salonName}
+        onChange={(e) => setSalonName(e.target.value)}
+        placeholder="e.g. Glamour Studio"
+        maxLength={100}
+        style={{ ...inputStyle, marginBottom: "20px" }}
+      />
+
+      {/* Logo */}
+      <label style={labelStyle}>Logo</label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+          marginBottom: "12px",
+        }}
+      >
+        <div
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: 12,
+            background: "#F9F8F6",
+            border: "1.5px dashed #E6E4DF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            flexShrink: 0,
+          }}
+        >
+          {logoDataUri ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoDataUri}
+              alt="Salon logo preview"
+              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+            />
+          ) : (
+            <span style={{ fontSize: 28, opacity: 0.4 }}>🖼️</span>
+          )}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+            onChange={handleFile}
+            style={{ fontSize: "12px" }}
+          />
+          {logoDataUri && (
+            <button
+              type="button"
+              onClick={clearLogo}
+              style={{
+                padding: "6px 12px",
+                border: "1.5px solid #FECACA",
+                borderRadius: 6,
+                fontSize: "12px",
+                fontWeight: 500,
+                background: "#FEF2F2",
+                color: "#DC2626",
+                cursor: "pointer",
+                alignSelf: "flex-start",
+              }}
+            >
+              Remove Logo
+            </button>
+          )}
+        </div>
+      </div>
+      {uploadError && (
+        <p style={{ fontSize: "12px", color: "#DC2626", marginBottom: "12px" }}>
+          {uploadError}
+        </p>
+      )}
+      <p style={{ fontSize: "11px", color: "#9CA3B4", marginBottom: "20px" }}>
+        PNG, JPG, GIF, WEBP, or SVG. Max 1 MB. Square images work best.
+      </p>
+
+      <button
+        onClick={() => saveMutation.mutate()}
+        disabled={disabled}
+        style={{ ...btnPrimary, opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
+      >
+        {saveMutation.isPending ? "Saving…" : "Save Branding"}
+      </button>
+    </div>
+  );
+}
+
 /* ─── Branches Tab ─── */
 function BranchesTab() {
   const qc = useQueryClient();

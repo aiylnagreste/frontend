@@ -4,7 +4,7 @@
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchBranches, fetchStaff, QK } from "@/lib/queries";
+import { fetchBranches, fetchStaff, fetchGeneral, QK } from "@/lib/queries";
 import type { Branch, Staff } from "@/lib/types";
 import { BranchDrawer } from "@/components/settings/BranchDrawer";
 import { StaffDrawer } from "@/components/settings/StaffDrawer";
@@ -26,6 +26,15 @@ export default function Sidebar() {
     queryFn: fetchStaff,
     staleTime: 10 * 60 * 1000,
   });
+
+  const { data: general } = useQuery({
+    queryKey: QK.general(),
+    queryFn: fetchGeneral,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const logo = general?.logo_data_uri ?? null;
+  const salonName = general?.salon_name?.trim() || "Salon";
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
@@ -55,13 +64,29 @@ export default function Sidebar() {
 
       {/* Brand */}
       <div style={styles.brand}>
-        <div style={styles.brandIcon}>
-          ✨
+        <div
+          style={{
+            ...styles.brandIcon,
+            // Override background when we have a real logo so the rose gradient
+            // doesn't bleed through transparent PNGs.
+            background: logo ? "#fff" : styles.brandIcon.background,
+            padding: logo ? 2 : 0,
+            overflow: "hidden",
+          }}
+        >
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logo}
+              alt={`${salonName} logo`}
+              style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 8 }}
+            />
+          ) : (
+            <span>✨</span>
+          )}
         </div>
         <div>
-          <div style={styles.brandTitle}>
-            <span style={{ color: "#ec8fa3" }}>Salon</span> Admin
-          </div>
+          <div style={styles.brandTitle}>{salonName}</div>
           <div style={styles.brandSub}>Management Portal</div>
         </div>
       </div>
