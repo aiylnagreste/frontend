@@ -1,110 +1,148 @@
-// components/ui/SuspensionModal.tsx
 "use client";
 
-import { ShieldOff } from "lucide-react";
+import type { SuspensionReason } from "@/lib/types";
 
-export function SuspensionModal({ salonName }: { salonName?: string }) {
+type Props = { salonName?: string; reason?: SuspensionReason };
+
+function getCopy(reason: SuspensionReason | undefined, salonName?: string) {
+  const who = salonName ? `${salonName}'s account` : "Your salon account";
+  
+  switch (reason) {
+    case "subscription_expired":
+      return {
+        icon: "⏰",
+        title: "Subscription Expired",
+        body: `${who} is paused because your subscription has expired. Renew your plan to restore access.`,
+        ctaLabel: "Renew Subscription",
+        ctaHref: "mailto:support@glowdesk.app?subject=Renew%20Subscription",
+      };
+    case "plan_deactivated":
+      return {
+        icon: "📋",
+        title: "Plan Discontinued",
+        body: `${who}'s plan is no longer available. Please contact support to move to a new plan.`,
+        ctaLabel: "Contact Support",
+        ctaHref: "mailto:support@glowdesk.app?subject=Plan%20Discontinued",
+      };
+    case "suspended":
+    case "not_found":
+    default:
+      return {
+        icon: "🔒",
+        title: "Account Suspended",
+        body: `${who} has been suspended. All actions are currently disabled. Please contact support to restore access.`,
+        ctaLabel: "Contact Support",
+        ctaHref: "mailto:support@glowdesk.app",
+      };
+  }
+}
+
+export function SuspensionModal({ salonName, reason }: Props) {
+  const copy = getCopy(reason, salonName);
+  
   return (
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="suspension-title"
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(17, 19, 24, 0.8)",
+        zIndex: 50,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 9999,
-        backdropFilter: "blur(6px)",
+        background: "rgba(17, 19, 24, 0.6)",
+        backdropFilter: "blur(4px)",
       }}
     >
       <div
         style={{
-          background: "#fff",
-          border: "1px solid #E6E4DF",
-          borderRadius: "16px",
-          padding: "40px 36px 32px",
+          width: "100%",
           maxWidth: "420px",
-          width: "90%",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.3)",
-          textAlign: "center",
+          margin: "0 16px",
+          background: "#fff",
+          borderRadius: 16,
+          padding: "32px",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
         }}
       >
+        {/* Icon Container */}
         <div
           style={{
-            width: "64px",
-            height: "64px",
+            width: 56,
+            height: 56,
             borderRadius: "50%",
             background: "linear-gradient(135deg, rgba(181,72,75,0.12), rgba(107,48,87,0.08))",
-            margin: "0 auto 24px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            border: "1px solid rgba(181,72,75,0.15)",
+            margin: "0 auto 24px auto",
+            fontSize: "24px",
           }}
-          aria-hidden="true"
         >
-          <ShieldOff size={28} color="#b5484b" strokeWidth={1.8} />
+          {copy.icon}
         </div>
+
+        {/* Title */}
         <h2
           id="suspension-title"
           style={{
+            fontFamily: "'Space Grotesk', sans-serif",
             fontSize: "20px",
             fontWeight: 700,
             color: "#1A1D23",
-            margin: "0 0 10px",
-            fontFamily: "'Space Grotesk', sans-serif",
             letterSpacing: "-0.02em",
+            textAlign: "center",
+            margin: 0,
+            marginBottom: "8px",
           }}
         >
-          Account Suspended
+          {copy.title}
         </h2>
+
+        {/* Body Text */}
         <p
           style={{
-            fontSize: "13px",
+            fontSize: "14px",
             color: "#5F6577",
-            lineHeight: 1.65,
-            margin: "0 0 24px",
-          }}
-        >
-          {salonName
-            ? `${salonName}'s account has been suspended.`
-            : "Your salon account has been suspended."}{" "}
-          All actions are currently disabled. Please contact support to restore
-          access.
-        </p>
-        {/* <a
-          href="mailto:support@glowdesk.app"
-          style={{
-            display: "inline-block",
-            padding: "10px 22px",
-            background: "var(--color-rose)",
-            color: "#fff",
-            borderRadius: "8px",
-            fontSize: "13px",
-            fontWeight: 600,
-            textDecoration: "none",
-          }}
-        >
-          Contact Support
-        </a> */}
-        <div
-          style={{
-            padding: "12px 16px",
-            background: "#F8F8F6",
-            borderRadius: "8px",
-            border: "1px solid #E6E4DF",
-            fontSize: "12px",
-            color: "#5F6577",
+            textAlign: "center",
             lineHeight: 1.6,
+            margin: 0,
+            marginBottom: "24px",
           }}
         >
-          <span style={{ fontWeight: 600, color: "#1A1D23" }}>Need help?</span>{" "}
-          Reach out to your account manager or email our support team for
-          next steps.
-        </div>
+          {copy.body}
+        </p>
+
+        {/* CTA Button */}
+        <a
+          //href={copy.ctaHref}
+           href='#'
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            padding: "12px",
+            background: "linear-gradient(135deg, #b5484b, #6b3057)",
+            color: "#fff",
+            borderRadius: 8,
+            fontSize: "14px",
+            fontWeight: 600,
+            fontFamily: "'DM Sans', sans-serif",
+            textDecoration: "none",
+            boxShadow: "0 4px 14px rgba(181,72,75,0.25)",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow = "0 6px 20px rgba(181,72,75,0.35)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "0 4px 14px rgba(181,72,75,0.25)";
+          }}
+        >
+          {copy.ctaLabel}
+        </a>
       </div>
     </div>
   );

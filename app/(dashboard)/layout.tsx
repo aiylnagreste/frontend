@@ -27,13 +27,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // 2-second delay as per requirement spec — show modal after initial render
   useEffect(() => {
-    if (!isSuspended) {
-      setShowModal(false);
-      return;
-    }
-    const t = setTimeout(() => setShowModal(true), 2000);
-    return () => clearTimeout(t);
-  }, [isSuspended]);
+  if (!isSuspended) {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setShowModal(false);
+    return;
+  }
+  const t = setTimeout(() => setShowModal(true), 2000);
+  return () => clearTimeout(t);
+}, [isSuspended]);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -59,7 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
-      {showModal && <SuspensionModal salonName={data?.salon_name} />}
+      {showModal && <SuspensionModal salonName={data?.salon_name} reason={data?.reason} />}
     </div>
   );
 }

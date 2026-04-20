@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect ,useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchBranches,
@@ -639,6 +639,7 @@ function BrandingTab() {
   const [salonName, setSalonName] = useState("");
   const [logoDataUri, setLogoDataUri] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Hydrate form once when data arrives
   useEffect(() => {
@@ -652,7 +653,7 @@ function BrandingTab() {
     mutationFn: () =>
       api.put("/salon-admin/api/settings/branding", {
         salon_name: salonName.trim(),
-        logo_data_uri: logoDataUri, // null clears the logo
+        logo_data_uri: logoDataUri,
       }),
     onSuccess: () => {
       toast.success("Branding saved");
@@ -669,7 +670,6 @@ function BrandingTab() {
       setUploadError("Please upload a PNG, JPG, GIF, WEBP, or SVG image.");
       return;
     }
-    // 1MB raw cap — matches backend ~1.5MB encoded guard
     if (file.size > 1 * 1024 * 1024) {
       setUploadError("Image must be 1 MB or smaller.");
       return;
@@ -684,8 +684,12 @@ function BrandingTab() {
 
   function clearLogo() {
     setLogoDataUri(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }
 
+  // --- Design System Styles ---
   const cardStyle: React.CSSProperties = {
     background: "#fff",
     border: "1px solid #E6E4DF",
@@ -694,6 +698,7 @@ function BrandingTab() {
     boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
     maxWidth: "640px",
   };
+
   const titleStyle: React.CSSProperties = {
     fontFamily: "'Space Grotesk', sans-serif",
     fontSize: "15px",
@@ -702,12 +707,14 @@ function BrandingTab() {
     letterSpacing: "-0.01em",
     marginBottom: "4px",
   };
+
   const descStyle: React.CSSProperties = {
     fontSize: "12px",
     color: "#5F6577",
     lineHeight: 1.6,
     marginBottom: "20px",
   };
+
   const labelStyle: React.CSSProperties = {
     display: "block",
     fontSize: "11px",
@@ -717,6 +724,7 @@ function BrandingTab() {
     letterSpacing: "0.06em",
     marginBottom: "8px",
   };
+
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px 14px",
@@ -730,6 +738,7 @@ function BrandingTab() {
     boxSizing: "border-box" as const,
     transition: "border-color 0.2s, box-shadow 0.2s",
   };
+
   const btnPrimary: React.CSSProperties = {
     padding: "10px 20px",
     background: "linear-gradient(135deg, #b5484b, #6b3057)",
@@ -762,23 +771,32 @@ function BrandingTab() {
         onChange={(e) => setSalonName(e.target.value)}
         placeholder="e.g. Glamour Studio"
         maxLength={100}
-        style={{ ...inputStyle, marginBottom: "20px" }}
+        style={{ ...inputStyle, marginBottom: "24px" }}
+        onFocus={(e) => {
+          e.target.style.borderColor = "#b5484b";
+          e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)";
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = "#E6E4DF";
+          e.target.style.boxShadow = "none";
+        }}
       />
 
-      {/* Logo */}
+      {/* Logo Section */}
       <label style={labelStyle}>Logo</label>
       <div
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: "16px",
           marginBottom: "12px",
         }}
       >
+        {/* Preview Box */}
         <div
           style={{
-            width: 72,
-            height: 72,
+            width: 80,
+            height: 80,
             borderRadius: 12,
             background: "#F9F8F6",
             border: "1.5px dashed #E6E4DF",
@@ -787,6 +805,13 @@ function BrandingTab() {
             justifyContent: "center",
             overflow: "hidden",
             flexShrink: 0,
+            transition: "border-color 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            if (!logoDataUri) e.currentTarget.style.borderColor = "#b5484b";
+          }}
+          onMouseLeave={(e) => {
+            if (!logoDataUri) e.currentTarget.style.borderColor = "#E6E4DF";
           }}
         >
           {logoDataUri ? (
@@ -797,22 +822,57 @@ function BrandingTab() {
               style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
             />
           ) : (
-            <span style={{ fontSize: 28, opacity: 0.4 }}>🖼️</span>
+            <span style={{ fontSize: 32, opacity: 0.4 }}>🖼️</span>
           )}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+
+        {/* Actions Column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingTop: "4px" }}>
+          {/* Hidden File Input */}
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
             onChange={handleFile}
-            style={{ fontSize: "12px" }}
+            style={{ display: "none" }}
           />
+          
+          {/* Upload Button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              padding: "7px 14px",
+              border: "1.5px solid #E6E4DF",
+              borderRadius: 6,
+              fontSize: "12px",
+              fontWeight: 500,
+              background: "#fff",
+              color: "#5F6577",
+              cursor: "pointer",
+              fontFamily: "'DM Sans', sans-serif",
+              transition: "all 0.15s",
+              alignSelf: "flex-start",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#b5484b";
+              e.currentTarget.style.color = "#b5484b";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "#E6E4DF";
+              e.currentTarget.style.color = "#5F6577";
+            }}
+          >
+            Choose File
+          </button>
+
+          {/* Remove Button */}
           {logoDataUri && (
             <button
               type="button"
               onClick={clearLogo}
               style={{
-                padding: "6px 12px",
+                padding: "7px 14px",
                 border: "1.5px solid #FECACA",
                 borderRadius: 6,
                 fontSize: "12px",
@@ -821,6 +881,16 @@ function BrandingTab() {
                 color: "#DC2626",
                 cursor: "pointer",
                 alignSelf: "flex-start",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#FEE2E2";
+                e.currentTarget.style.borderColor = "#FCA5A5";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#FEF2F2";
+                e.currentTarget.style.borderColor = "#FECACA";
               }}
             >
               Remove Logo
@@ -828,19 +898,54 @@ function BrandingTab() {
           )}
         </div>
       </div>
+
+      {/* Error Message Block */}
       {uploadError && (
-        <p style={{ fontSize: "12px", color: "#DC2626", marginBottom: "12px" }}>
-          {uploadError}
-        </p>
+        <div
+          style={{
+            background: "#FEF2F2",
+            color: "#DC2626",
+            padding: "8px 12px",
+            borderRadius: 6,
+            fontSize: "12px",
+            fontWeight: 500,
+            marginTop: "4px",
+            marginBottom: "12px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            borderLeft: "3px solid #EF4444",
+          }}
+        >
+          <span>⚠</span>
+          <span>{uploadError}</span>
+        </div>
       )}
-      <p style={{ fontSize: "11px", color: "#9CA3B4", marginBottom: "20px" }}>
+
+      {/* Helper Text */}
+      <p style={{ fontSize: "11px", color: "#9CA3B4", marginBottom: "24px" }}>
         PNG, JPG, GIF, WEBP, or SVG. Max 1 MB. Square images work best.
       </p>
 
+      {/* Save Button */}
       <button
         onClick={() => saveMutation.mutate()}
         disabled={disabled}
-        style={{ ...btnPrimary, opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
+        style={{
+          ...btnPrimary,
+          opacity: disabled ? 0.6 : 1,
+          cursor: disabled ? "not-allowed" : "pointer",
+        }}
+        onMouseEnter={(e) => {
+          if (!disabled) {
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow = "0 6px 16px rgba(181,72,75,0.3)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 4px 14px rgba(181,72,75,0.2)";
+        }}
       >
         {saveMutation.isPending ? "Saving…" : "Save Branding"}
       </button>

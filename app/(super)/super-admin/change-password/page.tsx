@@ -87,32 +87,9 @@ export default function ChangePasswordPage() {
   const toggleVisibility = (key: string) => setVisible(prev => ({ ...prev, [key]: !prev[key] }));
 
   return (
-    <div style={{
-      padding: "32px 36px",
-      background: C.bg,
-      minHeight: "100vh",
-      fontFamily: "'DM Sans', sans-serif",
-      display: "flex",
-      flexDirection: "column",
-    }}>
+    <div style={{ padding: "28px 36px", background: C.bg, minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" }}>
       {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <button
-          onClick={() => router.back()}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            background: "transparent", border: "none", cursor: "pointer",
-            color: C.text3, fontSize: 13, fontWeight: 500,
-            marginBottom: 16, padding: "4px 0",
-            transition: "color 0.15s",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.color = C.text2)}
-          onMouseLeave={e => (e.currentTarget.style.color = C.text3)}
-        >
-          <ArrowLeft size={15} />
-          Back
-        </button>
-
+      <div style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
             width: 48, height: 48, borderRadius: 14,
@@ -120,16 +97,16 @@ export default function ChangePasswordPage() {
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: `0 4px 14px ${C.primaryGlow}`,
           }}>
-            <ShieldHalf size={22} style={{ color: "#fff" }} />
+            <ShieldHalf size={20} style={{ color: "#fff" }} />
           </div>
           <div>
             <h1 style={{
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: 24, fontWeight: 700, color: C.text,
               letterSpacing: "-0.025em", lineHeight: 1.2,
-            }}>Change Password</h1>
+            }}>Chanange Password</h1>
             <p style={{ fontSize: 14, color: C.text2, marginTop: 2 }}>
-              Update your super admin account credentials
+              Choose a strong password to keep your salon account secure
             </p>
           </div>
         </div>
@@ -148,7 +125,7 @@ export default function ChangePasswordPage() {
         <div style={{
           padding: "20px 28px",
           borderBottom: `1px solid ${C.border2}`,
-          background: `linear-gradient(180deg, ${C.primaryGlow}, transparent)`,
+         // background: `linear-gradient(180deg, ${C.primaryGlow}, transparent)`,
           display: "flex", alignItems: "center", gap: 10,
         }}>
           <Lock size={16} style={{ color: C.primary }} />
