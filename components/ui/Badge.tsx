@@ -12,6 +12,7 @@ const STATUS_STYLES: Record<string, { bg: string; color: string; dot: string }> 
   suspended:  { bg: "#fef3c7", color: "#92400e", dot: "#f59e0b" },
   pending:    { bg: "#fef3c7", color: "#92400e", dot: "#f59e0b" },
   frozen:     { bg: "#f1f5f9", color: "#475569", dot: "#94a3b8" },
+  warning:    { bg: "#fef3c7", color: "#92400e", dot: "#f59e0b" },
 };
 
 interface BadgeProps {

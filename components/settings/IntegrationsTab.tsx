@@ -10,8 +10,9 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Lock, ExternalLink, Copy, Check, Trash2 } from "lucide-react";
 
-function ConnectionBadge({ hasToken }: { hasToken: boolean; verified: boolean }) {
-  if (hasToken) return <Badge status="active" label="Connected" />;
+function ConnectionBadge({ hasToken, verified }: { hasToken: boolean; verified: boolean }) {
+  if (hasToken && verified) return <Badge status="active" label="Connected" />;
+  if (hasToken && !verified) return <Badge status="warning" label="Awaiting verification" />;
   return <Badge status="inactive" label="Not configured" />;
 }
 
