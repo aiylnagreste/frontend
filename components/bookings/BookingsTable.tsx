@@ -43,9 +43,32 @@ export default function BookingsTable({ branchId, branchName }: Props) {
   const active = bookings.filter((b) => b.status !== "archived");
 
   function invalidate() {
+    // Invalidate bookings
     qc.invalidateQueries({ queryKey: ["bookings"] });
     qc.invalidateQueries({ queryKey: ["stats"] });
+    
+    // Invalidate ALL analytics queries (they depend on timeframe and branch)
     qc.invalidateQueries({ queryKey: ["analytics"] });
+    
+    // Also specifically invalidate the common timeframe queries
+    const timeframes = ["day", "week", "month", "year"];
+    timeframes.forEach(timeframe => {
+      if (branchName) {
+        qc.invalidateQueries({ 
+          queryKey: QK.analytics({ period: timeframe, branch: branchName, status: "completed" }) 
+        });
+        qc.invalidateQueries({ 
+          queryKey: QK.analytics({ period: timeframe, branch: branchName, status: "confirmed,completed" }) 
+        });
+      } else {
+        qc.invalidateQueries({ 
+          queryKey: QK.analytics({ period: timeframe, status: "completed" }) 
+        });
+        qc.invalidateQueries({ 
+          queryKey: QK.analytics({ period: timeframe, status: "confirmed,completed" }) 
+        });
+      }
+    });
   }
 
   const completeMutation = useMutation({
@@ -83,7 +106,7 @@ export default function BookingsTable({ branchId, branchName }: Props) {
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {/* Filters */}
+        {/* Filters - keep existing code */}
         <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ position: "relative" }}>
             <Calendar size={14} color="#9CA3B4" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
@@ -164,7 +187,7 @@ export default function BookingsTable({ branchId, branchName }: Props) {
           </div>
         </div>
 
-        {/* Table(s) */}
+        {/* Table(s) - keep existing code */}
         {isLoading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {[1, 2, 3, 4].map((i) => (
@@ -344,11 +367,13 @@ export default function BookingsTable({ branchId, branchName }: Props) {
         onClose={closeDrawer}
         editing={editingBooking}
         editMode="limited"
+        onSuccess={invalidate} 
       />
     </>
   );
 }
 
+// Keep the rest of the component helpers (TableAction, styles) unchanged...
 function TableAction({
   icon,
   label,

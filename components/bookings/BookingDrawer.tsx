@@ -19,9 +19,10 @@ interface BookingDrawerProps {
   editing: Booking | null;
   prefillBranch?: string;
   editMode?: 'full' | 'limited';
+  onSuccess?: () => void; // Add this line
 }
 
-export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode = 'full' }: BookingDrawerProps) {
+export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode = 'full' , onSuccess }: BookingDrawerProps) {
   const qc = useQueryClient();
   const [form, setForm] = useState({
     customer_name: "",
@@ -244,34 +245,64 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!validate()) return;
+  e.preventDefault();
+  if (!validate()) return;
 
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        ...form,
-        staff_name: form.staff_name || null,
-        notes: form.notes || null,
-      };
+  setIsSubmitting(true);
+  try {
+    const payload = {
+      ...form,
+      staff_name: form.staff_name || null,
+      notes: form.notes || null,
+    };
 
-      if (editing) {
-        await api.put(`/salon-admin/api/bookings/${editing.id}`, payload);
-        toast.success("Appointment updated");
-      } else {
-        await api.post("/salon-admin/api/bookings", payload);
-        toast.success("Appointment created");
-      }
-
-      qc.invalidateQueries({ queryKey: QK.bookings() });
-      qc.invalidateQueries({ queryKey: ["stats"] });
-      onClose();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to save appointment");
-    } finally {
-      setIsSubmitting(false);
+    if (editing) {
+      await api.put(`/salon-admin/api/bookings/${editing.id}`, payload);
+      toast.success("Appointment updated");
+    } else {
+      await api.post("/salon-admin/api/bookings", payload);
+      toast.success("Appointment created");
     }
+
+    qc.invalidateQueries({ queryKey: QK.bookings() });
+    qc.invalidateQueries({ queryKey: ["stats"] });
+    
+    // ADD THIS: Invalidate analytics queries
+    qc.invalidateQueries({ queryKey: ["analytics"] });
+    
+    // Also invalidate specific timeframe queries to be thorough
+    const timeframes = ["day", "week", "month", "year"];
+    timeframes.forEach(timeframe => {
+      // Invalidate for all branches (no branch filter)
+      qc.invalidateQueries({ 
+        queryKey: QK.analytics({ period: timeframe, status: "completed" }) 
+      });
+      qc.invalidateQueries({ 
+        queryKey: QK.analytics({ period: timeframe, status: "confirmed,completed" }) 
+      });
+      
+      // If you have branch-specific analytics, invalidate those too
+      // You might need to get the current branch from props or context
+      if (prefillBranch) {
+        qc.invalidateQueries({ 
+          queryKey: QK.analytics({ period: timeframe, branch: prefillBranch, status: "completed" }) 
+        });
+        qc.invalidateQueries({ 
+          queryKey: QK.analytics({ period: timeframe, branch: prefillBranch, status: "confirmed,completed" }) 
+        });
+      }
+    });
+
+    // Call onSuccess before closing to refresh analytics
+    onSuccess?.();
+
+    onClose();
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : "Failed to save appointment");
+  } finally {
+    setIsSubmitting(false);
   }
+}
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -516,7 +547,7 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
               >
                 <option value="">No preference</option>
                 {filteredStaff.map((s) => (
-                  <option key={s.id} value={s.name}>{s.name} — {s.role}</option>
+                  <option key={s.id} value={s.name}>{s.name}</option>
                 ))}
               </select>
             </div>

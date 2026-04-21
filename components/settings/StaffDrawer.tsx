@@ -68,6 +68,7 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
     const nameErr = validateName(form.name);
     if (nameErr) errs.name = nameErr === "This field is required" ? "Full name is required" : nameErr;
     if (!form.role) errs.role = "Role is required";
+    if (!form.branch_id) errs.branch_id = "Branch is required";
     const phoneErr = validatePhone(form.phone);
     if (phoneErr) errs.phone = phoneErr;
     setErrors(errs);
@@ -191,7 +192,9 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
             {errors.role && <span style={errorStyle}>{errors.role}</span>}
           </div>
           <div>
-            <label style={labelStyle}>Branch</label>
+            <label style={labelStyle}>
+              Branch <span style={{ color: "#b5484b" }}>*</span>
+            </label>
             <select
               value={form.branch_id}
               onChange={(e) => setForm({ ...form, branch_id: e.target.value })}
@@ -199,14 +202,12 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
               onFocus={(e) => { e.target.style.borderColor = "#b5484b"; e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#E6E4DF"; e.target.style.boxShadow = "none"; }}
             >
-              <option value="">All Branches</option>
+              <option value="">Select branch</option>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
             </select>
-            <span style={{ fontSize: "11px", color: "#9CA3B4", marginTop: "4px", display: "block" }}>
-              Leave empty for all branches
-            </span>
+            {errors.branch_id && <span style={errorStyle}>{errors.branch_id}</span>}
           </div>
         </div>
 
