@@ -25,6 +25,8 @@ const EMPTY_WA = { phone_number_id: "", access_token: "", verify_token: "" };
 const EMPTY_IG = { page_access_token: "", verify_token: "" };
 const EMPTY_FB = { page_access_token: "", verify_token: "" };
 
+const backendOrigin = (process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/$/, "");
+
 export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps) {
   const qc = useQueryClient();
   const { data: config } = useQuery<WebhookConfig>({
@@ -94,7 +96,6 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const backendOrigin = typeof window !== "undefined" ? window.location.origin : "";
 
   const waSavedFields = [
     { label: "Phone Number ID", value: config?.wa_phone_number_id || "—" },

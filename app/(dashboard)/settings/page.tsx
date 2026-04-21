@@ -390,33 +390,40 @@ function GeneralTab() {
 
         {/* Website & CORS Card */}
         {showCorsCard && (
-          <div style={cardStyle}>
-            <h4 style={titleStyle}>🌐 Website & CORS</h4>
-            <p style={descStyle}>
-              Add your website&apos;s URL so the chat widget and voice call can work on your site.
-            </p>
+    <div style={cardStyle}>
+      <h4 style={titleStyle}>🌐 Website & CORS</h4>
+      <p style={descStyle}>
+        Add your website&apos;s URL so the chat widget and voice call can work on your site.
+      </p>
 
-            <label style={labelStyle}>Your Website URL</label>
-            <input
-              type="url"
-              value={corsUrl}
-              onChange={(e) => setCorsUrl(e.target.value)}
-              placeholder="https://yoursalon.com"
-              style={{ ...inputStyle, marginBottom: "20px" }}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-            />
-            <button
-              onClick={() => corsOriginMutation.mutate()}
-              disabled={corsOriginMutation.isPending}
-              style={{ ...btnPrimary, opacity: corsOriginMutation.isPending ? 0.7 : 1 }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(181,72,75,0.3)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(181,72,75,0.2)"; }}
-            >
-              {corsOriginMutation.isPending ? "Saving…" : "Save Website URL"}
-            </button>
-          </div>
-        )}
+      <label style={labelStyle}>Your Website URL</label>
+      <input
+        type="url"
+        value={corsUrl}
+        onChange={(e) => setCorsUrl(e.target.value)}
+        placeholder="https://yoursalon.com"
+        style={{ ...inputStyle, marginBottom: "20px" }}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+      />
+      <button
+        onClick={() => {
+          // Trim trailing slash before saving
+          const trimmedUrl = corsUrl.replace(/\/+$/, '');
+          if (trimmedUrl !== corsUrl) {
+            setCorsUrl(trimmedUrl);
+          }
+          corsOriginMutation.mutate(trimmedUrl);
+        }}
+        disabled={corsOriginMutation.isPending}
+        style={{ ...btnPrimary, opacity: corsOriginMutation.isPending ? 0.7 : 1 }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(181,72,75,0.3)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(181,72,75,0.2)"; }}
+      >
+        {corsOriginMutation.isPending ? "Saving…" : "Save Website URL"}
+      </button>
+  </div>
+)}
       </div>
 
       {/* RIGHT COLUMN */}
