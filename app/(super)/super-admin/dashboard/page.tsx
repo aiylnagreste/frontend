@@ -728,7 +728,7 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
     }
   }
 
-  const activePlans = (plans || []).filter((p: Plan) => p.is_active === true || p.is_active === 1 || p.is_active === "1");
+  const activePlans = (plans || []).filter((p: Plan) => p.is_active === true);
 
   return (
     <ModalShell maxWidth={490}>
@@ -811,10 +811,7 @@ function EditPlanModal({ tenantId, salonName, currentPlan, onClose }: {
     queryFn: fetchPlans,
   });
 
-  const availablePlans = (plans || []).filter((plan: Plan) => {
-    const isActive = plan.is_active === true || plan.is_active === 1 || plan.is_active === "1";
-    return isActive;
-  });
+  const availablePlans = (plans || []).filter((plan: Plan) => plan.is_active === true);
 
   const initialPlanId = (() => {
     if (!availablePlans.length || !currentPlan) return "";
