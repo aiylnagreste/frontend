@@ -122,20 +122,6 @@ export interface WebhookConfig {
   };
 }
 
-// export interface PublicPlan {
-//   id: string;
-//   name: string;
-//   description?: string;
-//   price_cents: number;
-//   billing_cycle: "monthly" | "yearly";
-//   max_services: number;
-//   whatsapp_access: boolean;
-//   instagram_access: boolean;
-//   facebook_access: boolean;
-//   ai_calls_access: boolean;
-//   highlight?: boolean;  // Add this line
-// }
-
 export interface Tenant {
   tenant_id: string;
   id?: string;
