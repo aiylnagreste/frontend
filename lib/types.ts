@@ -122,6 +122,20 @@ export interface WebhookConfig {
   };
 }
 
+export interface PublicPlan {
+  id: string;
+  name: string;
+  description?: string;
+  price_cents: number;
+  billing_cycle: "monthly" | "yearly";
+  max_services: number;
+  whatsapp_access: boolean;
+  instagram_access: boolean;
+  facebook_access: boolean;
+  ai_calls_access: boolean;
+  highlight?: boolean;  // Add this line
+}
+
 export interface Tenant {
   tenant_id: string;
   id?: string;
@@ -152,7 +166,7 @@ export interface Plan {
   updated_at: string;
 }
 
-export type PublicPlan = Omit<Plan, 'stripe_price_id' | 'is_active' | 'created_at' | 'updated_at'>;
+//export type PublicPlan = Omit<Plan, 'stripe_price_id' | 'is_active' | 'created_at' | 'updated_at'>;
 
 export interface CorsOriginResponse {
   ok: boolean;
