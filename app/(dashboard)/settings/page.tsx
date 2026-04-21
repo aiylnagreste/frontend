@@ -144,10 +144,12 @@ function GeneralTab() {
   const [copied, setCopied] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
   
-  const generalBotName = (general as Record<string, string> | undefined)?.bot_name ?? "";
-  if (generalBotName && botName === "" && generalBotName !== botName) {
-    setBotName(generalBotName);
+useEffect(() => {
+  const generalSalonName = (general as Record<string, string> | undefined)?.salon_name ?? "";
+  if (generalSalonName && botName === "") {
+    setBotName(generalSalonName);
   }
+}, []);
 
   const tenantId = general?.tenantId ?? "…";
   const backendOrigin = (process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/$/, "");
@@ -187,7 +189,7 @@ function GeneralTab() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const previewName = botName.trim() || general?.owner_name || "Salon Assistant";
+  const previewName = botName.trim() || general?.salon_name || "Salon Assistant";
   const colorPresets = ["#8b4a6b", "#e11d48", "#7c3aed", "#0ea5e9", "#16a34a", "#ea580c"];
 
   // --- Design System Styles ---
@@ -316,7 +318,7 @@ function GeneralTab() {
               type="text"
               value={botName}
               onChange={(e) => setBotName(e.target.value)}
-              placeholder={general?.owner_name ?? "e.g. Glamour Studio"}
+              placeholder={general?.salon_name ?? "e.g. Glamour Studio"}
               style={{ ...inputStyle, marginBottom: "20px" }}
               onFocus={handleFocus}
               onBlur={handleBlur}
