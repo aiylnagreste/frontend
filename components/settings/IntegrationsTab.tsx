@@ -253,7 +253,7 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
         </div>
       </div>
 
-      {enabledCount > 0 && (
+     {enabledCount > 0 && (
   <div style={{
     display: "flex",
     justifyContent: enabledCount === 1 ? "flex-start" : "flex-end",
