@@ -130,13 +130,13 @@ function GeneralTab() {
   }, [corsOriginData]);
 
   const corsOriginMutation = useMutation({
-    mutationFn: () => saveCorsOrigin(corsUrl.trim() || null),
-    onSuccess: () => {
-      toast.success("Website URL saved");
-      qc.invalidateQueries({ queryKey: QK.corsOrigin() });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+  mutationFn: (url: string) => saveCorsOrigin(url || null),
+  onSuccess: () => {
+    toast.success("Website URL saved");
+    qc.invalidateQueries({ queryKey: QK.corsOrigin() });
+  },
+  onError: (e: Error) => toast.error(e.message),
+});
 
   const [currency, setCurrency] = useState(general?.currency ?? "Rs.");
   const [botName, setBotName] = useState((general as Record<string, string> | undefined)?.bot_name ?? "");
@@ -406,22 +406,22 @@ function GeneralTab() {
         onFocus={handleFocus}
         onBlur={handleBlur}
       />
-      <button
-        onClick={() => {
-          // Trim trailing slash before saving
-          const trimmedUrl = corsUrl.replace(/\/+$/, '');
-          if (trimmedUrl !== corsUrl) {
-            setCorsUrl(trimmedUrl);
-          }
-          corsOriginMutation.mutate(trimmedUrl);
-        }}
-        disabled={corsOriginMutation.isPending}
-        style={{ ...btnPrimary, opacity: corsOriginMutation.isPending ? 0.7 : 1 }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(181,72,75,0.3)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(181,72,75,0.2)"; }}
-      >
-        {corsOriginMutation.isPending ? "Saving…" : "Save Website URL"}
-      </button>
+     <button
+  onClick={() => {
+    // Trim trailing slash before saving
+    const trimmedUrl = corsUrl.replace(/\/+$/, '');
+    if (trimmedUrl !== corsUrl) {
+      setCorsUrl(trimmedUrl);
+    }
+    corsOriginMutation.mutate(trimmedUrl);
+  }}
+  disabled={corsOriginMutation.isPending}
+  style={{ ...btnPrimary, opacity: corsOriginMutation.isPending ? 0.7 : 1 }}
+  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(181,72,75,0.3)"; }}
+  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(181,72,75,0.2)"; }}
+>
+  {corsOriginMutation.isPending ? "Saving…" : "Save Website URL"}
+</button>
   </div>
 )}
       </div>
