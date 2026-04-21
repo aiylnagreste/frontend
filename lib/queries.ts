@@ -113,7 +113,13 @@ export async function saveCorsOrigin(cors_origin: string | null): Promise<void> 
 const SA = "/super-admin/api";
 export const fetchTenants = () => api.get<Tenant[]>(`${SA}/tenants`);
 export const fetchSuperStats = () =>
-  api.get<{ total_tenants: number; active_tenants: number }>(`${SA}/stats`);
+  api.get<{ 
+    total_tenants: number; 
+    active_tenants: number; 
+    new_this_month: number;
+    mrr: number;
+    revenue_change: number;
+  }>(`${SA}/stats`);
 
 export async function fetchPlans(): Promise<Plan[]> {
   const res = await fetch('/super-admin/api/plans', { credentials: 'include' });
