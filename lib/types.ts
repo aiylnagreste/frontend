@@ -161,7 +161,7 @@ export interface Plan {
   facebook_access: 0 | 1;
   ai_calls_access: 0 | 1;
   stripe_price_id: string | null;
-  is_active: 0 | 1;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
