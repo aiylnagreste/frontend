@@ -60,7 +60,7 @@ export default function PaymentsPage() {
 
   // Sort chronologically: oldest first, newest at the end
   const sorted = [...(subs || [])].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
   return (
@@ -207,7 +207,7 @@ export default function PaymentsPage() {
               Showing {sorted.length} record{sorted.length !== 1 ? "s" : ""}
             </span>
             <span style={{ fontSize: 11.5, color: C.text3 }}>
-              Oldest → Newest
+              Newest → Oldest
             </span>
           </div>
         )}

@@ -185,7 +185,7 @@ export default function SuperDashboardPage() {
     .sort((a, b) => {
       const dateA = new Date(a.created_at || 0).getTime();
       const dateB = new Date(b.created_at || 0).getTime();
-      return dateA - dateB;
+      return dateB - dateA;
     });
 
   return (
@@ -475,7 +475,7 @@ export default function SuperDashboardPage() {
               {searchTerm ? ` matching "${searchTerm}"` : ""}
             </span>
             <span style={{ fontSize: 11.5, color: C.text3 }}>
-              Oldest → Newest
+              Newest → Oldest
             </span>
           </div>
         )}
