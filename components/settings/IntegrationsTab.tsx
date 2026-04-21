@@ -43,11 +43,6 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
   const [editingIg, setEditingIg] = useState(false);
   const [editingFb, setEditingFb] = useState(false);
 
-  // Saving states per integration
-  const [savingWa, setSavingWa] = useState(false);
-  const [savingIg, setSavingIg] = useState(false);
-  const [savingFb, setSavingFb] = useState(false);
-
   useEffect(() => {
     if (config?.wa_phone_number_id) {
       setWa((prev) => ({ ...prev, phone_number_id: config.wa_phone_number_id }));
@@ -63,67 +58,29 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
     if (channel === "fb") { setFb(EMPTY_FB); setEditingFb(false); }
   }
 
-  // Generic save function for a single integration
-  async function saveIntegration(channel: "whatsapp" | "instagram" | "facebook", payload: any) {
-    try {
-      await api.put("/salon-admin/api/webhook-config", payload);
-      toast.success(`${channel === "whatsapp" ? "WhatsApp" : channel === "instagram" ? "Instagram" : "Facebook"} integration saved`);
-      // Clear sensitive fields after save
-      if (channel === "whatsapp") {
-        setWa((prev) => ({ ...prev, access_token: "", verify_token: "" }));
-        setEditingWa(false);
-      }
-      if (channel === "instagram") {
-        setIg(EMPTY_IG);
-        setEditingIg(false);
-      }
-      if (channel === "facebook") {
-        setFb(EMPTY_FB);
-        setEditingFb(false);
-      }
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      api.put("/salon-admin/api/webhook-config", {
+        wa_phone_number_id: wa.phone_number_id || undefined,
+        wa_access_token: wa.access_token || undefined,
+        wa_verify_token: wa.verify_token || undefined,
+        ig_page_access_token: ig.page_access_token || undefined,
+        ig_verify_token: ig.verify_token || undefined,
+        fb_page_access_token: fb.page_access_token || undefined,
+        fb_verify_token: fb.verify_token || undefined,
+      }),
+    onSuccess: () => {
+      toast.success("Integrations saved");
+      setWa((prev) => ({ ...prev, access_token: "", verify_token: "" }));
+      setIg(EMPTY_IG);
+      setFb(EMPTY_FB);
+      setEditingWa(false);
+      setEditingIg(false);
+      setEditingFb(false);
       qc.invalidateQueries({ queryKey: QK.webhookConfig() });
-    } catch (e: any) {
-      toast.error(e.message);
-      throw e;
-    }
-  }
-
-  const handleSaveWa = async () => {
-    setSavingWa(true);
-    try {
-      const payload: any = {};
-      if (wa.phone_number_id) payload.wa_phone_number_id = wa.phone_number_id;
-      if (wa.access_token) payload.wa_access_token = wa.access_token;
-      if (wa.verify_token) payload.wa_verify_token = wa.verify_token;
-      await saveIntegration("whatsapp", payload);
-    } finally {
-      setSavingWa(false);
-    }
-  };
-
-  const handleSaveIg = async () => {
-    setSavingIg(true);
-    try {
-      const payload: any = {};
-      if (ig.page_access_token) payload.ig_page_access_token = ig.page_access_token;
-      if (ig.verify_token) payload.ig_verify_token = ig.verify_token;
-      await saveIntegration("instagram", payload);
-    } finally {
-      setSavingIg(false);
-    }
-  };
-
-  const handleSaveFb = async () => {
-    setSavingFb(true);
-    try {
-      const payload: any = {};
-      if (fb.page_access_token) payload.fb_page_access_token = fb.page_access_token;
-      if (fb.verify_token) payload.fb_verify_token = fb.verify_token;
-      await saveIntegration("facebook", payload);
-    } finally {
-      setSavingFb(false);
-    }
-  };
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (channel: "whatsapp" | "instagram" | "facebook") =>
@@ -138,6 +95,7 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const waSavedFields = [
     { label: "Phone Number ID", value: config?.wa_phone_number_id || "—" },
@@ -158,6 +116,12 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
     (planFeatures.whatsapp_access === 1 ||
       planFeatures.instagram_access === 1 ||
       planFeatures.facebook_access === 1);
+
+  const enabledCount = [
+    planFeatures?.whatsapp_access === 1,
+    planFeatures?.instagram_access === 1,
+    planFeatures?.facebook_access === 1,
+  ].filter(Boolean).length;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -199,8 +163,6 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
             onDelete={() => deleteMutation.mutate("whatsapp")}
             isDeleting={deleteMutation.isPending}
             savedFields={waSavedFields}
-            onSave={handleSaveWa}
-            isSaving={savingWa}
           >
             <Field
               label="Phone Number ID"
@@ -240,8 +202,6 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
               onDelete={() => deleteMutation.mutate("instagram")}
               isDeleting={deleteMutation.isPending}
               savedFields={igSavedFields}
-              onSave={handleSaveIg}
-              isSaving={savingIg}
             >
               <Field
                 label="Page Access Token"
@@ -273,8 +233,6 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
               onDelete={() => deleteMutation.mutate("facebook")}
               isDeleting={deleteMutation.isPending}
               savedFields={fbSavedFields}
-              onSave={handleSaveFb}
-              isSaving={savingFb}
             >
               <Field
                 label="Page Access Token"
@@ -294,6 +252,34 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
           )}
         </div>
       </div>
+
+      {enabledCount > 0 && (
+  <div style={{
+    display: "flex",
+    justifyContent: enabledCount === 1 ? "flex-start" : "flex-end",
+    marginTop: "4px"
+  }}>
+    <button
+      onClick={() => saveMutation.mutate()}
+      disabled={saveMutation.isPending}
+      style={{
+        padding: "9px 20px",
+        background: "linear-gradient(135deg, #b5484b, #6b3057)",
+        color: "#fff",
+        border: "none",
+        borderRadius: "8px",
+        fontSize: "13px",
+        fontWeight: 600,
+        cursor: saveMutation.isPending ? "not-allowed" : "pointer",
+        fontFamily: "'DM Sans', sans-serif",
+        opacity: saveMutation.isPending ? 0.7 : 1,
+        transition: "opacity 0.2s",
+      }}
+    >
+      {saveMutation.isPending ? "Saving…" : (enabledCount === 1 ? "Save integration" : "Save All Integrations")}
+    </button>
+  </div>
+)}
     </div>
   );
 }
@@ -312,8 +298,6 @@ function IntegrationCard({
   isDeleting,
   savedFields,
   children,
-  onSave,
-  isSaving,
 }: {
   icon: string;
   title: string;
@@ -327,8 +311,6 @@ function IntegrationCard({
   isDeleting: boolean;
   savedFields: { label: string; value: string }[];
   children: React.ReactNode;
-  onSave: () => void;
-  isSaving: boolean;
 }) {
   return (
     <div style={cardStyle}>
@@ -360,8 +342,6 @@ function IntegrationCard({
           onDelete={onDelete}
           isDeleting={isDeleting}
           savedFields={savedFields}
-          onSave={onSave}
-          isSaving={isSaving}
         >
           {children}
         </CredentialSection>
@@ -380,8 +360,6 @@ function CredentialSection({
   isDeleting,
   savedFields,
   children,
-  onSave,
-  isSaving,
 }: {
   isSaved: boolean;
   isEditing: boolean;
@@ -391,8 +369,6 @@ function CredentialSection({
   isDeleting: boolean;
   savedFields: { label: string; value: string }[];
   children: React.ReactNode;
-  onSave: () => void;
-  isSaving: boolean;
 }) {
   if (isSaved && !isEditing) {
     return (
@@ -492,48 +468,28 @@ function CredentialSection({
         </div>
       )}
       {children}
-      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+      {isSaved && (
         <button
-          onClick={onSave}
-          disabled={isSaving}
+          onClick={onCancel}
           style={{
-            padding: "8px 20px",
-            background: "linear-gradient(135deg, #b5484b, #6b3057)",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            fontSize: "13px",
-            fontWeight: 600,
-            cursor: isSaving ? "not-allowed" : "pointer",
+            alignSelf: "flex-start",
+            padding: "6px 14px",
+            background: "transparent",
+            color: "#5F6577",
+            border: "1px solid #E6E4DF",
+            borderRadius: "6px",
+            fontSize: "12px",
+            fontWeight: 500,
+            cursor: "pointer",
             fontFamily: "'DM Sans', sans-serif",
-            opacity: isSaving ? 0.7 : 1,
-            transition: "opacity 0.2s",
+            transition: "all 0.15s",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "#F8F8F6"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
         >
-          {isSaving ? "Saving…" : "Save"}
+          Cancel
         </button>
-        {isSaved && (
-          <button
-            onClick={onCancel}
-            style={{
-              padding: "8px 16px",
-              background: "transparent",
-              color: "#5F6577",
-              border: "1px solid #E6E4DF",
-              borderRadius: "8px",
-              fontSize: "13px",
-              fontWeight: 500,
-              cursor: "pointer",
-              fontFamily: "'DM Sans', sans-serif",
-              transition: "all 0.15s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "#F8F8F6"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-          >
-            Cancel
-          </button>
-        )}
-      </div>
+      )}
     </div>
   );
 }
