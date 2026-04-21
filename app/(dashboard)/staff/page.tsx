@@ -10,9 +10,10 @@ import {
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ModalShell } from "@/components/ui/ModalShell";
 import { CHART_COLORS } from "@/lib/utils";
 import { StaffDrawer } from "@/components/settings/StaffDrawer";
-import { Plus } from "lucide-react";
+import { Plus, Maximize2 } from "lucide-react";
 
 type Period = "today" | "week" | "month";
 
@@ -39,6 +40,10 @@ export default function StaffPage() {
   const [branchFilter, setBranchFilter] = useState("");
   const [period, setPeriod] = useState<Period>("today");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  
+  // Modal states
+  const [completedModalData, setCompletedModalData] = useState<{ branchName: string; data: any[]; total: number } | null>(null);
+  const [requestedModalData, setRequestedModalData] = useState<{ branchName: string; data: any[]; total: number } | null>(null);
 
   const { data: branches = [] } = useQuery<Branch[]>({
     queryKey: QK.branches(),
@@ -93,6 +98,117 @@ export default function StaffPage() {
     border: "1px solid #E6E4DF",
     boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
     fontFamily: "'DM Sans', sans-serif",
+  };
+
+  const expandIconOverlay: React.CSSProperties = {
+    position: "absolute",
+    bottom: "8px",
+    right: "8px",
+    background: "rgba(0,0,0,0.6)",
+    borderRadius: "6px",
+    padding: "4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    opacity: 0.7,
+    transition: "opacity 0.2s",
+  };
+
+  const modalSummaryStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "16px 20px",
+    background: "#F8F8F6",
+    borderRadius: "10px",
+    marginBottom: "20px",
+  };
+
+  const modalSummaryLabel: React.CSSProperties = {
+    fontSize: "11px",
+    color: "#5F6577",
+    marginBottom: "4px",
+    fontWeight: 500,
+  };
+
+  const modalSummaryValue: React.CSSProperties = {
+    fontSize: "22px",
+    fontWeight: 700,
+    color: "#b5484b",
+    fontFamily: "'Space Grotesk', sans-serif",
+  };
+
+  const modalTableStyle: React.CSSProperties = {
+    width: "100%",
+    borderCollapse: "collapse",
+  };
+
+  const modalThLeft: React.CSSProperties = {
+    textAlign: "left",
+    padding: "12px 16px 8px 0",
+    color: "#9CA3B4",
+    fontWeight: 600,
+    fontSize: "11px",
+    fontFamily: "'DM Sans', sans-serif",
+    borderBottom: "1px solid #E6E4DF",
+  };
+
+  const modalThRight: React.CSSProperties = {
+    textAlign: "right",
+    padding: "12px 0 8px 16px",
+    color: "#9CA3B4",
+    fontWeight: 600,
+    fontSize: "11px",
+    fontFamily: "'DM Sans', sans-serif",
+    borderBottom: "1px solid #E6E4DF",
+  };
+
+  const modalTdLeft: React.CSSProperties = {
+    padding: "12px 16px 12px 0",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    fontSize: "13px",
+    fontFamily: "'DM Sans', sans-serif",
+  };
+
+  const modalTdRight: React.CSSProperties = {
+    padding: "12px 0 12px 16px",
+    textAlign: "right",
+    fontWeight: 600,
+    color: "#1A1D23",
+    fontFamily: "'Space Grotesk', sans-serif",
+    fontSize: "13px",
+  };
+
+  const modalTfootLeft: React.CSSProperties = {
+    padding: "14px 16px 0 0",
+    fontWeight: 700,
+    color: "#1A1D23",
+    fontFamily: "'Space Grotesk', sans-serif",
+    fontSize: "13px",
+  };
+
+  const modalTfootRight: React.CSSProperties = {
+    padding: "14px 0 0 16px",
+    textAlign: "right",
+    fontWeight: 700,
+    color: "#b5484b",
+    fontFamily: "'Space Grotesk', sans-serif",
+    fontSize: "14px",
+  };
+
+  const modalColorDot = (color: string): React.CSSProperties => ({
+    width: "10px",
+    height: "10px",
+    borderRadius: "50%",
+    background: color,
+    flexShrink: 0,
+  });
+
+  const modalServiceName: React.CSSProperties = {
+    color: "#1A1D23",
+    fontWeight: 500,
   };
 
   return (
@@ -157,7 +273,7 @@ export default function StaffPage() {
         </button>
       </div>
 
-      {/* Controls Bar - Updated to match reference pill style */}
+      {/* Controls Bar */}
       <div
         style={{
           display: "flex",
@@ -171,7 +287,6 @@ export default function StaffPage() {
           border: "1px solid #E6E4DF",
         }}
       >
-        {/* Branch filter */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <label style={{ fontSize: "11px", fontWeight: 600, color: "#5F6577", textTransform: "uppercase", letterSpacing: "0.06em" }}>Branch</label>
           <select
@@ -194,7 +309,6 @@ export default function StaffPage() {
           </select>
         </div>
 
-        {/* Period buttons - Individual floating pills matching reference */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "11px", fontWeight: 600, color: "#5F6577", textTransform: "uppercase", letterSpacing: "0.06em" }}>Period</span>
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
@@ -274,11 +388,11 @@ export default function StaffPage() {
             (a, b) => b[1].filter((x) => x.status === "completed").length - a[1].filter((x) => x.status === "completed").length,
           );
 
-          const showDate = dateFrom !== dateTo;
+          const totalCompleted = chartData.reduce((sum, d) => sum + d.count, 0);
+          const totalRequested = requestedChartData.reduce((sum, d) => sum + d.count, 0);
 
           return (
             <Card key={branch.id} style={{ background: "#fff", border: "1px solid #E6E4DF", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", overflow: "hidden" }}>
-              {/* Card Header with flex-end */}
               <CardHeader style={{ borderBottom: "1px solid #E6E4DF", padding: "16px 20px", background: "#F9F8F6" }}>
                 <div style={{ 
                   display: "flex", 
@@ -291,7 +405,7 @@ export default function StaffPage() {
                       🏪 {branch.name}
                     </span>
                     <span style={{ fontSize: "11px", color: "#5F6577", fontWeight: 500 }}>
-                      {PERIOD_LABELS[period]} · completed &amp; scheduled
+                      {PERIOD_LABELS[period]} · completed & scheduled
                     </span>
                   </div>
                   <div style={{ 
@@ -319,19 +433,62 @@ export default function StaffPage() {
                     
                     {chartData.length > 0 && (
                       <div>
-                        <div style={{ fontSize: "10px", fontWeight: 600, color: "#5F6577", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                          Completed Bookings
-                        </div>
-                        <div style={{ background: "#F9F8F6", padding: "12px", borderRadius: 8, border: "1px solid #E6E4DF" }}>
-                          <ResponsiveContainer width="100%" height={Math.max(80, chartData.length * 30)}>
-                            <BarChart data={chartData} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
-                              <XAxis type="number" tick={{ fontSize: 11, fill: "#5F6577" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                              <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12, fill: "#1A1D23", fontWeight: 500 }} axisLine={false} tickLine={false} />
-                              <Tooltip formatter={(v: unknown) => [String(v ?? 0), "Completed"]} contentStyle={tooltipStyle} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                              <Bar dataKey="count" fill={CHART_COLORS[branchIndex % CHART_COLORS.length]} radius={[0, 4, 4, 0]} barSize={18} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
+                        <div 
+  style={{ 
+    background: "#F9F8F6", 
+    padding: "12px", 
+    borderRadius: 8, 
+    border: "1px solid #E6E4DF", 
+    cursor: "pointer", 
+    position: "relative",
+    width: "100%",
+    overflowX: "auto"
+  }}
+  onClick={() => setCompletedModalData({ branchName: branch.name, data: chartData, total: totalCompleted })}
+>
+  <div style={{ 
+    minWidth: `${Math.max(250, chartData.length * 35 + 100)}px`,
+    height: `${Math.max(150, chartData.length * 40)}px`
+  }}>
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart 
+        data={chartData} 
+        layout="vertical" 
+        margin={{ left: 10, right: 20, top: 10, bottom: 10 }}
+      >
+        <XAxis 
+          type="number" 
+          tick={{ fontSize: 11, fill: "#5F6577" }} 
+          allowDecimals={false} 
+          axisLine={false} 
+          tickLine={false} 
+        />
+        <YAxis 
+          type="category" 
+          dataKey="name" 
+          width={chartData.length > 3 ? 130 : 110}
+          tick={{ fontSize: chartData.length > 4 ? 10 : 11, fill: "#1A1D23", fontWeight: 500 }} 
+          axisLine={false} 
+          tickLine={false} 
+        />
+        <Tooltip 
+          formatter={(v: unknown) => [String(v ?? 0), "Completed"]} 
+          contentStyle={tooltipStyle} 
+          cursor={{ fill: "rgba(0,0,0,0.04)" }} 
+        />
+        <Bar 
+          dataKey="count" 
+          fill={CHART_COLORS[branchIndex % CHART_COLORS.length]} 
+          radius={[0, 4, 4, 0]} 
+          barSize={chartData.length > 5 ? 16 : (chartData.length > 3 ? 18 : 20)} 
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+  <div style={expandIconOverlay}>
+    <Maximize2 size={12} color="#fff" />
+  </div>
+</div>
                       </div>
                     )}
 
@@ -340,7 +497,10 @@ export default function StaffPage() {
                         <div style={{ fontSize: "10px", fontWeight: 600, color: "#5F6577", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                           Most Requested
                         </div>
-                        <div style={{ background: "#F9F8F6", padding: "12px", borderRadius: 8, border: "1px solid #E6E4DF" }}>
+                        <div 
+                          style={{ background: "#F9F8F6", padding: "12px", borderRadius: 8, border: "1px solid #E6E4DF", cursor: "pointer", position: "relative" }}
+                          onClick={() => setRequestedModalData({ branchName: branch.name, data: requestedChartData, total: totalRequested })}
+                        >
                           <ResponsiveContainer width="100%" height={Math.max(80, requestedChartData.length * 30)}>
                             <BarChart data={requestedChartData} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
                               <XAxis type="number" tick={{ fontSize: 11, fill: "#5F6577" }} allowDecimals={false} axisLine={false} tickLine={false} />
@@ -349,6 +509,9 @@ export default function StaffPage() {
                               <Bar dataKey="count" fill={CHART_COLORS[(branchIndex + 2) % CHART_COLORS.length]} radius={[0, 4, 4, 0]} barSize={18} />
                             </BarChart>
                           </ResponsiveContainer>
+                          <div style={expandIconOverlay}>
+                            <Maximize2 size={12} color="#fff" />
+                          </div>
                         </div>
                       </div>
                     )}
@@ -395,7 +558,7 @@ export default function StaffPage() {
                                       lineHeight: 1.5,
                                     }}
                                   >
-                                    {showDate && (
+                                    {dateFrom !== dateTo && (
                                       <span style={{ color: "#9CA3B4", fontSize: "11px", flexShrink: 0 }}>
                                         {b.date} ·
                                       </span>
@@ -421,6 +584,114 @@ export default function StaffPage() {
           );
         })}
       </div>
+
+      {/* Completed Bookings Modal */}
+      {completedModalData && (
+        <ModalShell
+          open={!!completedModalData}
+          onClose={() => setCompletedModalData(null)}
+          title={`Completed Bookings - ${completedModalData.branchName}`}
+          width={500}
+        >
+          <div style={{ padding: "4px 0" }}>
+            <div style={modalSummaryStyle}>
+              <div>
+                <div style={modalSummaryLabel}>Total Completed</div>
+                <div style={modalSummaryValue}>{completedModalData.total}</div>
+              </div>
+              <div>
+                <div style={modalSummaryLabel}>Staff Members</div>
+                <div style={modalSummaryValue}>{completedModalData.data.length}</div>
+              </div>
+            </div>
+
+            <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+              <table style={modalTableStyle}>
+                <thead>
+                  <tr>
+                    <th style={modalThLeft}>Staff Member</th>
+                    <th style={modalThRight}>Completed</th>
+                    <th style={modalThRight}>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {completedModalData.data.map((row, i) => (
+                    <tr key={i} style={{ borderTop: "1px solid #F0EEED" }}>
+                      <td style={modalTdLeft}>
+                        <span style={modalColorDot(CHART_COLORS[i % CHART_COLORS.length])} />
+                        <span style={modalServiceName}>{row.name}</span>
+                      </td>
+                      <td style={modalTdRight}>{row.count}</td>
+                      <td style={modalTdRight}>{((row.count / completedModalData.total) * 100).toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ borderTop: "2px solid #E6E4DF" }}>
+                    <td style={modalTfootLeft}>Total</td>
+                    <td style={modalTfootRight}>{completedModalData.total}</td>
+                    <td style={{ padding: "14px 0 0 0" }} />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Most Requested Modal */}
+      {requestedModalData && (
+        <ModalShell
+          open={!!requestedModalData}
+          onClose={() => setRequestedModalData(null)}
+          title={`Most Requested Staff - ${requestedModalData.branchName}`}
+          width={500}
+        >
+          <div style={{ padding: "4px 0" }}>
+            <div style={modalSummaryStyle}>
+              <div>
+                <div style={modalSummaryLabel}>Total Requests</div>
+                <div style={modalSummaryValue}>{requestedModalData.total}</div>
+              </div>
+              <div>
+                <div style={modalSummaryLabel}>Staff Members</div>
+                <div style={modalSummaryValue}>{requestedModalData.data.length}</div>
+              </div>
+            </div>
+
+            <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+              <table style={modalTableStyle}>
+                <thead>
+                  <tr>
+                    <th style={modalThLeft}>Staff Member</th>
+                    <th style={modalThRight}>Requests</th>
+                    <th style={modalThRight}>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requestedModalData.data.map((row, i) => (
+                    <tr key={i} style={{ borderTop: "1px solid #F0EEED" }}>
+                      <td style={modalTdLeft}>
+                        <span style={modalColorDot(CHART_COLORS[(i + 2) % CHART_COLORS.length])} />
+                        <span style={modalServiceName}>{row.name}</span>
+                      </td>
+                      <td style={modalTdRight}>{row.count}</td>
+                      <td style={modalTdRight}>{((row.count / requestedModalData.total) * 100).toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ borderTop: "2px solid #E6E4DF" }}>
+                    <td style={modalTfootLeft}>Total</td>
+                    <td style={modalTfootRight}>{requestedModalData.total}</td>
+                    <td style={{ padding: "14px 0 0 0" }} />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </ModalShell>
+      )}
 
       <StaffDrawer
         open={drawerOpen}

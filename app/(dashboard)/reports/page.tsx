@@ -11,6 +11,7 @@ import {
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ModalShell } from "@/components/ui/ModalShell";
 import { CHART_COLORS, formatCurrency } from "@/lib/utils";
 import {
   BarChart3,
@@ -19,6 +20,7 @@ import {
   TrendingUp,
   SlidersHorizontal,
   X,
+  Maximize2,
 } from "lucide-react";
 
 type Period = "day" | "week" | "month" | "year";
@@ -45,6 +47,11 @@ export default function ReportsPage() {
   const [customFrom, setCustomFrom] = useState(today);
   const [customTo, setCustomTo] = useState(today);
   const rangeDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Modal states
+  const [showTopServicesModal, setShowTopServicesModal] = useState(false);
+  const [showRevenueModal, setShowRevenueModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   useEffect(() => {
     if (!showCustomRange) return;
@@ -95,6 +102,8 @@ export default function ReportsPage() {
     .sort((a, b) => b.value - a.value);
 
   const statusTotal = statusData.reduce((t, x) => t + x.value, 0);
+  const totalBookings = topServices.reduce((sum, s) => sum + s.count, 0);
+  const totalRevenue = revenueByService.reduce((sum, s) => sum + s.revenue, 0);
 
   function selectPeriod(p: Period) {
     setPeriod(p);
@@ -126,7 +135,6 @@ export default function ReportsPage() {
 
       {/* Filters row */}
       <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-        {/* Branch select */}
         <select
           value={branch}
           onChange={(e) => setBranch(e.target.value)}
@@ -156,7 +164,6 @@ export default function ReportsPage() {
           ))}
         </select>
 
-        {/* Period tabs + custom range */}
         <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
           <div
             style={{
@@ -193,7 +200,6 @@ export default function ReportsPage() {
             })}
           </div>
 
-          {/* Custom range toggle */}
           <div ref={rangeDropdownRef} style={{ position: "relative" }}>
             <button
               onClick={() => setShowCustomRange((v) => !v)}
@@ -247,7 +253,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Summary KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
+      {/* <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
         <KpiTile
           label="Revenue"
           sublabel="Completed bookings"
@@ -268,11 +274,11 @@ export default function ReportsPage() {
           small
           loading={isLoading}
         />
-      </div>
+      </div> */}
 
       {/* Charts grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-        {/* Top Services Bar */}
+        {/* Top Services Bar - Clickable */}
         <Card>
           <CardHeader>
             <div style={chartHeaderStyle}>
@@ -286,27 +292,35 @@ export default function ReportsPage() {
             ) : topServices.length === 0 ? (
               <EmptyState icon="📊" title="No data for this period" />
             ) : (
-              <ResponsiveContainer width="100%" height={Math.max(160, topServices.length * 30)}>
-                <BarChart data={topServices} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
-                  <XAxis type="number" tick={{ fontSize: 11, fill: "#5F6577" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11, fill: "#1A1D23" }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    formatter={(v: unknown) => [String(v ?? 0), "Bookings"]}
-                    contentStyle={tooltipStyle}
-                    cursor={{ fill: "rgba(181,72,75,0.04)" }}
-                  />
-                  <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={18}>
-                    {topServices.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <div 
+                onClick={() => setShowTopServicesModal(true)}
+                style={{ cursor: "pointer", position: "relative" }}
+              >
+                <ResponsiveContainer width="100%" height={Math.max(160, topServices.length * 30)}>
+                  <BarChart data={topServices} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
+                    <XAxis type="number" tick={{ fontSize: 11, fill: "#5F6577" }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11, fill: "#1A1D23" }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      formatter={(v: unknown) => [String(v ?? 0), "Bookings"]}
+                      contentStyle={tooltipStyle}
+                      cursor={{ fill: "rgba(181,72,75,0.04)" }}
+                    />
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={18}>
+                      {topServices.map((_, i) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={expandIconOverlay}>
+                  <Maximize2 size={12} color="#fff" />
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Revenue Pie */}
+        {/* Revenue Pie - Clickable */}
         <Card>
           <CardHeader>
             <div style={chartHeaderStyle}>
@@ -320,40 +334,48 @@ export default function ReportsPage() {
             ) : revenueByService.length === 0 ? (
               <EmptyState icon="💰" title="No revenue data" />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie
-                    data={revenueByService}
-                    dataKey="revenue"
-                    nameKey="name"
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={3}
-                    strokeWidth={0}
-                  >
-                    {revenueByService.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(v: unknown, name: unknown) => [formatCurrency(v as number, currency), name as string]}
-                    contentStyle={tooltipStyle}
-                  />
-                  <Legend
-                    iconType="circle"
-                    iconSize={7}
-                    wrapperStyle={{ fontSize: "11px", fontFamily: "'DM Sans', sans-serif" }}
-                    formatter={(v) => <span style={{ fontSize: "11px", color: "#5F6577" }}>{v}</span>}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <div 
+                onClick={() => setShowRevenueModal(true)}
+                style={{ cursor: "pointer", position: "relative" }}
+              >
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={revenueByService}
+                      dataKey="revenue"
+                      nameKey="name"
+                      cx="50%"
+                      cy="45%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      strokeWidth={0}
+                    >
+                      {revenueByService.map((_, i) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(v: unknown, name: unknown) => [formatCurrency(v as number, currency), name as string]}
+                      contentStyle={tooltipStyle}
+                    />
+                    <Legend
+                      iconType="circle"
+                      iconSize={7}
+                      wrapperStyle={{ fontSize: "11px", fontFamily: "'DM Sans', sans-serif" }}
+                      formatter={(v) => <span style={{ fontSize: "11px", color: "#5F6577" }}>{v}</span>}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={expandIconOverlay}>
+                  <Maximize2 size={12} color="#fff" />
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Booking Status */}
+        {/* Booking Status - Clickable */}
         <Card style={{ gridColumn: "1 / -1" }}>
           <CardHeader>
             <div style={chartHeaderStyle}>
@@ -367,102 +389,266 @@ export default function ReportsPage() {
             ) : statusData.length === 0 ? (
               <EmptyState icon="📋" title="No booking data for this period" />
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: "40px", flexWrap: "wrap" }}>
-                <ResponsiveContainer width={240} height={220}>
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={90}
-                      paddingAngle={3}
-                      strokeWidth={0}
-                    >
-                      {statusData.map((s, i) => (
-                        <Cell key={i} fill={s.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(v: unknown, name: unknown) => [String(v), name as string]}
-                      contentStyle={tooltipStyle}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {statusData.map((s) => {
-                    const pct = statusTotal > 0 ? Math.round((s.value / statusTotal) * 100) : 0;
-                    return (
-                      <div key={s.name} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <div style={{
-                          width: "10px",
-                          height: "10px",
-                          borderRadius: "50%",
-                          background: s.color,
-                          flexShrink: 0,
-                        }} />
-                        <span style={{
-                          fontSize: "13px",
-                          color: "#1A1D23",
-                          fontWeight: 500,
-                          minWidth: "90px",
-                          fontFamily: "'DM Sans', sans-serif",
-                        }}>
-                          {s.name}
-                        </span>
-                        <span style={{
-                          fontSize: "14px",
-                          color: "#1A1D23",
-                          fontWeight: 700,
-                          fontFamily: "'Space Grotesk', sans-serif",
-                          minWidth: "40px",
-                          textAlign: "right",
-                        }}>
-                          {s.value}
-                        </span>
-                        <div style={{ flex: 1, maxWidth: "80px" }}>
-                          <div style={pctBarOuter}>
-                            <div style={{ ...pctBarInner, width: `${pct}%`, background: s.color }} />
+              <div 
+                onClick={() => setShowStatusModal(true)}
+                style={{ cursor: "pointer", position: "relative" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "40px", flexWrap: "wrap" }}>
+                  <ResponsiveContainer width={240} height={220}>
+                    <PieChart>
+                      <Pie
+                        data={statusData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={90}
+                        paddingAngle={3}
+                        strokeWidth={0}
+                      >
+                        {statusData.map((s, i) => (
+                          <Cell key={i} fill={s.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(v: unknown, name: unknown) => [String(v), name as string]}
+                        contentStyle={tooltipStyle}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {statusData.map((s) => {
+                      const pct = statusTotal > 0 ? Math.round((s.value / statusTotal) * 100) : 0;
+                      return (
+                        <div key={s.name} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <div style={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50%",
+                            background: s.color,
+                            flexShrink: 0,
+                          }} />
+                          <span style={{
+                            fontSize: "13px",
+                            color: "#1A1D23",
+                            fontWeight: 500,
+                            minWidth: "90px",
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>
+                            {s.name}
+                          </span>
+                          <span style={{
+                            fontSize: "14px",
+                            color: "#1A1D23",
+                            fontWeight: 700,
+                            fontFamily: "'Space Grotesk', sans-serif",
+                            minWidth: "40px",
+                            textAlign: "right",
+                          }}>
+                            {s.value}
+                          </span>
+                          <div style={{ flex: 1, maxWidth: "80px" }}>
+                            <div style={pctBarOuter}>
+                              <div style={{ ...pctBarInner, width: `${pct}%`, background: s.color }} />
+                            </div>
                           </div>
+                          <span style={{
+                            fontSize: "11px",
+                            color: "#9CA3B4",
+                            fontWeight: 600,
+                            minWidth: "36px",
+                            textAlign: "right",
+                            fontFamily: "'Space Grotesk', sans-serif",
+                          }}>
+                            {pct}%
+                          </span>
                         </div>
-                        <span style={{
-                          fontSize: "11px",
-                          color: "#9CA3B4",
-                          fontWeight: 600,
-                          minWidth: "36px",
-                          textAlign: "right",
-                          fontFamily: "'Space Grotesk', sans-serif",
-                        }}>
-                          {pct}%
-                        </span>
-                      </div>
-                    );
-                  })}
-                  <div style={{
-                    borderTop: "1px solid #E6E4DF",
-                    marginTop: "4px",
-                    paddingTop: "10px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}>
-                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1D23" }}>Total</span>
-                    <span style={{
-                      fontSize: "14px",
-                      fontWeight: 700,
-                      color: "#1A1D23",
-                      fontFamily: "'Space Grotesk', sans-serif",
+                      );
+                    })}
+                    <div style={{
+                      borderTop: "1px solid #E6E4DF",
+                      marginTop: "4px",
+                      paddingTop: "10px",
+                      display: "flex",
+                      justifyContent: "space-between",
                     }}>
-                      {statusTotal}
-                    </span>
+                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1D23" }}>Total</span>
+                      <span style={{
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: "#1A1D23",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                      }}>
+                        {statusTotal}
+                      </span>
+                    </div>
                   </div>
+                </div>
+                <div style={expandIconOverlay}>
+                  <Maximize2 size={12} color="#fff" />
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Top Services Modal */}
+      <ModalShell
+        open={showTopServicesModal}
+        onClose={() => setShowTopServicesModal(false)}
+        title="Most Booked Services"
+        width={560}
+      >
+        <div style={{ padding: "4px 0" }}>
+          <div style={modalSummaryStyle}>
+            <div>
+              <div style={modalSummaryLabel}>Total Bookings</div>
+              <div style={modalSummaryValue}>{totalBookings}</div>
+            </div>
+            <div>
+              <div style={modalSummaryLabel}>Total Services</div>
+              <div style={modalSummaryValue}>{topServices.length}</div>
+            </div>
+          </div>
+
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+            <table style={modalTableStyle}>
+              <thead>
+                <tr>
+                  <th style={modalThLeft}>Service</th>
+                  <th style={modalThRight}>Bookings</th>
+                  <th style={modalThRight}>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topServices.map((row, i) => (
+                  <tr key={i} style={{ borderTop: "1px solid #F0EEED" }}>
+                    <td style={modalTdLeft}>
+                      <span style={modalColorDot(CHART_COLORS[i % CHART_COLORS.length])} />
+                      <span style={modalServiceName}>{row.name}</span>
+                    </td>
+                    <td style={modalTdRight}>{row.count}</td>
+                    <td style={modalTdRight}>{((row.count / totalBookings) * 100).toFixed(1)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: "2px solid #E6E4DF" }}>
+                  <td style={modalTfootLeft}>Total</td>
+                  <td style={modalTfootRight}>{totalBookings}</td>
+                  <td style={{ padding: "14px 0 0 0" }} />
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </ModalShell>
+
+      {/* Revenue Modal */}
+      <ModalShell
+        open={showRevenueModal}
+        onClose={() => setShowRevenueModal(false)}
+        title="Revenue by Service"
+        width={560}
+      >
+        <div style={{ padding: "4px 0" }}>
+          <div style={modalSummaryStyle}>
+            <div>
+              <div style={modalSummaryLabel}>Total Revenue</div>
+              <div style={modalSummaryValue}>{formatCurrency(totalRevenue, currency)}</div>
+            </div>
+            <div>
+              <div style={modalSummaryLabel}>Total Services</div>
+              <div style={modalSummaryValue}>{revenueByService.length}</div>
+            </div>
+          </div>
+
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+            <table style={modalTableStyle}>
+              <thead>
+                <tr>
+                  <th style={modalThLeft}>Service</th>
+                  <th style={modalThRight}>Revenue</th>
+                  <th style={modalThRight}>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {revenueByService.map((row, i) => (
+                  <tr key={i} style={{ borderTop: "1px solid #F0EEED" }}>
+                    <td style={modalTdLeft}>
+                      <span style={modalColorDot(CHART_COLORS[i % CHART_COLORS.length])} />
+                      <span style={modalServiceName}>{row.name}</span>
+                    </td>
+                    <td style={modalTdRight}>{formatCurrency(row.revenue, currency)}</td>
+                    <td style={modalTdRight}>{((row.revenue / totalRevenue) * 100).toFixed(1)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: "2px solid #E6E4DF" }}>
+                  <td style={modalTfootLeft}>Total</td>
+                  <td style={modalTfootRight}>{formatCurrency(totalRevenue, currency)}</td>
+                  <td style={{ padding: "14px 0 0 0" }} />
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </ModalShell>
+
+      {/* Status Modal */}
+      <ModalShell
+        open={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+        title="Bookings by Status"
+        width={500}
+      >
+        <div style={{ padding: "4px 0" }}>
+          <div style={modalSummaryStyle}>
+            <div>
+              <div style={modalSummaryLabel}>Total Bookings</div>
+              <div style={modalSummaryValue}>{statusTotal}</div>
+            </div>
+            <div>
+              <div style={modalSummaryLabel}>Status Types</div>
+              <div style={modalSummaryValue}>{statusData.length}</div>
+            </div>
+          </div>
+
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+            <table style={modalTableStyle}>
+              <thead>
+                <tr>
+                  <th style={modalThLeft}>Status</th>
+                  <th style={modalThRight}>Count</th>
+                  <th style={modalThRight}>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statusData.map((row, i) => (
+                  <tr key={i} style={{ borderTop: "1px solid #F0EEED" }}>
+                    <td style={modalTdLeft}>
+                      <span style={modalColorDot(row.color)} />
+                      <span style={modalServiceName}>{row.name}</span>
+                    </td>
+                    <td style={modalTdRight}>{row.value}</td>
+                    <td style={modalTdRight}>{((row.value / statusTotal) * 100).toFixed(1)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: "2px solid #E6E4DF" }}>
+                  <td style={modalTfootLeft}>Total</td>
+                  <td style={modalTfootRight}>{statusTotal}</td>
+                  <td style={{ padding: "14px 0 0 0" }} />
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </ModalShell>
     </div>
   );
 }
@@ -612,4 +798,115 @@ const pctBarInner: React.CSSProperties = {
   height: "100%",
   borderRadius: "2px",
   transition: "width 0.4s ease",
+};
+
+const expandIconOverlay: React.CSSProperties = {
+  position: "absolute",
+  bottom: "8px",
+  right: "8px",
+  background: "rgba(0,0,0,0.6)",
+  borderRadius: "6px",
+  padding: "4px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  opacity: 0.7,
+  transition: "opacity 0.2s",
+};
+
+const modalSummaryStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "16px 20px",
+  background: "#F8F8F6",
+  borderRadius: "10px",
+  marginBottom: "20px",
+};
+
+const modalSummaryLabel: React.CSSProperties = {
+  fontSize: "11px",
+  color: "#5F6577",
+  marginBottom: "4px",
+  fontWeight: 500,
+};
+
+const modalSummaryValue: React.CSSProperties = {
+  fontSize: "22px",
+  fontWeight: 700,
+  color: "#b5484b",
+  fontFamily: "'Space Grotesk', sans-serif",
+};
+
+const modalTableStyle: React.CSSProperties = {
+  width: "100%",
+  borderCollapse: "collapse",
+};
+
+const modalThLeft: React.CSSProperties = {
+  textAlign: "left",
+  padding: "12px 16px 8px 0",
+  color: "#9CA3B4",
+  fontWeight: 600,
+  fontSize: "11px",
+  fontFamily: "'DM Sans', sans-serif",
+  borderBottom: "1px solid #E6E4DF",
+};
+
+const modalThRight: React.CSSProperties = {
+  textAlign: "right",
+  padding: "12px 0 8px 16px",
+  color: "#9CA3B4",
+  fontWeight: 600,
+  fontSize: "11px",
+  fontFamily: "'DM Sans', sans-serif",
+  borderBottom: "1px solid #E6E4DF",
+};
+
+const modalTdLeft: React.CSSProperties = {
+  padding: "12px 16px 12px 0",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  fontSize: "13px",
+  fontFamily: "'DM Sans', sans-serif",
+};
+
+const modalTdRight: React.CSSProperties = {
+  padding: "12px 0 12px 16px",
+  textAlign: "right",
+  fontWeight: 600,
+  color: "#1A1D23",
+  fontFamily: "'Space Grotesk', sans-serif",
+  fontSize: "13px",
+};
+
+const modalTfootLeft: React.CSSProperties = {
+  padding: "14px 16px 0 0",
+  fontWeight: 700,
+  color: "#1A1D23",
+  fontFamily: "'Space Grotesk', sans-serif",
+  fontSize: "13px",
+};
+
+const modalTfootRight: React.CSSProperties = {
+  padding: "14px 0 0 16px",
+  textAlign: "right",
+  fontWeight: 700,
+  color: "#b5484b",
+  fontFamily: "'Space Grotesk', sans-serif",
+  fontSize: "14px",
+};
+
+const modalColorDot = (color: string): React.CSSProperties => ({
+  width: "10px",
+  height: "10px",
+  borderRadius: "50%",
+  background: color,
+  flexShrink: 0,
+});
+
+const modalServiceName: React.CSSProperties = {
+  color: "#1A1D23",
+  fontWeight: 500,
 };
