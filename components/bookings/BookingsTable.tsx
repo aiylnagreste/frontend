@@ -123,7 +123,7 @@ export default function BookingsTable({ branchId, branchName }: Props) {
               <option value="confirmed">Confirmed</option>
               <option value="completed">Completed</option>
               <option value="canceled">Cancelled</option>
-              <option value="no_show">No-Show</option>
+              <option value="no_show">Missed</option>
             </select>
           </div>
 

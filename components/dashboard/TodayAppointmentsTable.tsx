@@ -48,7 +48,7 @@ export default function TodayAppointmentsTable() {
     mutationFn: (id: number) =>
       api.patch(`/salon-admin/api/bookings/${id}/status`, { status: "no_show" }),
     onSuccess: () => {
-      toast.success("Marked as no-show");
+      toast.success("Marked as Missed");
       invalidateAfterMutation();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -224,7 +224,7 @@ export default function TodayAppointmentsTable() {
                       )}
                     </td>
                     <td style={cellStyle}>
-                      <Badge status={b.status} />
+                      <Badge status={b.status === "no_show" ? "Missed" : b.status} />
                     </td>
                     <td style={cellStyle}>
                       <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -241,7 +241,7 @@ export default function TodayAppointmentsTable() {
                             />
                             <TableAction
                               icon={<UserMinus size={11} strokeWidth={2} />}
-                              label="No-Show"
+                              label="Missed"
                               bg="#FEF3C7"
                               color="#92400E"
                               hoverBg="#FDE68A"

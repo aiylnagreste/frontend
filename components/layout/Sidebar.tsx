@@ -2,7 +2,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchBranches, fetchStaff, fetchGeneral, QK } from "@/lib/queries";
 import type { Branch, Staff } from "@/lib/types";
@@ -15,6 +15,36 @@ export default function Sidebar() {
   const [showBranchDrawer, setShowBranchDrawer] = useState(false);
   const [showStaffDrawer, setShowStaffDrawer] = useState(false);
 
+  // ──────────────────────────────────────────────────────────────
+  // 1. Hydration Safety: isMounted pattern
+  // ──────────────────────────────────────────────────────────────
+  // Server: isMounted is always false.
+  // Client: becomes true immediately on mount.
+  const [isMounted, setIsMounted] = useState(false);
+  
+  const [branding, setBranding] = useState<{ logo: string | null; name: string }>({
+    logo: null,
+    name: "Salon",
+  });
+
+  useEffect(() => {
+    // Run only on Client
+    setIsMounted(true);
+
+    // Load from LocalStorage instantly
+    try {
+      const cached = localStorage.getItem("salon_branding");
+      if (cached) {
+        setBranding(JSON.parse(cached));
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }, []);
+
+  // ──────────────────────────────────────────────────────────────
+  // Data Fetching
+  // ──────────────────────────────────────────────────────────────
   const { data: branches = [] } = useQuery<Branch[]>({
     queryKey: QK.branches(),
     queryFn: fetchBranches,
@@ -27,14 +57,29 @@ export default function Sidebar() {
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: general } = useQuery({
+  const { data: general, isLoading: isGeneralLoading } = useQuery({
     queryKey: QK.general(),
     queryFn: fetchGeneral,
     staleTime: 10 * 60 * 1000,
   });
 
-  const logo = general?.logo_data_uri ?? null;
-  const salonName = general?.salon_name?.trim() || "Salon";
+  // ──────────────────────────────────────────────────────────────
+  // 2. Sync Data: When API loads, update State + LocalStorage
+  // ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (general) {
+      const newBranding = {
+        logo: general.logo_data_uri ?? null,
+        name: general.salon_name?.trim() || "Salon",
+      };
+      setBranding(newBranding);
+      try {
+        localStorage.setItem("salon_branding", JSON.stringify(newBranding));
+      } catch (e) {
+        // Storage might be full or disabled
+      }
+    }
+  }, [general]);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
@@ -56,40 +101,56 @@ export default function Sidebar() {
     }
   }
 
+  // ──────────────────────────────────────────────────────────────
+  // 3. Render Logic
+  // ──────────────────────────────────────────────────────────────
+  // Show skeleton if: NOT mounted (Server) OR (Loading AND no cached data)
+  const showSkeleton = !isMounted || (isGeneralLoading && !branding.logo);
+
   return (
     <aside style={styles.sidebar}>
       {/* Background glow */}
       <div style={styles.glow1} />
       <div style={styles.glow2} />
 
-      {/* Brand */}
-      <div style={styles.brand}>
-        <div
-          style={{
-            ...styles.brandIcon,
-            // Override background when we have a real logo so the rose gradient
-            // doesn't bleed through transparent PNGs.
-            background: logo ? "#fff" : styles.brandIcon.background,
-            padding: logo ? 2 : 0,
-            overflow: "hidden",
-          }}
-        >
-          {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logo}
-              alt={`${salonName} logo`}
-              style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 8 }}
-            />
-          ) : (
-            <span>✨</span>
-          )}
+      {/* Brand Block */}
+      {showSkeleton ? (
+        // Skeleton Loader (Server + Initial Client Paint)
+        <div style={styles.brand}>
+          <div style={styles.skeletonIcon} />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={styles.skeletonTitle} />
+            <div style={styles.skeletonSub} />
+          </div>
         </div>
-        <div>
-          <div style={styles.brandTitle}>{salonName}</div>
-          <div style={styles.brandSub}>Management Portal</div>
+      ) : (
+        // Real Brand (Client only, after mount)
+        <div style={styles.brand}>
+          <div
+            style={{
+              ...styles.brandIcon,
+              background: branding.logo ? "#fff" : styles.brandIcon.background,
+              padding: branding.logo ? 2 : 0,
+              overflow: "hidden",
+            }}
+          >
+            {branding.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={branding.logo}
+                alt={`${branding.name} logo`}
+                style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 8 }}
+              />
+            ) : (
+              <span>✨</span>
+            )}
+          </div>
+          <div>
+            <div style={styles.brandTitle}>{branding.name}</div>
+            <div style={styles.brandSub}>Management Portal</div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Navigation */}
       <nav style={styles.nav}>
@@ -359,6 +420,29 @@ const styles: Record<string, React.CSSProperties> = {
     letterSpacing: "0.08em",
     fontWeight: 500,
   },
+  // Skeleton Loader Styles
+  skeletonIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: "rgba(255,255,255,0.08)",
+    flexShrink: 0,
+    animation: "pulse 1.5s infinite",
+  },
+  skeletonTitle: {
+    width: "80%",
+    height: 14,
+    borderRadius: 4,
+    background: "rgba(255,255,255,0.08)",
+    animation: "pulse 1.5s infinite 0.2s",
+  },
+  skeletonSub: {
+    width: "60%",
+    height: 10,
+    borderRadius: 4,
+    background: "rgba(255,255,255,0.05)",
+    animation: "pulse 1.5s infinite 0.4s",
+  },
   nav: {
     flex: 1,
     padding: "12px 8px",
@@ -380,7 +464,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     gap: "10px",
     padding: "9px 12px",
-    borderRadius: "8px",
+    borderRadius: 8,
     fontSize: "13px",
     cursor: "pointer",
     border: "none",
@@ -393,7 +477,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     gap: "8px",
     padding: "7px 12px 7px 28px",
-    borderRadius: "6px",
+    borderRadius: 6,
     fontSize: "12px",
     cursor: "pointer",
     border: "none",
@@ -411,7 +495,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     gap: "10px",
     padding: "9px 12px",
-    borderRadius: "8px",
+    borderRadius: 8,
     fontSize: "13px",
     color: "rgba(255,255,255,0.4)",
     background: "transparent",
@@ -422,3 +506,16 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'DM Sans', sans-serif",
   },
 };
+
+// Inject keyframes for pulse animation
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.type = "text/css";
+  styleSheet.innerText = `
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.2; }
+    }
+  `;
+  document.head.appendChild(styleSheet);
+}

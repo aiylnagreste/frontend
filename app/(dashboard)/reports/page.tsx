@@ -34,7 +34,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   completed: { label: "Completed", color: "#22c55e" },
   confirmed: { label: "Confirmed", color: "#3b82f6" },
   canceled: { label: "Canceled", color: "#ef4444" },
-  no_show: { label: "No Show", color: "#f97316" },
+  no_show: { label: "Missed", color: "#f97316" },
 };
 
 export default function ReportsPage() {

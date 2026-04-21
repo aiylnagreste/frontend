@@ -31,7 +31,7 @@ export const STATUS_LABELS: Record<string, string> = {
   confirmed: "Confirmed",
   completed: "Completed",
   canceled: "Cancelled",
-  no_show: "No-Show",
+  no_show: "Missed",
   archived: "Archived",
 };
 

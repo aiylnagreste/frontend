@@ -537,7 +537,7 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
               <option value="confirmed">Confirmed</option>
               <option value="completed">Completed</option>
               <option value="canceled">Canceled</option>
-              <option value="no_show">No Show</option>
+              <option value="no_show">Missed</option>
             </select>
           </div>
         </div>
