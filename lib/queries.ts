@@ -218,3 +218,59 @@ export async function fetchPublicPlans(): Promise<PublicPlan[]> {
   if (!res.ok) throw new Error('Failed to load plans');
   return res.json();
 }
+
+// Add to your queries.ts file after the existing super admin functions
+// In lib/queries.ts — Replace the existing SalonIntegration-related types and fetchers
+
+// ── Super Admin: Integrations ───────────────────────────────────────────────
+
+export interface SalonIntegration {
+  id: number;
+  tenant_id: string;
+  salon_name: string;
+  owner_name: string;
+  plan_name: string;
+  plan_features: {
+    whatsapp: boolean;
+    instagram: boolean;
+    facebook: boolean;
+    widget: boolean;
+    ai_calls: boolean;
+  };
+  has_whatsapp: boolean;
+  has_instagram: boolean;
+  has_facebook: boolean;
+  needs_configuration: {
+    whatsapp: boolean;
+    instagram: boolean;
+    facebook: boolean;
+  };
+}
+
+export interface WebhookConfigDetail {
+  whatsapp_phone_number_id: string | null;
+  whatsapp_access_token: string | null;
+  instagram_access_token: string | null;
+  facebook_access_token: string | null;
+}
+
+export const fetchIntegrationsSalons = () =>
+  api.get<SalonIntegration[]>(`${SA}/integrations/salons`);
+
+export const fetchIntegrationConfig = (salonId: number) =>
+  api.get<WebhookConfigDetail>(`${SA}/integrations/${salonId}`);
+
+export const saveIntegrationConfig = (
+  salonId: number,
+  payload: Record<string, string | undefined>
+) => {
+  // Remove undefined values before sending
+  const clean: Record<string, string> = {};
+  for (const [k, v] of Object.entries(payload)) {
+    if (v && v.trim()) clean[k] = v.trim();
+  }
+  return api.put(`${SA}/integrations/${salonId}`, clean);
+};
+
+export const deleteIntegrationChannel = (salonId: number, channel: string) =>
+  api.delete(`${SA}/integrations/${salonId}/${channel}`);

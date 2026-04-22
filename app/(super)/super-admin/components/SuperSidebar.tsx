@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard, Layers, CreditCard,
-  ShieldHalf, LogOut, ChevronRight,
+  ShieldHalf, LogOut, ChevronRight, Settings
 } from "lucide-react";
 
 const NAV = [
@@ -19,6 +19,12 @@ const NAV = [
     items: [
       { href: "/super-admin/plans",    icon: Layers,     label: "Plans" },
       { href: "/super-admin/payments", icon: CreditCard, label: "Payments" },
+    ],
+  },
+  {
+    section: "Integrations",
+    items: [
+      { href: "/super-admin/integrations", icon: Settings, label: "Salon Integrations" },
     ],
   },
   {
