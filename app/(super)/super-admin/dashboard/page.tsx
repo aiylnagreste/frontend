@@ -16,13 +16,14 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 
+// Updated Color Scheme matching the Red/Purple Target
 const C = {
   bg: "#F4F3EF",
   surface: "#FFFFFF",
-  primary: "#0D9488",
-  primaryHover: "#0F766E",
-  primaryLight: "#CCFBF1",
-  primaryGlow: "rgba(13,148,136,0.12)",
+  primary: "#b5484b",      // Main Brand Color (Red)
+  primaryHover: "#6b3057", // Secondary Brand Color (Purple/Dark Red)
+  primaryLight: "rgba(181,72,75,0.1)",
+  primaryGlow: "rgba(181,72,75,0.25)",
   accent: "#E8913A",
   accentLight: "#FEF3C7",
   text: "#1A1D23",
@@ -52,7 +53,7 @@ function StatCard({ title, value, change, iconEl, accent, trend }: {
   iconEl: React.ReactNode; accent: "teal" | "green" | "red" | "amber"; trend?: "up" | "down" | "neutral";
 }) {
   const palette: Record<string, { icon: string; iconBg: string }> = {
-    teal:  { icon: C.primary, iconBg: C.primaryLight },
+    teal:  { icon: C.primary, iconBg: C.primaryLight }, // Will now be Red
     green: { icon: C.success, iconBg: C.successBg },
     red:   { icon: C.error,   iconBg: C.errorBg },
     amber: { icon: C.accent,  iconBg: C.accentLight },
@@ -196,7 +197,7 @@ export default function SuperDashboardPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
             width: 48, height: 48, borderRadius: 14,
-            background: `linear-gradient(135deg, ${C.primary}, #0F766E)`,
+            background: `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: `0 4px 14px ${C.primaryGlow}`,
           }}>
@@ -292,7 +293,7 @@ export default function SuperDashboardPage() {
                   transition: "box-shadow 0.18s, transform 0.15s",
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.boxShadow = "0 4px 14px rgba(13,148,136,0.25)";
+                  e.currentTarget.style.boxShadow = `0 4px 16px rgba(181,72,75,0.4)`;
                   e.currentTarget.style.transform = "translateY(-1px)";
                 }}
                 onMouseLeave={e => {
@@ -317,7 +318,7 @@ export default function SuperDashboardPage() {
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "18px 22px", borderBottom: `1px solid ${C.border2}`,
           flexWrap: "wrap", gap: 12,
-          background: "linear-gradient(180deg, rgba(13,148,136,0.04), transparent)",
+          background: "linear-gradient(180deg, rgba(181,72,75,0.04), transparent)", // Updated Red tint
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 9, background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -358,7 +359,7 @@ export default function SuperDashboardPage() {
                 transition: "box-shadow 0.18s, transform 0.15s",
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = "0 4px 16px rgba(13,148,136,0.25)";
+                e.currentTarget.style.boxShadow = `0 4px 16px rgba(181,72,75,0.4)`;
                 e.currentTarget.style.transform = "translateY(-1px)";
               }}
               onMouseLeave={e => {
@@ -397,7 +398,7 @@ export default function SuperDashboardPage() {
                   const tid = t.tenant_id || t.id || "";
                   return (
                     <tr key={tid} style={{ borderBottom: `1px solid ${C.border2}`, transition: "background 0.15s" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,148,136,0.02)")}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(181,72,75,0.02)")} // Updated Red tint
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
                       <td style={{ padding: "14px 22px" }}>
@@ -444,7 +445,7 @@ export default function SuperDashboardPage() {
                             }}
                             onMouseEnter={e => {
                               e.currentTarget.style.background = C.primaryLight;
-                              e.currentTarget.style.borderColor = "rgba(13,148,136,0.2)";
+                              e.currentTarget.style.borderColor = "rgba(181,72,75,0.2)";
                             }}
                             onMouseLeave={e => {
                               e.currentTarget.style.background = "transparent";
@@ -589,7 +590,7 @@ function ModalHeader({ icon, iconBg, iconColor, title, subtitle, onClose }: {
       display: "flex", alignItems: "center", gap: 12,
       padding: "22px 26px 18px",
       borderBottom: `1px solid ${C.border2}`,
-      background: "linear-gradient(180deg, rgba(13,148,136,0.04), transparent)",
+      background: "linear-gradient(180deg, rgba(181,72,75,0.04), transparent)", // Updated Red tint
     }}>
       <div style={{
         width: 36, height: 36, borderRadius: 10,
@@ -660,7 +661,7 @@ function ModalFooter({ onCancel, onConfirm, confirmLabel, confirmDisabled, loadi
         }}
         onMouseEnter={e => {
           if (!loading && !confirmDisabled) {
-            e.currentTarget.style.boxShadow = "0 4px 16px rgba(13,148,136,0.25)";
+            e.currentTarget.style.boxShadow = `0 4px 16px rgba(181,72,75,0.4)`;
             e.currentTarget.style.transform = "translateY(-1px)";
           }
         }}

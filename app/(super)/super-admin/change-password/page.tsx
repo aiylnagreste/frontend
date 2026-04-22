@@ -1,19 +1,19 @@
-// app/(super)/super-admin/change-password/page.tsx
 "use client";
 
 import { useState, useMemo } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { ShieldHalf, Eye, EyeOff, ArrowLeft, Lock, Check, X, Loader2 } from "lucide-react";
+import { ShieldHalf, Eye, EyeOff, Lock, Check, X, Loader2 } from "lucide-react";
 
+// Updated Color Scheme matching the Red/Purple Target Sidebar
 const C = {
   bg: "#F4F3EF",
   surface: "#FFFFFF",
-  primary: "#0D9488",
-  primaryHover: "#0F766E",
-  primaryLight: "#CCFBF1",
-  primaryGlow: "rgba(13,148,136,0.12)",
+  primary: "#b5484b",      // Main Brand Color (Red)
+  primaryHover: "#6b3057", // Secondary Brand Color (Purple/Dark Red)
+  primaryLight: "rgba(181,72,75,0.1)", // Very faint red for backgrounds
+  primaryGlow: "rgba(181,72,75,0.25)", // Reddish glow
   text: "#1A1D23",
   text2: "#5F6577",
   text3: "#9CA3B4",
@@ -93,7 +93,7 @@ export default function ChangePasswordPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
             width: 48, height: 48, borderRadius: 14,
-            background: `linear-gradient(135deg, ${C.primary}, #0F766E)`,
+            background: `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: `0 4px 14px ${C.primaryGlow}`,
           }}>
@@ -104,7 +104,7 @@ export default function ChangePasswordPage() {
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: 24, fontWeight: 700, color: C.text,
               letterSpacing: "-0.025em", lineHeight: 1.2,
-            }}>Chanange Password</h1>
+            }}>Change Password</h1>
             <p style={{ fontSize: 14, color: C.text2, marginTop: 2 }}>
               Choose a strong password to keep your salon account secure
             </p>
@@ -125,7 +125,6 @@ export default function ChangePasswordPage() {
         <div style={{
           padding: "20px 28px",
           borderBottom: `1px solid ${C.border2}`,
-         // background: `linear-gradient(180deg, ${C.primaryGlow}, transparent)`,
           display: "flex", alignItems: "center", gap: 10,
         }}>
           <Lock size={16} style={{ color: C.primary }} />
@@ -343,7 +342,7 @@ export default function ChangePasswordPage() {
               }}
               onMouseEnter={e => {
                 if (!loading) {
-                  e.currentTarget.style.boxShadow = `0 4px 16px rgba(13,148,136,0.25)`;
+                  e.currentTarget.style.boxShadow = `0 4px 16px rgba(181,72,75,0.4)`; // Adjusted glow for red color
                   e.currentTarget.style.transform = "translateY(-1px)";
                 }
               }}

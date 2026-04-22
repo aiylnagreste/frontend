@@ -206,12 +206,12 @@ export default function Sidebar() {
           active={isActive("/packages")}
           onClick={() => navigate("/packages")}
         />
-        <NavItem
+        {/* <NavItem
           icon="🎁"
           label="Deals & Offers"
           active={isActive("/deals")}
           onClick={() => navigate("/deals")}
-        />
+        /> */}
 
         <div style={styles.sectionLabel}>System</div>
 

@@ -10,9 +10,9 @@ import { CreditCard } from "lucide-react";
 const C = {
   bg: "#F4F3EF",
   surface: "#FFFFFF",
-  primary: "#0D9488",
-  primaryLight: "#CCFBF1",
-  primaryGlow: "rgba(13,148,136,0.12)",
+  primary: "#b5484b",
+  primaryLight: "rgba(181,72,75,0.1)",
+  primaryGlow: "rgba(181,72,75,0.25)",
   text: "#1A1D23",
   text2: "#5F6577",
   text3: "#9CA3B4",
@@ -71,7 +71,7 @@ export default function PaymentsPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
             width: 48, height: 48, borderRadius: 14,
-            background: `linear-gradient(135deg, ${C.primary}, #0F766E)`,
+            background: `linear-gradient(135deg, ${C.primary}, #6b3057)`,
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: `0 4px 14px ${C.primaryGlow}`,
           }}>
@@ -103,7 +103,7 @@ export default function PaymentsPage() {
           display: "flex", alignItems: "center", gap: 10,
           padding: "18px 22px",
           borderBottom: `1px solid ${C.border2}`,
-          background: "linear-gradient(180deg, rgba(13,148,136,0.04), transparent)",
+          background: "linear-gradient(180deg, rgba(181,72,75,0.04), transparent)",
         }}>
           <div style={{
             width: 32, height: 32, borderRadius: 9,
@@ -153,7 +153,7 @@ export default function PaymentsPage() {
                 {sorted.map(s => (
                   <tr key={s.id}
                     style={{ borderBottom: `1px solid ${C.border2}`, transition: "background 0.15s" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,148,136,0.02)")}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(181,72,75,0.02)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   >
                     <td style={{ padding: "14px 22px" }}>

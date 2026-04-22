@@ -39,123 +39,66 @@ export function SuperSidebar() {
   }
 
   return (
-    <aside style={{
-      width: 252, minHeight: "100vh",
-      background: "#0E1015",
-      display: "flex", flexDirection: "column",
-      position: "fixed", top: 0, left: 0, bottom: 0,
-      zIndex: 100,
-      fontFamily: "'DM Sans', sans-serif",
-      /* Subtle right edge light */
-      borderRight: "1px solid rgba(255,255,255,0.05)",
-    }}>
-      {/* ── Brand ── */}
-      <div style={{
-        padding: "22px 20px 18px",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        display: "flex", alignItems: "center", gap: 12,
-      }}>
-        <div style={{
-          width: 38, height: 38, borderRadius: 11,
-          background: "linear-gradient(135deg, #0D9488 0%, #2DD4BF 100%)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 17, fontWeight: 700, color: "#fff", flexShrink: 0,
-          fontFamily: "'Space Grotesk', sans-serif",
-          boxShadow: "0 2px 10px rgba(13,148,136,0.35)",
-        }}>G</div>
+    <aside style={styles.sidebar}>
+      {/* Background glows matching the target aesthetic */}
+      <div style={styles.glow1} />
+      <div style={styles.glow2} />
+
+      {/* Brand Block */}
+      <div style={styles.brand}>
+        <div style={styles.brandIcon}>
+          <span style={{ fontSize: "18px" }}>✨</span>
+        </div>
         <div>
-          <div style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: 15, fontWeight: 700, color: "#fff",
-            letterSpacing: "-0.01em",
-          }}>GlowDesk</div>
-          <div style={{
-            fontSize: 9.5, color: "rgba(255,255,255,0.3)",
-            textTransform: "uppercase", letterSpacing: "0.12em",
-            marginTop: 2, fontWeight: 500,
-          }}>Super Admin</div>
+          <div style={styles.brandTitle}>Salon</div>
+          <div style={styles.brandSub}>Super Admin</div>
         </div>
       </div>
 
-      {/* ── Navigation ── */}
-      <nav style={{
-        flex: 1, padding: "8px 10px", overflowY: "auto",
-        /* Fade edges on scroll */
-        maskImage: "linear-gradient(to bottom, transparent 0%, black 12px, black calc(100% - 12px), transparent 100%)",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 12px, black calc(100% - 12px), transparent 100%)",
-      }}>
-        {NAV.map((group, gIdx) => (
+      {/* Navigation */}
+      <nav style={styles.nav}>
+        {NAV.map((group) => (
           <div key={group.section}>
-            {/* Section label */}
-            <div style={{
-              fontSize: 9.5, fontWeight: 600,
-              color: "rgba(255,255,255,0.25)",
-              textTransform: "uppercase", letterSpacing: "0.12em",
-              padding: gIdx === 0 ? "14px 12px 8px" : "20px 12px 8px",
-            }}>{group.section}</div>
+            <div style={styles.sectionLabel}>{group.section}</div>
 
-            {group.items.map(item => {
+            {group.items.map((item) => {
               const active = isActive(item.href);
               const Icon = item.icon;
 
               return (
-                <Link key={item.href} href={item.href}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    padding: "9px 12px", borderRadius: 9,
-                    fontSize: 13, fontWeight: active ? 600 : 450,
-                    color: active ? "#5EEAD4" : "rgba(255,255,255,0.4)",
-                    background: active
-                      ? "linear-gradient(135deg, rgba(13,148,136,0.15) 0%, rgba(13,148,136,0.06) 100%)"
-                      : "transparent",
-                    textDecoration: "none",
-                    marginBottom: 2,
-                    transition: "all 0.18s ease",
-                    position: "relative",
-                    /* Active left indicator */
-                    borderLeft: active ? "2px solid #0D9488" : "2px solid transparent",
-                  }}
-                  onMouseEnter={e => {
-                    if (!active) {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.7)";
-                      e.currentTarget.style.borderLeftColor = "rgba(255,255,255,0.08)";
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!active) {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.4)";
-                      e.currentTarget.style.borderLeftColor = "transparent";
-                    }
-                  }}
-                >
-                  {/* Icon wrapper with active glow */}
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 7,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: active ? "rgba(13,148,136,0.2)" : "transparent",
-                    flexShrink: 0,
-                    transition: "background 0.18s ease",
-                  }}>
-                    <Icon
-                      size={14.5}
-                      style={{
-                        flexShrink: 0,
-                        color: active ? "#5EEAD4" : undefined,
-                        filter: active ? "drop-shadow(0 0 4px rgba(94,234,212,0.4))" : undefined,
-                      }}
-                    />
+                <Link key={item.href} href={item.href} style={{ textDecoration: "none", width: "100%" }}>
+                  <div
+                    style={{
+                      ...styles.navItem,
+                      color: active ? "#fff" : "rgba(255,255,255,0.55)",
+                      background: active ? "rgba(181,72,75,0.2)" : "transparent",
+                      fontWeight: active ? 600 : 400,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!active) {
+                        e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                        e.currentTarget.style.color = "rgba(255,255,255,0.85)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active) {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.color = "rgba(255,255,255,0.55)";
+                      }
+                    }}
+                  >
+                    {/* Icon Slot matching target dimensions */}
+                    <span style={styles.iconSlot}>
+                      <Icon size={16} style={{ width: "100%", height: "100%" }} />
+                    </span>
+                    
+                    <span style={{ flex: 1, textAlign: "left" }}>{item.label}</span>
+
+                    {/* Active Indicator Chevron */}
+                    {active && (
+                      <ChevronRight size={13} style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }} />
+                    )}
                   </div>
-
-                  <span style={{ flex: 1 }}>{item.label}</span>
-
-                  {/* Active chevron */}
-                  {active && (
-                    <ChevronRight size={13} style={{
-                      color: "rgba(94,234,212,0.5)", flexShrink: 0,
-                    }} />
-                  )}
                 </Link>
               );
             })}
@@ -163,60 +106,207 @@ export function SuperSidebar() {
         ))}
       </nav>
 
-      {/* ── Footer ── */}
-      <div style={{
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        padding: "10px 10px 14px",
-      }}>
-        {/* User pill */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 10,
-          padding: "10px 12px", borderRadius: 9,
-          background: "rgba(255,255,255,0.03)",
-          marginBottom: 6,
-        }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: "50%",
-            background: "linear-gradient(135deg, #0D9488 0%, #E8913A 100%)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 10.5, fontWeight: 700, color: "#fff", flexShrink: 0,
-            fontFamily: "'Space Grotesk', sans-serif",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-          }}>SA</div>
+      {/* Footer */}
+      <div style={styles.footer}>
+        {/* User Pill styled to match theme */}
+        <div style={styles.userPill}>
+          <div style={styles.userAvatar}>SA</div>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{
-              fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)",
-              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-            }}>Super Admin</div>
-            <div style={{
-              fontSize: 10, color: "rgba(255,255,255,0.25)",
-              marginTop: 1,
-            }}>admin@glowdesk.com</div>
+            <div style={styles.userName}>Super Admin</div>
+            <div style={styles.userEmail}>admin@glowdesk.com</div>
           </div>
         </div>
 
-        {/* Logout */}
-        <a href="/super-admin/logout" style={{
-          display: "flex", alignItems: "center", gap: 10,
-          padding: "9px 12px", borderRadius: 9,
-          fontSize: 13, fontWeight: 500,
-          color: "rgba(239,68,68,0.5)",
-          textDecoration: "none",
-          transition: "all 0.18s ease",
-        }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = "rgba(239,68,68,0.08)";
-            e.currentTarget.style.color = "rgba(239,68,68,0.85)";
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "rgba(239,68,68,0.5)";
-          }}
-        >
-          <LogOut size={14} style={{ flexShrink: 0 }} />
-          <span>Logout</span>
+        {/* Logout Button */}
+        <a href="/super-admin/logout" style={{ textDecoration: "none", width: "100%" }}>
+          <button
+            style={styles.logoutBtn}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+              e.currentTarget.style.color = "rgba(255,255,255,0.8)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+            }}
+          >
+            <LogOut size={14} style={{ flexShrink: 0 }} />
+            <span>Logout</span>
+          </button>
         </a>
       </div>
     </aside>
   );
 }
+
+/* ── Styles Object (Matching Target Sidebar.tsx) ── */
+const styles: Record<string, React.CSSProperties> = {
+  sidebar: {
+    width: "252px",
+    minHeight: "100vh",
+    background: "#111318",
+    display: "flex",
+    flexDirection: "column",
+    position: "fixed",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    zIndex: 100,
+    fontFamily: "'DM Sans', sans-serif",
+    borderRight: "1px solid rgba(255,255,255,0.06)",
+    overflowY: "auto",
+    overflowX: "hidden",
+  },
+  glow1: {
+    position: "absolute",
+    width: 300,
+    height: 300,
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(181,72,75,0.1) 0%, transparent 70%)",
+    top: -80,
+    left: -80,
+    pointerEvents: "none",
+  },
+  glow2: {
+    position: "absolute",
+    width: 250,
+    height: 250,
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(107,48,87,0.08) 0%, transparent 70%)",
+    bottom: 40,
+    right: -60,
+    pointerEvents: "none",
+  },
+  brand: {
+    padding: "24px 20px 20px",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    position: "relative",
+  },
+  brandIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: "linear-gradient(135deg, #b5484b, #6b3057)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 16,
+    flexShrink: 0,
+    boxShadow: "0 4px 16px rgba(181,72,75,0.3)",
+    color: "#fff",
+    fontWeight: 700,
+    fontFamily: "'Space Grotesk', sans-serif",
+  },
+  brandTitle: {
+    fontSize: "15px",
+    fontWeight: 700,
+    color: "#fff",
+    fontFamily: "'Space Grotesk', sans-serif",
+    letterSpacing: "-0.01em",
+    lineHeight: 1.2,
+  },
+  brandSub: {
+    fontSize: "10px",
+    color: "rgba(255,255,255,0.35)",
+    marginTop: "2px",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    fontWeight: 500,
+  },
+  nav: {
+    flex: 1,
+    padding: "12px 8px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+    position: "relative",
+  },
+  sectionLabel: {
+    fontSize: "10px",
+    fontWeight: 600,
+    color: "rgba(255,255,255,0.25)",
+    textTransform: "uppercase",
+    letterSpacing: "0.1em",
+    padding: "16px 12px 6px",
+  },
+  navItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "9px 12px",
+    borderRadius: 8,
+    fontSize: "13px",
+    cursor: "pointer",
+    border: "none",
+    width: "100%",
+    transition: "all 0.15s",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  iconSlot: {
+    fontSize: "15px",
+    width: "20px",
+    textAlign: "center",
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footer: {
+    padding: "12px 8px 16px",
+    borderTop: "1px solid rgba(255,255,255,0.06)",
+    position: "relative",
+  },
+  userPill: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "10px 12px",
+    borderRadius: 8,
+    marginBottom: 6,
+    background: "rgba(255,255,255,0.03)",
+  },
+  userAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #b5484b, #6b3057)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "10.5px",
+    fontWeight: 700,
+    color: "#fff",
+    flexShrink: 0,
+  },
+  userName: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "rgba(255,255,255,0.8)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  userEmail: {
+    fontSize: 10,
+    color: "rgba(255,255,255,0.25)",
+    marginTop: 1,
+  },
+  logoutBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "9px 12px",
+    borderRadius: 8,
+    fontSize: "13px",
+    color: "rgba(255,255,255,0.4)",
+    background: "transparent",
+    border: "none",
+    width: "100%",
+    cursor: "pointer",
+    transition: "all 0.15s",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+};

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchServices, fetchBranches, fetchGeneral, QK } from "@/lib/queries";
+import { fetchServices, fetchBranches, fetchGeneral, fetchPlanFeatures, QK } from "@/lib/queries";
 import type { Service, Branch } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 import { api } from "@/lib/api";
@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useState } from "react";
 import { ServiceDrawer } from "@/components/services/ServiceDrawer";
-import { MapPin, Clock, Pencil, Trash2, Plus, Layers, Search } from "lucide-react";
+import { MapPin, Clock, Pencil, Trash2, Plus, Layers, Search, AlertCircle } from "lucide-react";
 
 function parseDuration(mins: number) {
   if (!mins) return "—";
@@ -28,7 +28,7 @@ export default function PackagesPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
 
-  const { data: services = [], isLoading } = useQuery<Service[]>({
+  const { data: services = [], isLoading: servicesLoading } = useQuery<Service[]>({
     queryKey: QK.services(),
     queryFn: fetchServices,
     staleTime: 5 * 60_000,
@@ -46,7 +46,16 @@ export default function PackagesPage() {
     staleTime: 10 * 60_000,
   });
 
+  const { data: planFeatures, isLoading: planLoading } = useQuery({
+    queryKey: QK.planFeatures(),
+    queryFn: fetchPlanFeatures,
+    staleTime: 60_000,
+  });
+
   const currency = general?.currency ?? "";
+  const maxServices = planFeatures?.max_services ?? 15;
+  const activeServices = services.filter((s) => s.frozen === 0);
+  const hasReachedLimit = activeServices.length >= maxServices && maxServices > 0;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/salon-admin/api/services/${id}`),
@@ -77,6 +86,10 @@ export default function PackagesPage() {
     .sort((a, b) => a.frozen - b.frozen);
 
   function openAddDrawer() {
+    if (hasReachedLimit) {
+      toast.error(`Maximum ${maxServices} services reached. Please upgrade your plan to add more.`);
+      return;
+    }
     setEditingService(null);
     setDrawerOpen(true);
   }
@@ -90,6 +103,8 @@ export default function PackagesPage() {
     setDrawerOpen(false);
     setEditingService(null);
   }
+
+  const isLoading = servicesLoading || planLoading;
 
   return (
     <>
@@ -116,15 +131,18 @@ export default function PackagesPage() {
             </div>
             <button
               onClick={openAddDrawer}
+              disabled={hasReachedLimit}
               style={{
                 padding: "9px 18px",
-                background: "linear-gradient(135deg, #b5484b, #6b3057)",
+                background: hasReachedLimit
+                  ? "#9CA3B4"
+                  : "linear-gradient(135deg, #b5484b, #6b3057)",
                 color: "#fff",
                 border: "none",
                 borderRadius: "8px",
                 fontSize: "13px",
                 fontWeight: 600,
-                cursor: "pointer",
+                cursor: hasReachedLimit ? "not-allowed" : "pointer",
                 fontFamily: "'DM Sans', sans-serif",
                 display: "flex",
                 alignItems: "center",
@@ -132,9 +150,11 @@ export default function PackagesPage() {
                 transition: "opacity 0.2s",
                 whiteSpace: "nowrap",
                 flexShrink: 0,
+                opacity: hasReachedLimit ? 0.6 : 1,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+              title={hasReachedLimit ? `Maximum ${maxServices} services reached. Upgrade your plan to add more.` : "Add new service"}
+              onMouseEnter={(e) => { if (!hasReachedLimit) e.currentTarget.style.opacity = "0.9"; }}
+              onMouseLeave={(e) => { if (!hasReachedLimit) e.currentTarget.style.opacity = "1"; }}
             >
               <Plus size={14} strokeWidth={2.5} />
               Add Service
@@ -148,6 +168,7 @@ export default function PackagesPage() {
             display: "flex",
             gap: "8px",
             marginBottom: "20px",
+            flexWrap: "wrap",
           }}
         >
           <div
@@ -182,7 +203,66 @@ export default function PackagesPage() {
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#94a3b8" }} />
             <span>{frozenCount} Frozen</span>
           </div>
+          {maxServices > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 14px",
+                background: hasReachedLimit ? "#FEF2F2" : "#F8F8F6",
+                borderRadius: "8px",
+                fontSize: "12px",
+                color: hasReachedLimit ? "#DC2626" : "#64748b",
+                fontWeight: 500,
+              }}
+            >
+              <span>📊</span>
+              <span>
+                {activeCount} / {maxServices} services used
+              </span>
+            </div>
+          )}
         </div>
+
+        {/* Progress bar */}
+        {maxServices > 0 && (
+          <div style={{ 
+            marginBottom: "20px",
+            background: "#E6E4DF",
+            borderRadius: "4px",
+            height: "4px",
+            overflow: "hidden"
+          }}>
+            <div style={{
+              width: `${(activeCount / maxServices) * 100}%`,
+              height: "100%",
+              background: activeCount >= maxServices ? "#EF4444" : "linear-gradient(90deg, #b5484b, #6b3057)",
+              transition: "width 0.3s ease"
+            }} />
+          </div>
+        )}
+
+        {/* Warning banner when limit is reached */}
+        {hasReachedLimit && (
+          <div
+            style={{
+              background: "#FEF2F2",
+              border: "1px solid #FECACA",
+              borderRadius: "8px",
+              padding: "12px 16px",
+              marginBottom: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <AlertCircle size={16} style={{ color: "#DC2626", flexShrink: 0 }} />
+            <span style={{ fontSize: "13px", color: "#DC2626", flex: 1 }}>
+              You've reached the maximum limit of {maxServices} active services.
+            </span>
+          </div>
+        )}
 
         {/* Filters row */}
         <div
@@ -323,7 +403,7 @@ export default function PackagesPage() {
                 : "Add your first service to get started."
             }
             action={
-              !search && !branchFilter && frozenFilter === "all"
+              !search && !branchFilter && frozenFilter === "all" && !hasReachedLimit
                 ? { label: "Add Service", onClick: openAddDrawer }
                 : undefined
             }
@@ -350,7 +430,13 @@ export default function PackagesPage() {
         )}
       </div>
 
-      <ServiceDrawer open={drawerOpen} onClose={closeDrawer} editing={editingService} />
+      <ServiceDrawer 
+        open={drawerOpen} 
+        onClose={closeDrawer} 
+        editing={editingService}
+        currentServiceCount={activeCount}
+        maxServices={maxServices}
+      />
     </>
   );
 }

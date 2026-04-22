@@ -27,7 +27,7 @@ import { RoleDrawer } from "@/components/settings/RoleDrawer";
 import {IntegrationsTab} from "@/components/settings/IntegrationsTab";
 import { PlanUpgradeTab } from "@/components/settings/PlanUpgradeTab";
 
-import { Lock , TriangleAlert} from 'lucide-react';
+import { Check, X ,Lock, TriangleAlert} from 'lucide-react';
 
 import { ModalShell } from "@/components/ui/ModalShell";
 type SettingsTab = "general" | "branding" | "branches" | "staff" | "roles" | "timings" | "integrations"  | "plan" | "account";
@@ -1994,6 +1994,28 @@ function AccountTab() {
   const [lockoutMinutes, setLockoutMinutes] = useState(0);
   const [remainingAttempts, setRemainingAttempts] = useState(3);
 
+  // Password strength requirements
+  const requirements = [
+    { test: (p: string) => p.length >= 6, label: "At least 6 characters" },
+    { test: (p: string) => /[A-Z]/.test(p), label: "One uppercase letter" },
+    { test: (p: string) => /[0-9]/.test(p), label: "One number" },
+    { test: (p: string) => /[^A-Za-z0-9]/.test(p), label: "One special character" },
+  ];
+
+  function getStrength(pwd: string) {
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (pwd.length >= 10) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    if (score <= 1) return { label: "Weak", color: "#EF4444", bg: "#FEF2F2", width: "20%" };
+    if (score <= 2) return { label: "Fair", color: "#F59E0B", bg: "#FFFBEB", width: "40%" };
+    if (score <= 3) return { label: "Good", color: "#EAB308", bg: "#FEFCE8", width: "60%" };
+    if (score <= 4) return { label: "Strong", color: "#84CC16", bg: "#F7FEE7", width: "80%" };
+    return { label: "Excellent", color: "#22C55E", bg: "#F0FDF4", width: "100%" };
+  }
+
   // Load failed attempts from localStorage on mount
   useEffect(() => {
     const storedAttempts = localStorage.getItem("salonPasswordAttempts");
@@ -2091,22 +2113,7 @@ function AccountTab() {
     setLockoutMinutes(0);
   };
 
-  const getPasswordStrength = (pw: string) => {
-    if (!pw) return { score: 0, label: "", color: "" };
-    let score = 0;
-    if (pw.length >= 6) score++;
-    if (pw.length >= 10) score++;
-    if (/[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
-    if (/[^A-Za-z0-9]/.test(pw)) score++;
-    if (score <= 1) return { score, label: "Weak", color: "#EF4444" };
-    if (score <= 2) return { score, label: "Fair", color: "#F59E0B" };
-    if (score <= 3) return { score, label: "Good", color: "#3B82F6" };
-    return { score, label: "Strong", color: "#22C55E" };
-  };
-
-  const strength = getPasswordStrength(form.newPassword);
-  const confirmMismatch = form.confirmPassword.length > 0 && form.newPassword !== form.confirmPassword;
+  const strength = getStrength(form.newPassword);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -2333,20 +2340,6 @@ function AccountTab() {
     borderLeft: "3px solid #EF4444",
   };
 
-  const warningMsg: React.CSSProperties = {
-    background: "#FFFBEB",
-    color: "#D97706",
-    padding: "8px 12px",
-    borderRadius: 6,
-    fontSize: "12px",
-    fontWeight: 500,
-    marginTop: "8px",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    borderLeft: "3px solid #F59E0B",
-  };
-
   return (
     <div style={{ maxWidth: "520px" }}>
       {/* Header */}
@@ -2486,40 +2479,60 @@ function AccountTab() {
                 {showNew ? "Hide" : "Show"}
               </button>
             </div>
-            {/* Strength indicator */}
-            {form.newPassword && (
-              <div style={{ marginTop: "10px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "4px",
-                    marginBottom: "5px",
-                  }}
-                >
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      style={{
-                        flex: 1,
-                        height: "3px",
-                        borderRadius: "2px",
-                        background:
-                          i <= strength.score ? strength.color : "#E6E4DF",
-                        transition: "background 0.3s",
-                      }}
-                    />
-                  ))}
+            
+            {/* Password Strength Indicator - New style */}
+            {form.newPassword.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <div style={{
+                  height: 4, borderRadius: 4, background: "#E6E4DF",
+                  overflow: "hidden", marginBottom: 8,
+                }}>
+                  <div style={{
+                    height: "100%", borderRadius: 4,
+                    width: strength.width,
+                    background: strength.color,
+                    transition: "width 0.3s ease, background 0.3s ease",
+                  }} />
                 </div>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: strength.color,
-                    transition: "color 0.3s",
-                  }}
-                >
-                  {strength.label}
-                </span>
+
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  marginBottom: 10,
+                }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, color: strength.color,
+                    letterSpacing: "0.04em", textTransform: "uppercase",
+                  }}>{strength.label}</span>
+                </div>
+
+                {/* Requirements checklist */}
+                <div style={{
+                  display: "grid", gridTemplateColumns: "1fr 1fr",
+                  gap: "6px 16px",
+                }}>
+                  {requirements.map(r => {
+                    const met = r.test(form.newPassword);
+                    return (
+                      <div key={r.label} style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        fontSize: 11, color: met ? "#22C55E" : "#9CA3B4",
+                        transition: "color 0.2s",
+                      }}>
+                        <div style={{
+                          width: 14, height: 14, borderRadius: "50%",
+                          border: `1.5px solid ${met ? "#22C55E" : "#E6E4DF"}`,
+                          background: met ? "#22C55E" : "transparent",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          flexShrink: 0,
+                          transition: "all 0.2s",
+                        }}>
+                          {met && <Check size={8} style={{ color: "#fff" }} strokeWidth={3} />}
+                        </div>
+                        <span>{r.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -2540,10 +2553,11 @@ function AccountTab() {
                 placeholder="Re-enter your new password"
                 style={{
                   ...baseInput,
-                  borderColor: confirmMismatch ? "#EF4444" : undefined,
+                  borderColor: form.confirmPassword.length > 0 && form.newPassword !== form.confirmPassword ? "#EF4444" : 
+                              form.confirmPassword.length > 0 && form.newPassword === form.confirmPassword ? "#22C55E" : undefined,
                 }}
-                onFocus={(e) => handleFocus(e, confirmMismatch)}
-                onBlur={(e) => handleBlur(e, confirmMismatch)}
+                onFocus={(e) => handleFocus(e, form.confirmPassword.length > 0 && form.newPassword !== form.confirmPassword)}
+                onBlur={(e) => handleBlur(e, form.confirmPassword.length > 0 && form.newPassword !== form.confirmPassword)}
               />
               <button
                 type="button"
@@ -2560,30 +2574,39 @@ function AccountTab() {
               >
                 {showConfirm ? "Hide" : "Show"}
               </button>
-            </div>
-            {confirmMismatch && (
-              <div style={errorMsg}>
-                <span>⚠</span>
-                <span>Passwords do not match</span>
-              </div>
-            )}
-            {form.confirmPassword &&
-              form.newPassword === form.confirmPassword && (
-                <div
-                  style={{
-                    color: "#16A34A",
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    marginTop: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span>✓</span>
-                  <span>Passwords match</span>
+              
+              {/* Match indicator inside input */}
+              {form.confirmPassword.length > 0 && (
+                <div style={{
+                  position: "absolute", right: 50, top: "50%", transform: "translateY(-50%)",
+                  display: "flex", alignItems: "center",
+                }}>
+                  {form.newPassword === form.confirmPassword ? (
+                    <Check size={14} style={{ color: "#22C55E" }} />
+                  ) : (
+                    <X size={14} style={{ color: "#EF4444" }} />
+                  )}
                 </div>
               )}
+            </div>
+            
+            {/* Match/Mismatch message */}
+            {form.confirmPassword.length > 0 && form.newPassword !== form.confirmPassword && (
+              <p style={{
+                fontSize: 12, color: "#EF4444", marginTop: 6,
+                display: "flex", alignItems: "center", gap: 4,
+              }}>
+                <X size={12} /> Passwords do not match
+              </p>
+            )}
+            {form.confirmPassword.length > 0 && form.newPassword === form.confirmPassword && (
+              <p style={{
+                fontSize: 12, color: "#22C55E", marginTop: 6,
+                display: "flex", alignItems: "center", gap: 4,
+              }}>
+                <Check size={12} /> Passwords match
+              </p>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -2653,84 +2676,6 @@ function AccountTab() {
             </button>
           </div>
         </form>
-      </div>
-
-      {/* Security Tips */}
-      <div
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(181,72,75,0.03), rgba(107,48,87,0.03))",
-          border: "1px solid rgba(181,72,75,0.1)",
-          borderRadius: 12,
-          padding: "20px 24px",
-          marginTop: "20px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            marginBottom: "16px",
-          }}
-        >
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
-              background:
-                "linear-gradient(135deg, rgba(181,72,75,0.12), rgba(107,48,87,0.12))",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "14px",
-              flexShrink: 0,
-            }}
-          >
-            🛡️
-          </div>
-          <span
-            style={{
-              fontSize: "13px",
-              fontWeight: 600,
-              color: "#1A1D23",
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
-          >
-            Security Tips
-          </span>
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "10px 16px",
-          }}
-        >
-          {[
-            { icon: "📐", text: "Use at least 6 characters" },
-            { icon: "🔤", text: "Mix letters, numbers & symbols" },
-            { icon: "🚫", text: "Avoid common words" },
-            { icon: "🔒", text: "Never share your password" },
-          ].map((tip, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                fontSize: "12px",
-                color: "#5F6577",
-              }}
-            >
-              <span style={{ fontSize: "12px", opacity: 0.65 }}>
-                {tip.icon}
-              </span>
-              <span>{tip.text}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

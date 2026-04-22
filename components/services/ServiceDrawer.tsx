@@ -4,19 +4,28 @@ import { useState, useEffect } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import { QK, fetchBranches } from "@/lib/queries";
+import { QK, fetchBranches, fetchPlanFeatures } from "@/lib/queries";
 import { ModalShell } from "@/components/ui/ModalShell";
 import type { Service, Branch } from "@/lib/types";
+import { AlertCircle } from "lucide-react";
 
 interface ServiceDrawerProps {
   open: boolean;
   onClose: () => void;
   editing: Service | null;
+  currentServiceCount?: number;
+  maxServices?: number;
 }
 
 const DURATION_PRESETS = [15, 30, 45, 60, 75, 90, 120];
 
-export function ServiceDrawer({ open, onClose, editing }: ServiceDrawerProps) {
+export function ServiceDrawer({ 
+  open, 
+  onClose, 
+  editing, 
+  currentServiceCount = 0, 
+  maxServices = 15 
+}: ServiceDrawerProps) {
   const qc = useQueryClient();
   const [form, setForm] = useState({
     name: "",
@@ -33,6 +42,9 @@ export function ServiceDrawer({ open, onClose, editing }: ServiceDrawerProps) {
     queryFn: fetchBranches,
     enabled: open,
   });
+
+  const isAddingNew = !editing;
+  const hasReachedLimit = isAddingNew && currentServiceCount >= maxServices && maxServices > 0;
 
   useEffect(() => {
     if (open) {
@@ -70,16 +82,25 @@ export function ServiceDrawer({ open, onClose, editing }: ServiceDrawerProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    
+    // Check limit for new services
+    if (isAddingNew && hasReachedLimit) {
+      toast.error(`Maximum ${maxServices} services reached. Please upgrade your plan to add more.`);
+      return;
+    }
+    
     if (!validate()) return;
     setIsSubmitting(true);
     try {
       if (editing) {
         await api.put(`/salon-admin/api/services/${editing.id}`, form);
+        toast.success("Service updated");
       } else {
         await api.post("/salon-admin/api/services", form);
+        toast.success("Service created");
       }
-      toast.success(editing ? "Service updated" : "Service created");
       qc.invalidateQueries({ queryKey: QK.services() });
+      qc.invalidateQueries({ queryKey: ["stats"] });
       onClose();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save service");
@@ -97,9 +118,106 @@ export function ServiceDrawer({ open, onClose, editing }: ServiceDrawerProps) {
 
   const hasError = (field: string) => !!errors[field];
 
+  // Show limit reached UI if trying to add new service when at limit
+  if (hasReachedLimit) {
+    return (
+      <ModalShell open={open} onClose={onClose} title="Service Limit Reached" width={480}>
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <div
+            style={{
+              width: "64px",
+              height: "64px",
+              borderRadius: "50%",
+              background: "#FEF2F2",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 20px",
+            }}
+          >
+            <AlertCircle size={32} style={{ color: "#DC2626" }} />
+          </div>
+          <h4
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#1A1D23",
+              marginBottom: "8px",
+            }}
+          >
+            Maximum Services Reached
+          </h4>
+          <p style={{ fontSize: "13px", color: "#5F6577", marginBottom: "16px" }}>
+            Your current plan allows up to <strong>{maxServices}</strong> active services.
+            You're currently using <strong>{currentServiceCount}</strong> of {maxServices}.
+          </p>
+          <p style={{ fontSize: "13px", color: "#5F6577", marginBottom: "24px" }}>
+            Upgrade your plan to add more services or freeze some existing ones.
+          </p>
+          <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+            <button
+              onClick={onClose}
+              style={{
+                padding: "10px 20px",
+                background: "transparent",
+                border: "1.5px solid #E6E4DF",
+                borderRadius: "8px",
+                fontSize: "13px",
+                fontWeight: 500,
+                color: "#5F6577",
+                cursor: "pointer",
+              }}
+            >
+              Close
+            </button>
+            <button
+              onClick={() => window.location.href = "/settings/plan"}
+              style={{
+                padding: "10px 24px",
+                background: "linear-gradient(135deg, #b5484b, #6b3057)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Upgrade Plan
+            </button>
+          </div>
+        </div>
+      </ModalShell>
+    );
+  }
+
   return (
     <ModalShell open={open} onClose={onClose} title={editing ? "Edit Service" : "New Service"} width={480}>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {/* Service limit warning (only for new services when near limit) */}
+        {isAddingNew && currentServiceCount >= maxServices - 1 && maxServices > 0 && (
+          <div
+            style={{
+              background: "#FFFBEB",
+              border: "1px solid #FDE047",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "12px",
+              color: "#92400E",
+            }}
+          >
+            <AlertCircle size={14} style={{ color: "#D97706" }} />
+            <span>
+              You have {currentServiceCount} of {maxServices} services. 
+              {currentServiceCount === maxServices - 1 && " You can add 1 more service."}
+            </span>
+          </div>
+        )}
+
         {/* Service Name */}
         <div>
           <label style={labelStyle}>

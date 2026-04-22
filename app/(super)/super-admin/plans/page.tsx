@@ -16,10 +16,10 @@ import {
 const C = {
   bg: "#F4F3EF",
   surface: "#FFFFFF",
-  primary: "#0D9488",
-  primaryHover: "#0F766E",
-  primaryLight: "#CCFBF1",
-  primaryGlow: "rgba(13,148,136,0.12)",
+  primary: "#b5484b",
+  primaryHover: "#6b3057",
+  primaryLight:"rgba(181,72,75, 0.1)CCFBF1",
+  primaryGlow: "rgba(181,72,75, 0.25)",
   text: "#1A1D23",
   text2: "#5F6577",
   text3: "#9CA3B4",
@@ -68,7 +68,7 @@ function FeatureChip({ label, active, icon }: { label: string; active: boolean; 
       letterSpacing: "0.01em",
       background: active ? C.primaryLight : C.bg,
       color: active ? C.primary : C.text3,
-      border: `1px solid ${active ? "#99F6E4" : C.border2}`,
+      border: `1px solid ${active ? "rgba(181,72,75,0.3)" : C.border2}`,
       opacity: active ? 1 : 0.55,
       transition: "all 0.15s",
     }}>
@@ -116,7 +116,7 @@ function PlanCard({ plan, onEdit, onToggle, onHardDelete }: {
         borderBottom: `1px solid ${C.border2}`,
         display: "flex", alignItems: "flex-start", justifyContent: "space-between",
         background: active
-          ? "linear-gradient(180deg, rgba(13,148,136,0.04), transparent)"
+          ? "linear-gradient(180deg, rgba(181,72,75,0.04), transparent)"
           : "linear-gradient(180deg, rgba(239,68,68,0.04), transparent)",
       }}>
         <div>
@@ -213,12 +213,18 @@ function PlanCard({ plan, onEdit, onToggle, onHardDelete }: {
 }
 
 // ── Toggle ────────────────────────────────────────────────────────────────────
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+// ── Toggle ────────────────────────────────────────────────────────────────────
+function Toggle({ label, checked, onChange, noBorder }: { 
+  label: string; 
+  checked: boolean; 
+  onChange: (v: boolean) => void;
+  noBorder?: boolean;
+}) {
   return (
     <label style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
       padding: "9px 0", cursor: "pointer", userSelect: "none",
-      borderBottom: `1px solid ${C.border2}`,
+      borderBottom: noBorder ? "none" : `1px solid ${C.border2}`,
     }}>
       <span style={{ fontSize: 13.5, color: checked ? C.text : C.text3, transition: "color 0.15s" }}>{label}</span>
       <button
@@ -289,7 +295,7 @@ function ModalHeader({ icon, iconBg, iconColor, title, subtitle, onClose }: {
       display: "flex", alignItems: "center", gap: 12,
       padding: "22px 26px 18px",
       borderBottom: `1px solid ${C.border2}`,
-      background: "linear-gradient(180deg, rgba(13,148,136,0.04), transparent)",
+      background: "linear-gradient(180deg, rgba(181,72,75,0.04), transparent)",
     }}>
       <div style={{
         width: 36, height: 36, borderRadius: 10,
@@ -358,7 +364,7 @@ function ModalFooter({ onCancel, onConfirm, confirmLabel, loading }: {
         }}
         onMouseEnter={e => {
           if (!loading) {
-            e.currentTarget.style.boxShadow = "0 4px 16px rgba(13,148,136,0.25)";
+            e.currentTarget.style.boxShadow = "0 4px 16px rgba(181,72,75,0.4)";
             e.currentTarget.style.transform = "translateY(-1px)";
           }
         }}
@@ -538,7 +544,7 @@ function PlanForm({ initial, onClose, onSaved }: {
         <div style={{
           border: `1px solid ${C.border2}`, borderRadius: 12,
           padding: "4px 16px 4px", marginTop: 4,
-          background: `linear-gradient(180deg, rgba(13,148,136,0.02), transparent)`,
+          background: `linear-gradient(180deg, rgba(181,72,75,0.02), transparent)`,
         }}>
           <p style={{
             fontSize: 10.5, fontWeight: 600, color: C.text3,
@@ -551,7 +557,7 @@ function PlanForm({ initial, onClose, onSaved }: {
           <Toggle label="WhatsApp Chat" checked={form.whatsapp_access} onChange={v => set("whatsapp_access", v)} />
           <Toggle label="Instagram Chat" checked={form.instagram_access} onChange={v => set("instagram_access", v)} />
           <Toggle label="Facebook Chat" checked={form.facebook_access} onChange={v => set("facebook_access", v)} />
-          <Toggle label="Widget Call & Chat" checked={form.ai_calls_access} onChange={v => set("ai_calls_access", v)} />
+          <Toggle label="Widget Call & Chat" checked={form.ai_calls_access} onChange={v => set("ai_calls_access", v)} noBorder  />
         </div>
       </div>
 
@@ -633,7 +639,7 @@ export default function PlansPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
             width: 48, height: 48, borderRadius: 14,
-            background: `linear-gradient(135deg, ${C.primary}, #0F766E)`,
+            background: `linear-gradient(135deg, ${C.primary}, #6b3057)`,
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: `0 4px 14px ${C.primaryGlow}`,
           }}>
@@ -665,7 +671,7 @@ export default function PlansPage() {
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "18px 22px",
           borderBottom: `1px solid ${C.border2}`,
-          background: "linear-gradient(180deg, rgba(13,148,136,0.04), transparent)",
+          background: "linear-gradient(180deg, rgba(181,72,75,0.04), transparent)",
           flexWrap: "wrap", gap: 12,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -699,7 +705,7 @@ export default function PlansPage() {
               transition: "box-shadow 0.18s, transform 0.15s",
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.boxShadow = "0 4px 16px rgba(13,148,136,0.25)";
+              e.currentTarget.style.boxShadow = "0 4px 16px rgba(181,72,75,0.4)";
               e.currentTarget.style.transform = "translateY(-1px)";
             }}
             onMouseLeave={e => {

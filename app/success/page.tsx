@@ -18,7 +18,6 @@ function SuccessContent() {
   const cancelled = searchParams.get("cancelled") === "1";
 
   useEffect(() => {
-    // Handle cancellation
     if (cancelled) {
       setStatus("error");
       setMessage("Payment was cancelled. No changes were made.");
@@ -28,7 +27,6 @@ function SuccessContent() {
       return;
     }
 
-    // If no session ID, just show success (for direct redirects)
     if (!sessionId) {
       setStatus("success");
       setMessage(
@@ -55,7 +53,6 @@ function SuccessContent() {
       return () => clearInterval(timer);
     }
 
-    // Verify subscription with session ID
     const verifySubscription = async () => {
       try {
         const response = await fetch("/api/stripe/verify-subscription", {
@@ -104,12 +101,12 @@ function SuccessContent() {
     verifySubscription();
   }, [sessionId, upgrade, cancelled, router]);
 
-  // Loading state
   if (status === "loading") {
     return (
       <div style={styles.container}>
-        <div style={styles.ambientGlow1} />
-        <div style={styles.ambientGlow2} />
+        <div style={styles.blob1} />
+        <div style={styles.blob2} />
+        <div style={styles.blob3} />
         <div style={styles.card}>
           <Loader2 size={48} style={styles.spinner} />
           <div style={styles.brand}>
@@ -123,12 +120,12 @@ function SuccessContent() {
     );
   }
 
-  // Error state
   if (status === "error") {
     return (
       <div style={styles.container}>
-        <div style={styles.ambientGlow1} />
-        <div style={styles.ambientGlow2} />
+        <div style={styles.blob1} />
+        <div style={styles.blob2} />
+        <div style={styles.blob3} />
         <div style={styles.card}>
           <div style={styles.iconCircleError}>
             <XCircle size={34} style={{ color: "#EF4444" }} />
@@ -154,19 +151,17 @@ function SuccessContent() {
     );
   }
 
-  // Success state
   return (
     <div style={styles.container}>
-      <div style={styles.ambientGlow1} />
-      <div style={styles.ambientGlow2} />
+      <div style={styles.blob1} />
+      <div style={styles.blob2} />
+      <div style={styles.blob3} />
       
       <div style={styles.card}>
-        {/* Success icon */}
         <div style={styles.iconCircle}>
-          <CheckCircle size={34} style={{ color: "#7B9A70" }} />
+          <CheckCircle size={34} style={{ color: "#16a34a" }} />
         </div>
 
-        {/* Brand */}
         <div style={styles.brand}>
           <div style={styles.brandIcon}>✨</div>
           <span style={styles.brandText}>Salon</span>
@@ -182,20 +177,17 @@ function SuccessContent() {
             : "Your subscription is now active! You can now access your salon dashboard.")}
         </p>
 
-        {/* Email notice - only for new registrations */}
         {!upgrade && (
           <div style={styles.emailNotice}>
-            <Mail size={16} style={{ color: "#7B9A70", flexShrink: 0 }} />
+            <Mail size={16} style={{ color: "#16a34a", flexShrink: 0 }} />
             <span style={styles.emailNoticeText}>
               Check your inbox for setup instructions and credentials
             </span>
           </div>
         )}
 
-        {/* Divider */}
         <div style={styles.divider} />
 
-        {/* What happens next */}
         <div style={styles.nextSteps}>
           <p style={styles.nextStepsTitle}>What happens next</p>
           {upgrade ? (
@@ -231,12 +223,11 @@ function SuccessContent() {
           )}
         </div>
 
-        {/* CTA Buttons */}
         <div style={styles.buttonGroup}>
           <Link 
             href={upgrade ? "/salon-admin/dashboard" : "/salon-admin/login"} 
             style={styles.button}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.88"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.9"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; }}
           >
             {upgrade ? "Go to Dashboard" : "Go to Login"}
@@ -262,7 +253,6 @@ function SuccessContent() {
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Space+Grotesk:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap');
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
@@ -276,8 +266,9 @@ export default function SuccessPage() {
   return (
     <Suspense fallback={
       <div style={styles.container}>
-        <div style={styles.ambientGlow1} />
-        <div style={styles.ambientGlow2} />
+        <div style={styles.blob1} />
+        <div style={styles.blob2} />
+        <div style={styles.blob3} />
         <div style={styles.card}>
           <Loader2 size={48} style={styles.spinner} />
           <div style={styles.brand}>
@@ -296,63 +287,74 @@ export default function SuccessPage() {
 const styles: Record<string, React.CSSProperties> = {
   container: {
     minHeight: "100vh",
-    background: "#0F1115",
+    background: "#FBF8F5",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: 24,
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     position: "relative",
     overflow: "hidden",
   },
-  ambientGlow1: {
+  blob1: {
     position: "absolute",
-    top: "20%",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: 600,
-    height: 400,
-    background: "radial-gradient(ellipse, rgba(181,72,75,0.08) 0%, transparent 70%)",
+    width: 500,
+    height: 500,
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(181,72,75,0.08) 0%, transparent 70%)",
+    top: "-15%",
+    right: "-10%",
     pointerEvents: "none",
   },
-  ambientGlow2: {
+  blob2: {
     position: "absolute",
-    bottom: "10%",
-    right: "15%",
+    width: 400,
+    height: 400,
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(196,149,106,0.06) 0%, transparent 70%)",
+    bottom: "-10%",
+    left: "-8%",
+    pointerEvents: "none",
+  },
+  blob3: {
+    position: "absolute",
     width: 300,
     height: 300,
-    background: "radial-gradient(ellipse, rgba(201,160,112,0.05) 0%, transparent 70%)",
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(181,72,75,0.05) 0%, transparent 70%)",
+    top: "40%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
     pointerEvents: "none",
   },
   card: {
     position: "relative",
-    background: "linear-gradient(145deg, #1E2330, #181C26)",
-    border: "1px solid rgba(255,255,255,0.07)",
+    background: "#FFFFFF",
+    border: "1px solid rgba(45,42,38,0.06)",
     borderRadius: 20,
-    padding: "52px 44px",
+    padding: "48px 40px",
     maxWidth: 460,
     width: "100%",
     textAlign: "center" as const,
-    boxShadow: "0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)",
+    boxShadow: "0 1px 3px rgba(45,42,38,0.04), 0 8px 32px rgba(45,42,38,0.06)",
   },
   iconCircle: {
-    width: 72,
-    height: 72,
+    width: 68,
+    height: 68,
     borderRadius: "50%",
-    background: "rgba(123, 154, 112, 0.12)",
-    border: "1px solid rgba(123, 154, 112, 0.3)",
+    background: "#F0FDF4",
+    border: "1px solid rgba(22,163,74,0.15)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 0 30px rgba(123,154,112,0.15)",
     margin: "0 auto 28px",
   },
   iconCircleError: {
-    width: 72,
-    height: 72,
+    width: 68,
+    height: 68,
     borderRadius: "50%",
-    background: "rgba(239, 68, 68, 0.12)",
-    border: "1px solid rgba(239, 68, 68, 0.3)",
+    background: "#FEF2F2",
+    border: "1px solid rgba(239,68,68,0.15)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -369,73 +371,73 @@ const styles: Record<string, React.CSSProperties> = {
     width: 28,
     height: 28,
     borderRadius: 8,
-    background: "linear-gradient(135deg, #B5484B, #6B3057)",
+    background: "linear-gradient(135deg, #b5484b, #6b3057)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: 13,
   },
   brandText: {
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "'Playfair Display', serif",
     fontSize: 15,
-    fontWeight: 700,
-    color: "rgba(237,232,227,0.6)",
+    fontWeight: 600,
+    color: "#5F6577",
     letterSpacing: "-0.01em",
   },
   mainTitle: {
-    fontFamily: "'Cormorant Garamond', serif",
-    fontSize: 36,
-    fontWeight: 500,
-    color: "#EDE8E3",
+    fontFamily: "'Playfair Display', serif",
+    fontSize: 32,
+    fontWeight: 600,
+    color: "#1A1D23",
     letterSpacing: "-0.01em",
     margin: "0 0 10px",
-    lineHeight: 1.1,
+    lineHeight: 1.2,
   },
   title: {
-    fontFamily: "'Cormorant Garamond', serif",
-    fontSize: 28,
-    fontWeight: 500,
-    color: "#EDE8E3",
+    fontFamily: "'Playfair Display', serif",
+    fontSize: 26,
+    fontWeight: 600,
+    color: "#1A1D23",
     letterSpacing: "-0.01em",
     margin: "0 0 12px",
     lineHeight: 1.2,
   },
   errorTitle: {
-    fontFamily: "'Cormorant Garamond', serif",
-    fontSize: 28,
-    fontWeight: 500,
-    color: "#EF4444",
+    fontFamily: "'Playfair Display', serif",
+    fontSize: 26,
+    fontWeight: 600,
+    color: "#DC2626",
     letterSpacing: "-0.01em",
     margin: "0 0 12px",
     lineHeight: 1.2,
   },
   description: {
     fontSize: 14,
-    color: "#8E8A86",
+    color: "#5F6577",
     lineHeight: 1.7,
-    margin: "0 0 32px",
-    fontWeight: 300,
+    margin: "0 0 28px",
+    fontWeight: 400,
   },
   emailNotice: {
     display: "flex",
     alignItems: "center",
     gap: 10,
-    background: "rgba(123, 154, 112, 0.08)",
-    border: "1px solid rgba(123, 154, 112, 0.2)",
-    borderRadius: 10,
+    background: "#F0FDF4",
+    border: "1px solid rgba(22,163,74,0.12)",
+    borderRadius: 12,
     padding: "13px 16px",
-    marginBottom: 32,
+    marginBottom: 28,
     textAlign: "left" as const,
   },
   emailNoticeText: {
     fontSize: 13,
-    color: "#A0C090",
+    color: "#5F6577",
     fontWeight: 500,
     lineHeight: 1.4,
   },
   divider: {
     height: 1,
-    background: "rgba(255,255,255,0.06)",
+    background: "#F3F0EC",
     marginBottom: 28,
   },
   nextSteps: {
@@ -445,7 +447,7 @@ const styles: Record<string, React.CSSProperties> = {
   nextStepsTitle: {
     fontSize: 11,
     fontWeight: 600,
-    color: "#4E4A46",
+    color: "#5F6577",
     textTransform: "uppercase" as const,
     letterSpacing: "0.12em",
     marginBottom: 14,
@@ -460,22 +462,21 @@ const styles: Record<string, React.CSSProperties> = {
     width: 20,
     height: 20,
     borderRadius: "50%",
-    background: "rgba(181,72,75,0.15)",
-    border: "1px solid rgba(181,72,75,0.25)",
+    background: "rgba(181,72,75,0.2)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: 10,
     fontWeight: 700,
-    color: "#C9856A",
+    color: "#b5484b",
     flexShrink: 0,
     marginTop: 1,
   },
   stepText: {
     fontSize: 13,
-    color: "#8E8A86",
+    color: "#5F6577",
     lineHeight: 1.5,
-    fontWeight: 300,
+    fontWeight: 400,
   },
   buttonGroup: {
     display: "flex",
@@ -489,46 +490,46 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    padding: "13px 28px",
-    borderRadius: 10,
-    background: "linear-gradient(135deg, #B5484B, #6B3057)",
-    color: "#F5EDE8",
+    padding: "13px 24px",
+    borderRadius: 12,
+    background: "linear-gradient(135deg, #b5484b, #6b3057)",
+    color: "#fff",
     textDecoration: "none",
     fontSize: 14,
     fontWeight: 600,
-    boxShadow: "0 4px 20px rgba(181,72,75,0.3)",
+    boxShadow: "0 8px 32px rgba(181,72,75,0.3)",
     transition: "opacity 0.2s",
-    fontFamily: "inherit",
+    fontFamily: "'Inter', sans-serif",
   },
   secondaryButton: {
     display: "flex",
     alignItems: "center",
     gap: 8,
-    padding: "13px 28px",
-    borderRadius: 10,
-    background: "rgba(255,255,255,0.05)",
-    color: "#8E8A86",
+    padding: "13px 24px",
+    borderRadius: 12,
+    background: "#FFFFFF",
+    color: "#5F6577",
     textDecoration: "none",
     fontSize: 14,
     fontWeight: 500,
-    transition: "background 0.2s",
-    fontFamily: "inherit",
-    border: "1px solid rgba(255,255,255,0.07)",
+    transition: "all 0.2s",
+    fontFamily: "'Inter', sans-serif",
+    border: "1.5px solid #E6E4DF",
   },
   redirectNote: {
     fontSize: 12,
-    color: "#4E4A46",
+    color: "#9CA3B4",
     marginTop: 16,
   },
   secureNote: {
     fontSize: 11,
-    color: "#3A3830",
+    color: "#9CA3B4",
     marginTop: 20,
   },
   spinner: {
     animation: "spin 1s linear infinite",
     marginBottom: 24,
-    color: "#B5484B",
+    color: "#b5484b",
     marginLeft: "auto",
     marginRight: "auto",
     display: "block",

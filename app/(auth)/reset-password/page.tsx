@@ -13,15 +13,56 @@ function getStrength(pwd: string) {
   if (/[a-z]/.test(pwd)) score++;
   if (/[0-9]/.test(pwd)) score++;
   if (/[^A-Za-z0-9]/.test(pwd)) score++;
-  if (score <= 2) return { label: "Weak", color: "#DC2626", bg: "#FEE2E2", width: "33%" };
-  if (score <= 4) return { label: "Fair", color: "#D97706", bg: "#FEF3C7", width: "66%" };
-  return { label: "Strong", color: "#16a34a", bg: "#F0FDF4", width: "100%" };
+  if (score <= 2)
+    return {
+      label: "Weak",
+      color: "#DC2626",
+      bg: "#FEE2E2",
+      width: "33%",
+    };
+  if (score <= 4)
+    return {
+      label: "Fair",
+      color: "#D97706",
+      bg: "#FEF3C7",
+      width: "66%",
+    };
+  return {
+    label: "Strong",
+    color: "#16a34a",
+    bg: "#F0FDF4",
+    width: "100%",
+  };
 }
 
 function Requirement({ met, text }: { met: boolean; text: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: met ? "#16a34a" : "#9CA3B4", transition: "color 0.2s" }}>
-      <span style={{ width: 14, height: 14, borderRadius: "50%", border: met ? "none" : "1.5px solid #D1D5DB", background: met ? "#16a34a" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#fff", flexShrink: 0, transition: "all 0.2s" }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        fontSize: 11,
+        color: met ? "#16a34a" : "#9CA3B4",
+        transition: "color 0.2s",
+      }}
+    >
+      <span
+        style={{
+          width: 14,
+          height: 14,
+          borderRadius: "50%",
+          border: met ? "none" : "1.5px solid #D1D5DB",
+          background: met ? "#16a34a" : "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 8,
+          color: "#fff",
+          flexShrink: 0,
+          transition: "all 0.2s",
+        }}
+      >
         {met && "✓"}
       </span>
       <span>{text}</span>
@@ -51,36 +92,59 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <div style={{ padding: "60px 52px" }}>
-        <div style={{ textAlign: "center" }}>
+      <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 430 }}>
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
           <div
             style={{
-              width: 64,
-              height: 64,
+              width: 60,
+              height: 60,
               borderRadius: 16,
               background: "#FEF2F2",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 20px",
+              margin: "0 auto 24px",
+              boxShadow: "0 4px 20px rgba(239,68,68,0.1)",
             }}
           >
-            <span style={{ fontSize: 28 }}>⚠</span>
+            <span style={{ fontSize: 24 }}>⚠</span>
           </div>
-          <p
+          <h1
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 18,
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 24,
               fontWeight: 600,
               color: "#1A1D23",
-              marginBottom: 8,
+              marginBottom: 10,
             }}
           >
             Invalid Reset Link
+          </h1>
+          <p
+            style={{
+              color: "#5F6577",
+              fontSize: 14,
+              lineHeight: 1.65,
+              maxWidth: 300,
+              margin: "0 auto",
+            }}
+          >
+            This password reset link is missing or corrupted. Please request a
+            new one.
           </p>
-          <p style={{ color: "#5F6577", fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>
-            This password reset link is missing or corrupted. Please request a new one.
-          </p>
+        </div>
+
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 20,
+            padding: "28px 32px",
+            boxShadow:
+              "0 1px 3px rgba(45,42,38,0.04), 0 8px 32px rgba(45,42,38,0.06)",
+            border: "1px solid rgba(45,42,38,0.06)",
+            textAlign: "center",
+          }}
+        >
           <Link
             href="/forgot-password"
             style={{
@@ -89,15 +153,21 @@ function ResetPasswordContent() {
               gap: 8,
               background: "linear-gradient(135deg, #b5484b, #6b3057)",
               color: "#fff",
-              padding: "12px 24px",
-              borderRadius: 8,
+              padding: "13px 20px",
+              borderRadius: 12,
               fontSize: 13,
               fontWeight: 600,
               textDecoration: "none",
+              fontFamily: "'Inter', sans-serif",
               transition: "opacity 0.2s",
+              boxShadow: "0 8px 32px rgba(181,72,75,0.3)",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "0.9";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "1";
+            }}
           >
             <ArrowLeft size={14} />
             Request New Link
@@ -109,8 +179,14 @@ function ResetPasswordContent() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!hasMinLength) { setError("Password must be at least 8 characters"); return; }
-    if (password !== confirm) { setError("Passwords do not match"); return; }
+    if (!hasMinLength) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match");
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -133,15 +209,15 @@ function ResetPasswordContent() {
     }
   }
 
-  const inputStyle: React.CSSProperties = {
+  const inputBase: React.CSSProperties = {
     width: "100%",
-    padding: "12px 16px",
+    padding: "12px 14px 12px 40px",
     border: "1.5px solid #E6E4DF",
-    borderRadius: 8,
+    borderRadius: 12,
     fontSize: 14,
     color: "#1A1D23",
     outline: "none",
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     transition: "border-color 0.2s, box-shadow 0.2s",
     boxSizing: "border-box",
   };
@@ -158,325 +234,633 @@ function ResetPasswordContent() {
 
   const labelStyle: React.CSSProperties = {
     display: "block",
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 600,
     color: "#5F6577",
-    textTransform: "uppercase",
-    letterSpacing: "0.06em",
     marginBottom: 8,
+    letterSpacing: "0.02em",
   };
 
   return (
-    <div style={{ padding: "60px 52px" }}>
-      {success ? (
-        <div style={{ textAlign: "center" }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
-              background: "#F0FDF4",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 20px",
-            }}
-          >
-            <CheckCircle size={28} color="#16a34a" />
-          </div>
-          <p
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 18,
-              fontWeight: 600,
-              color: "#1A1D23",
-              marginBottom: 8,
-            }}
-          >
-            Password Updated
-          </p>
-          <p style={{ color: "#5F6577", fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>
-            Your password has been changed successfully.<br />
-            Redirecting to login…
-          </p>
-          <Link
-            href="/login"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "linear-gradient(135deg, #b5484b, #6b3057)",
-              color: "#fff",
-              padding: "12px 24px",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-              transition: "opacity 0.2s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-          >
-            Go to Login
-          </Link>
+    <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 430 }}>
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: 36 }}>
+        <div
+          style={{
+            width: 60,
+            height: 60,
+            borderRadius: 16,
+            background: "linear-gradient(135deg, #b5484b, #6b3057)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 24px",
+            boxShadow: "0 8px 32px rgba(181,72,75,0.3)",
+          }}
+        >
+          <Shield size={24} color="#fff" strokeWidth={1.6} />
         </div>
-      ) : (
-        <>
-          <div style={{ marginBottom: 36 }}>
-            <h2
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: 24,
-                fontWeight: 700,
-                color: "#1A1D23",
-                letterSpacing: "-0.02em",
-                marginBottom: 6,
-              }}
-            >
-              Set New Password
-            </h2>
-            <p style={{ fontSize: 13, color: "#5F6577" }}>
-              Create a strong password to secure your account
-            </p>
-          </div>
+        <h1
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 28,
+            fontWeight: 600,
+            color: "#1A1D23",
+            letterSpacing: "-0.01em",
+            marginBottom: 10,
+          }}
+        >
+          Set New Password
+        </h1>
+        <p
+          style={{
+            color: "#5F6577",
+            fontSize: 14,
+            lineHeight: 1.65,
+            maxWidth: 300,
+            margin: "0 auto",
+          }}
+        >
+          Create a strong password to keep your salon account secure.
+        </p>
+      </div>
 
-          {error && (
+      {/* Card body */}
+      <div
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 20,
+          padding: "32px 28px",
+          boxShadow:
+            "0 1px 3px rgba(45,42,38,0.04), 0 8px 32px rgba(45,42,38,0.06)",
+          border: "1px solid rgba(45,42,38,0.06)",
+        }}
+      >
+        {success ? (
+          <div style={{ textAlign: "center", padding: "8px 0" }}>
             <div
               style={{
-                background: "#FEF2F2",
-                color: "#DC2626",
-                padding: "12px 16px",
-                borderRadius: 8,
-                fontSize: 13,
-                fontWeight: 500,
-                marginBottom: 20,
+                width: 56,
+                height: 56,
+                borderRadius: 50,
+                background: "#F0FDF4",
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
-                borderLeft: "3px solid #EF4444",
+                justifyContent: "center",
+                margin: "0 auto 20px",
               }}
-              role="alert"
             >
-              <span>⚠</span>
-              <span>{error}</span>
+              <CheckCircle size={24} color="#16a34a" strokeWidth={1.8} />
             </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {/* New Password */}
-            <div style={{ marginBottom: password ? 16 : 20 }}>
-              <label style={labelStyle}>
-                New Password <span style={{ color: "#EF4444" }}>*</span>
-              </label>
-              <div style={{ position: "relative" }}>
-                <input
-                  type={showPwd ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter new password"
-                  autoFocus
-                  autoComplete="new-password"
-                  style={{ ...inputStyle, paddingRight: 44 }}
-                  onFocus={focusHandler}
-                  onBlur={blurHandler}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPwd((v) => !v)}
-                  style={{
-                    position: "absolute",
-                    right: 14,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#9CA3B4",
-                    padding: 0,
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                  aria-label={showPwd ? "Hide password" : "Show password"}
-                >
-                  {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Password Strength */}
-            {password && (
-              <div style={{ marginBottom: 20 }}>
-                {/* Strength bar */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 4,
-                      borderRadius: 2,
-                      background: "#E6E4DF",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: strength?.width || "0%",
-                        background: strength?.color || "#E6E4DF",
-                        borderRadius: 2,
-                        transition: "width 0.3s ease, background 0.3s ease",
-                      }}
-                    />
-                  </div>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      color: strength?.color,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      minWidth: 40,
-                      textAlign: "right",
-                      transition: "color 0.3s",
-                    }}
-                  >
-                    {strength?.label}
-                  </span>
-                </div>
-
-                {/* Requirements checklist */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "5px 16px",
-                    padding: "10px 12px",
-                    background: "#F8F8F6",
-                    borderRadius: 8,
-                  }}
-                >
-                  <Requirement met={hasMinLength} text="8+ characters" />
-                  <Requirement met={hasUpper} text="Uppercase letter" />
-                  <Requirement met={hasLower} text="Lowercase letter" />
-                  <Requirement met={hasNumber} text="Number" />
-                  <Requirement met={hasSpecial} text="Special character" />
-                </div>
-              </div>
-            )}
-
-            {/* Confirm Password */}
-            <div style={{ marginBottom: 28 }}>
-              <label style={labelStyle}>
-                Confirm Password <span style={{ color: "#EF4444" }}>*</span>
-              </label>
-              <div style={{ position: "relative" }}>
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="Repeat your password"
-                  autoComplete="new-password"
-                  style={{
-                    ...inputStyle,
-                    paddingRight: 44,
-                    borderColor: confirm.length > 0 && !passwordsMatch ? "#DC2626" : undefined,
-                    boxShadow: confirm.length > 0 && !passwordsMatch ? "0 0 0 3px rgba(220,38,38,0.12)" : undefined,
-                  }}
-                  onFocus={focusHandler}
-                  onBlur={(e) => {
-                    if (confirm.length > 0 && !passwordsMatch) {
-                      e.target.style.borderColor = "#DC2626";
-                      e.target.style.boxShadow = "0 0 0 3px rgba(220,38,38,0.12)";
-                    } else {
-                      blurHandler(e);
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm((v) => !v)}
-                  style={{
-                    position: "absolute",
-                    right: 14,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#9CA3B4",
-                    padding: 0,
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                  aria-label={showConfirm ? "Hide password" : "Show password"}
-                >
-                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {confirm.length > 0 && passwordsMatch && (
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 6 }}>
-                  <span style={{ fontSize: 11, color: "#16a34a", fontWeight: 500 }}>✓ Passwords match</span>
-                </div>
-              )}
-              {confirm.length > 0 && !passwordsMatch && (
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 6 }}>
-                  <span style={{ fontSize: 11, color: "#DC2626", fontWeight: 500 }}>✗ Passwords do not match</span>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
+            <p
               style={{
-                width: "100%",
-                padding: "13px",
-                background: loading
-                  ? "#9CA3B4"
-                  : "linear-gradient(135deg, #b5484b, #6b3057)",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-                fontSize: 14,
+                fontFamily: "'Playfair Display', serif",
+                fontSize: 20,
                 fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                transition: "opacity 0.2s",
+                color: "#1A1D23",
+                marginBottom: 8,
               }}
             >
-              {loading ? "Updating Password…" : "Update Password"}
-            </button>
-          </form>
-
-          <div style={{ textAlign: "center", marginTop: 24 }}>
+              Password Updated
+            </p>
+            <p
+              style={{
+                color: "#5F6577",
+                fontSize: 13,
+                lineHeight: 1.7,
+                marginBottom: 24,
+              }}
+            >
+              Your password has been changed successfully.
+              <br />
+              Redirecting to login…
+            </p>
             <Link
               href="/login"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
-                color: "#b5484b",
-                fontSize: 12,
+                justifyContent: "center",
+                gap: 8,
+                width: "100%",
+                padding: "13px 20px",
+                background: "linear-gradient(135deg, #b5484b, #6b3057)",
+                color: "#fff",
+                borderRadius: 12,
+                fontSize: 13,
+                fontWeight: 600,
                 textDecoration: "none",
-                fontWeight: 500,
+                fontFamily: "'Inter', sans-serif",
+                transition: "opacity 0.2s",
+                boxShadow: "0 8px 32px rgba(181,72,75,0.3)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.9";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
               }}
             >
-              <ArrowLeft size={13} />
-              Back to login
+              Go to Login
             </Link>
           </div>
+        ) : (
+          <>
+            {error && (
+              <div
+                style={{
+                  background: "#FEF2F2",
+                  border: "1px solid rgba(239,68,68,0.15)",
+                  color: "#DC2626",
+                  padding: "11px 14px",
+                  borderRadius: 12,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  marginBottom: 20,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  lineHeight: 1.4,
+                }}
+                role="alert"
+              >
+                <span
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    background: "#EF4444",
+                    flexShrink: 0,
+                  }}
+                />
+                <span>{error}</span>
+              </div>
+            )}
 
-          <p
-            style={{
-              textAlign: "center",
-              fontSize: 11,
-              color: "#9CA3B4",
-              marginTop: 24,
-            }}
-          >
-            Secure password update · Your session will require re-authentication
-          </p>
-        </>
+            <form onSubmit={handleSubmit}>
+              {/* New Password */}
+              <div style={{ marginBottom: password ? 14 : 20 }}>
+                <label style={labelStyle}>
+                  New Password <span style={{ color: "#EF4444" }}>*</span>
+                </label>
+                <div style={{ position: "relative" }}>
+                  <Shield
+                    size={16}
+                    color="#B0A89F"
+                    style={{
+                      position: "absolute",
+                      left: 14,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <input
+                    type={showPwd ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) setError("");
+                    }}
+                    placeholder="Enter new password"
+                    autoFocus
+                    autoComplete="new-password"
+                    style={{ ...inputBase, paddingRight: 44 }}
+                    onFocus={focusHandler}
+                    onBlur={blurHandler}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd((v) => !v)}
+                    style={{
+                      position: "absolute",
+                      right: 14,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "#9CA3B4",
+                      padding: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      transition: "color 0.15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#b5484b";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "#9CA3B4";
+                    }}
+                    aria-label={showPwd ? "Hide password" : "Show password"}
+                  >
+                    {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Password Strength */}
+              {password && (
+                <div style={{ marginBottom: 18 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        flex: 1,
+                        height: 4,
+                        borderRadius: 2,
+                        background: "#E6E4DF",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: strength?.width || "0%",
+                          background: strength?.color || "#E6E4DF",
+                          borderRadius: 2,
+                          transition: "width 0.3s ease, background 0.3s ease",
+                        }}
+                      />
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: strength?.color,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                        minWidth: 42,
+                        textAlign: "right",
+                        transition: "color 0.3s",
+                      }}
+                    >
+                      {strength?.label}
+                    </span>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "5px 16px",
+                      padding: "10px 12px",
+                      background: "#F8F8F6",
+                      borderRadius: 10,
+                      border: "1px solid #F3F0EC",
+                    }}
+                  >
+                    <Requirement met={hasMinLength} text="8+ characters" />
+                    <Requirement met={hasUpper} text="Uppercase letter" />
+                    <Requirement met={hasLower} text="Lowercase letter" />
+                    <Requirement met={hasNumber} text="Number" />
+                    <Requirement met={hasSpecial} text="Special character" />
+                  </div>
+                </div>
+              )}
+
+              {/* Confirm Password */}
+              <div style={{ marginBottom: 24 }}>
+                <label style={labelStyle}>
+                  Confirm Password <span style={{ color: "#EF4444" }}>*</span>
+                </label>
+                <div style={{ position: "relative" }}>
+                  <Shield
+                    size={16}
+                    color="#B0A89F"
+                    style={{
+                      position: "absolute",
+                      left: 14,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    value={confirm}
+                    onChange={(e) => {
+                      setConfirm(e.target.value);
+                      if (error) setError("");
+                    }}
+                    placeholder="Repeat your password"
+                    autoComplete="new-password"
+                    style={{
+                      ...inputBase,
+                      paddingRight: 44,
+                      borderColor:
+                        confirm.length > 0 && !passwordsMatch
+                          ? "#DC2626"
+                          : undefined,
+                      boxShadow:
+                        confirm.length > 0 && !passwordsMatch
+                          ? "0 0 0 3px rgba(220,38,38,0.12)"
+                          : undefined,
+                    }}
+                    onFocus={focusHandler}
+                    onBlur={(e) => {
+                      if (confirm.length > 0 && !passwordsMatch) {
+                        e.target.style.borderColor = "#DC2626";
+                        e.target.style.boxShadow =
+                          "0 0 0 3px rgba(220,38,38,0.12)";
+                      } else {
+                        blurHandler(e);
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    style={{
+                      position: "absolute",
+                      right: 14,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "#9CA3B4",
+                      padding: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      transition: "color 0.15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#b5484b";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "#9CA3B4";
+                    }}
+                    aria-label={
+                      showConfirm ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {confirm.length > 0 && passwordsMatch && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      marginTop: 6,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: "#16a34a",
+                        fontWeight: 500,
+                      }}
+                    >
+                      ✓ Passwords match
+                    </span>
+                  </div>
+                )}
+                {confirm.length > 0 && !passwordsMatch && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      marginTop: 6,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: "#DC2626",
+                        fontWeight: 500,
+                      }}
+                    >
+                      ✗ Passwords do not match
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: "100%",
+                  padding: "13px 20px",
+                  background: loading
+                    ? "#9CA3B4"
+                    : "linear-gradient(135deg, #b5484b, #6b3057)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 12,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontFamily: "'Inter', sans-serif",
+                  transition: "opacity 0.2s",
+                  boxShadow: loading
+                    ? "none"
+                    : "0 8px 32px rgba(181,72,75,0.3)",
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) e.currentTarget.style.opacity = "0.9";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+              >
+                {loading ? (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 14,
+                        height: 14,
+                        border: "2px solid rgba(255,255,255,0.3)",
+                        borderTopColor: "#fff",
+                        borderRadius: "50%",
+                        display: "inline-block",
+                        animation: "spin 0.6s linear infinite",
+                      }}
+                    />
+                    Updating Password…
+                  </span>
+                ) : (
+                  "Update Password"
+                )}
+              </button>
+            </form>
+
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: 20,
+                paddingTop: 16,
+                borderTop: "1px solid #F3F0EC",
+              }}
+            >
+              <Link
+                href="/login"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  color: "#b5484b",
+                  fontSize: 12,
+                  textDecoration: "none",
+                  fontWeight: 500,
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#b5484b";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#b5484b";
+                }}
+              >
+                <ArrowLeft size={13} />
+                Back to login
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Security tips */}
+      {!success && (
+        <div
+          style={{
+            marginTop: 20,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            maxWidth: 430,
+          }}
+        >
+          {[
+            "Use a mix of letters, numbers & symbols",
+            "Avoid reusing passwords from other sites",
+            "Consider using a password manager",
+          ].map((tip, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                fontSize: 11,
+                color: "#9CA3B4",
+                lineHeight: 1.5,
+              }}
+            >
+              <span
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: "50%",
+                  background: "rgba(181,72,75,0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 8,
+                  color: "#b5484b",
+                  flexShrink: 0,
+                  marginTop: 1,
+                  fontWeight: 600,
+                }}
+              >
+                {i + 1}
+              </span>
+              <span>{tip}</span>
+            </div>
+          ))}
+        </div>
       )}
+
+      {/* Footer hints */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 20,
+          marginTop: 24,
+          flexWrap: "wrap",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            color: "#9CA3B4",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              background: "#4CAF7D",
+              display: "inline-block",
+            }}
+          />
+          Encrypted update
+        </span>
+        <span style={{ fontSize: 11, color: "#E5E0DB" }}>·</span>
+        <span
+          style={{
+            fontSize: 11,
+            color: "#9CA3B4",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              background: "#C4956A",
+              display: "inline-block",
+            }}
+          />
+          Re-auth required
+        </span>
+        <span style={{ fontSize: 11, color: "#E5E0DB" }}>·</span>
+        <span
+          style={{
+            fontSize: 11,
+            color: "#9CA3B4",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              background: "#8BA4C4",
+              display: "inline-block",
+            }}
+          />
+          One-time use link
+        </span>
+      </div>
     </div>
   );
 }
@@ -486,189 +870,80 @@ export default function ResetPasswordPage() {
     <div
       style={{
         minHeight: "100vh",
+        background: "#FBF8F5",
         display: "flex",
-        fontFamily: "'DM Sans', sans-serif",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "'Inter', sans-serif",
+        position: "relative",
+        overflow: "hidden",
+        padding: "24px",
       }}
     >
-      {/* Left visual panel - matching LoginPage style */}
+      {/* Soft decorative blobs */}
       <div
         style={{
-          flex: 1,
-          background: "#111318",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          position: "relative",
-          overflow: "hidden",
+          position: "absolute",
+          width: 500,
+          height: 500,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(181,72,75,0.08) 0%, transparent 70%)",
+          top: "-15%",
+          right: "-10%",
+          pointerEvents: "none",
         }}
-      >
-        {/* Glow blobs */}
-        <div
-          style={{
-            position: "absolute",
-            width: 500,
-            height: 500,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(181,72,75,0.15) 0%, transparent 70%)",
-            top: -100,
-            left: -100,
-            pointerEvents: "none",
-            animation: "gdDrift 12s ease-in-out infinite alternate",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            width: 400,
-            height: 400,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(107,48,87,0.12) 0%, transparent 70%)",
-            bottom: -80,
-            right: -80,
-            pointerEvents: "none",
-            animation: "gdDrift 10s ease-in-out infinite alternate-reverse",
-          }}
-        />
-
-        <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            textAlign: "center",
-            padding: "40px 48px",
-          }}
-        >
-          {/* Brand icon */}
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
-              background: "linear-gradient(135deg, #b5484b, #6b3057)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 28px",
-              boxShadow: "0 8px 32px rgba(181,72,75,0.3)",
-            }}
-          >
-            <Shield size={28} color="#fff" />
-          </div>
-
-          <h1
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 32,
-              fontWeight: 700,
-              color: "#fff",
-              letterSpacing: "-0.02em",
-              marginBottom: 12,
-            }}
-          >
-            Secure Your Account
-          </h1>
-          <p
-            style={{
-              color: "rgba(255,255,255,0.45)",
-              fontSize: 14,
-              lineHeight: 1.7,
-              maxWidth: 320,
-            }}
-          >
-            Set a strong, unique password. This helps protect your salon data and client information.
-          </p>
-
-          {/* Security tips */}
-          <div
-            style={{
-              marginTop: 32,
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-              textAlign: "left",
-              maxWidth: 280,
-              margin: "32px auto 0",
-            }}
-          >
-            {[
-              "Use a mix of letters, numbers & symbols",
-              "Avoid reusing passwords from other sites",
-              "Consider using a password manager",
-            ].map((tip, i) => (
-              <div
-                key={i}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 10,
-                  fontSize: 12,
-                  color: "rgba(255,255,255,0.35)",
-                  lineHeight: 1.5,
-                }}
-              >
-                <span
-                  style={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    background: "rgba(181,72,75,0.2)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 9,
-                    color: "#b5484b",
-                    flexShrink: 0,
-                    marginTop: 1,
-                  }}
-                >
-                  {i + 1}
-                </span>
-                <span>{tip}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right form panel - matching LoginPage styling */}
+      />
       <div
         style={{
-          width: 480,
-          background: "#fff",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          overflow: "auto",
+          position: "absolute",
+          width: 400,
+          height: 400,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(196,149,106,0.06) 0%, transparent 70%)",
+          bottom: "-10%",
+          left: "-8%",
+          pointerEvents: "none",
         }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          width: 300,
+          height: 300,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(181,72,75,0.05) 0%, transparent 70%)",
+          top: "40%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <Suspense
+        fallback={
+          <div
+            style={{
+              textAlign: "center",
+              color: "#9CA3B4",
+              fontSize: 13,
+              padding: 40,
+            }}
+          >
+            Loading…
+          </div>
+        }
       >
-        <Suspense
-          fallback={
-            <div
-              style={{
-                padding: "60px 52px",
-                textAlign: "center",
-                color: "#9CA3B4",
-                fontSize: 13,
-              }}
-            >
-              Loading…
-            </div>
-          }
-        >
-          <ResetPasswordContent />
-        </Suspense>
-      </div>
+        <ResetPasswordContent />
+      </Suspense>
 
       <style jsx>{`
-        @keyframes gdDrift {
-          0% {
-            transform: translate(0, 0) rotate(0deg);
-          }
-          100% {
-            transform: translate(30px, 20px) rotate(5deg);
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
           }
         }
       `}</style>
