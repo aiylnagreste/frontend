@@ -122,18 +122,20 @@ export interface WebhookConfig {
   };
 }
 
+// In lib/types.ts - Make sure PublicPlan has id as number
 export interface PublicPlan {
-  id: string;
+  id: number;  // Should be number, not string
   name: string;
-  description?: string;
+  description: string | null;
   price_cents: number;
-  billing_cycle: "monthly" | "yearly";
+  billing_cycle: string;
   max_services: number;
-  whatsapp_access: boolean;
-  instagram_access: boolean;
-  facebook_access: boolean;
-  ai_calls_access: boolean;
-  highlight?: boolean;  // Add this line
+  whatsapp_access: number;
+  instagram_access: number;
+  facebook_access: number;
+  ai_calls_access: number;
+  widget_access: number;
+  highlight?: boolean;
 }
 
 export interface Tenant {

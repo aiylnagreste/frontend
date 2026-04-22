@@ -25,10 +25,12 @@ import { BranchDrawer } from "@/components/settings/BranchDrawer";
 import { StaffDrawer } from "@/components/settings/StaffDrawer";
 import { RoleDrawer } from "@/components/settings/RoleDrawer";
 import {IntegrationsTab} from "@/components/settings/IntegrationsTab";
+import { PlanUpgradeTab } from "@/components/settings/PlanUpgradeTab";
+
 import { Lock , TriangleAlert} from 'lucide-react';
 
 import { ModalShell } from "@/components/ui/ModalShell";
-type SettingsTab = "general" | "branding" | "branches" | "staff" | "roles" | "timings" | "integrations" | "account";
+type SettingsTab = "general" | "branding" | "branches" | "staff" | "roles" | "timings" | "integrations"  | "plan" | "account";
 
 const TABS: { id: SettingsTab; label: string }[] = [
   { id: "general", label: "⚙️ General" },
@@ -38,6 +40,7 @@ const TABS: { id: SettingsTab; label: string }[] = [
   { id: "roles", label: "🏷️ Roles" },
   { id: "timings", label: "🕐 Salon Hours" },
   { id: "integrations", label: "🔗 Integrations" },
+  { id: "plan", label: "💳 Plan & Billing" },  
   { id: "account", label: "🔑 Account" },
 ];
 
@@ -93,6 +96,7 @@ export default function SettingsPage() {
       {activeTab === "roles" && <RolesTab />}
       {activeTab === "timings" && <TimingsTab />}
       {activeTab === "integrations" && <IntegrationsTabWrapper />}
+      {activeTab === "plan" && <PlanUpgradeTab />}
       {activeTab === "account" && <AccountTab />}
     </div>
   );
@@ -1976,7 +1980,6 @@ function IntegrationsTabWrapper() {
 }
 
 /* ─── Account Tab ─── */
-/* ─── Account Tab with 3-Attempt Lockout ─── */
 function AccountTab() {
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);

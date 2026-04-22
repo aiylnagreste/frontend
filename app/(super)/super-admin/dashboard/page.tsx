@@ -433,7 +433,7 @@ export default function SuperDashboardPage() {
                           >
                             <Power size={14} />
                           </button>
-                          {/* <button
+                          <button
                             onClick={() => setEditPlanFor({ tenantId: t.tenant_id, salonName: t.salon_name, currentPlan: t.subscription_plan })}
                             title="Edit Plan"
                             style={{
@@ -452,7 +452,7 @@ export default function SuperDashboardPage() {
                             }}
                           >
                             <CreditCard size={14} />
-                          </button> */}
+                          </button>
                         </div>
                       </td>
                     </tr>

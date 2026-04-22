@@ -109,6 +109,86 @@ export async function saveCorsOrigin(cors_origin: string | null): Promise<void> 
   await api.put(`${BASE}/cors-origin`, { cors_origin });
 }
 
+// In lib/queries.ts - Replace the fetchCurrentSubscription function
+export async function fetchCurrentSubscription(): Promise<CurrentSubscription> {
+  try {
+    const response = await api.get("/salon-admin/api/subscription/current");
+    
+    // Check if response IS the data (has planId directly)
+    if (response && typeof response === 'object' && 'planId' in response) {
+      return response as CurrentSubscription;
+    }
+    
+    // Check if response has a data property
+    if (response && typeof response === 'object' && 'data' in response && response.data) {
+      return response.data as CurrentSubscription;
+    }
+    
+    // Fallback
+    return {
+      id: null,
+      planId: null,
+      planName: "Free",
+      priceCents: 0,
+      billingCycle: "monthly",
+      status: "active",
+      currentPeriodEnd: null,
+      remainingDays: null,
+      remainingDaysText: null,
+      features: {
+        maxServices: 5,
+        whatsappAccess: false,
+        instagramAccess: false,
+        facebookAccess: false,
+        aiCallsAccess: false,
+        widgetAccess: false,
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching current subscription:", error);
+    return {
+      id: null,
+      planId: null,
+      planName: "Free",
+      priceCents: 0,
+      billingCycle: "monthly",
+      status: "active",
+      currentPeriodEnd: null,
+      remainingDays: null,
+      remainingDaysText: null,
+      features: {
+        maxServices: 5,
+        whatsappAccess: false,
+        instagramAccess: false,
+        facebookAccess: false,
+        aiCallsAccess: false,
+        widgetAccess: false,
+      }
+    };
+  }
+}
+
+// In lib/queries.ts - Add or update this interface
+export interface CurrentSubscription {
+  id: number | null;
+  planId: number | null;
+  planName: string;
+  priceCents: number;
+  billingCycle: string;
+  status: string;
+  currentPeriodEnd: string | null;
+  remainingDays: number | null;
+  remainingDaysText: string | null;
+  features: {
+    maxServices: number;
+    whatsappAccess: boolean;
+    instagramAccess: boolean;
+    facebookAccess: boolean;
+    aiCallsAccess: boolean;
+    widgetAccess: boolean;
+  };
+}
+
 // Super admin
 const SA = "/super-admin/api";
 export const fetchTenants = () => api.get<Tenant[]>(`${SA}/tenants`);
