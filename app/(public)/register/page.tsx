@@ -367,12 +367,22 @@ function validateDetails() {
                     </label>
                     <input
                       type={"type" in f ? f.type : "text"}
+                      inputMode={f.key === "phone" ? "tel" : undefined}
+                      maxLength={f.key === "phone" ? 20 : undefined}
                       style={errors[f.key] ? inputErrorStyle : inputStyle}
                       placeholder={f.placeholder}
                       value={form[f.key]}
                       onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                       onFocus={e => { e.currentTarget.style.borderColor = errors[f.key] ? "#F87171" : T.primary; }}
-                      onBlur={e => { e.currentTarget.style.borderColor = errors[f.key] ? "#F87171" : T.border; }}
+                      onBlur={e => {
+                        if (f.key === "phone") {
+                          const err = validatePhoneRequired(form.phone);
+                          setErrors(prev => ({ ...prev, phone: err || "" }));
+                          e.currentTarget.style.borderColor = err ? "#F87171" : T.border;
+                        } else {
+                          e.currentTarget.style.borderColor = errors[f.key] ? "#F87171" : T.border;
+                        }
+                      }}
                     />
                     {errors[f.key] && (
                       <p style={{ fontSize: 11, color: "#EF4444", marginTop: 4 }} role="alert">{errors[f.key]}</p>

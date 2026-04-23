@@ -364,6 +364,8 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
               </div>
               <input
                 type="tel"
+                inputMode="tel"
+                maxLength={20}
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 placeholder="+92 300 1234567"
@@ -375,7 +377,12 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
                   ...(isLimitedEdit ? disabledInputStyle : {}),
                 }}
                 onFocus={(e) => { if (!hasError("phone") && !isLimitedEdit) { e.target.style.borderColor = "#b5484b"; e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)"; }}}
-                onBlur={(e) => { if (!hasError("phone") && !isLimitedEdit) { e.target.style.borderColor = "#E6E4DF"; e.target.style.boxShadow = "none"; }}}
+                onBlur={(e) => {
+                  if (isLimitedEdit) return;
+                  const err = validatePhoneRequired(form.phone);
+                  setErrors(prev => ({ ...prev, phone: err || "" }));
+                  if (!err) { e.target.style.borderColor = "#E6E4DF"; e.target.style.boxShadow = "none"; }
+                }}
               />
             </div>
             {errors.phone && <span style={errorStyle}>{errors.phone}</span>}

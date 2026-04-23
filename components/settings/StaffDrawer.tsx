@@ -160,12 +160,18 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
             <label style={labelStyle}>Phone</label>
             <input
               type="tel"
+              inputMode="tel"
+              maxLength={20}
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="+92 300 1234567"
               style={{ ...inputStyle, ...errorInputStyle("phone") }}
               onFocus={(e) => focusInput(e, "phone")}
-              onBlur={(e) => blurInput(e, "phone")}
+              onBlur={(e) => {
+                const err = validatePhone(form.phone);
+                setErrors(prev => ({ ...prev, phone: err || "" }));
+                blurInput(e, "phone");
+              }}
             />
             {errors.phone && <span style={errorStyle}>{errors.phone}</span>}
           </div>

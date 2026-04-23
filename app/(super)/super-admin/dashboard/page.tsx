@@ -508,9 +508,12 @@ export default function SuperDashboardPage() {
 }
 
 // ── Shared Modal Input ────────────────────────────────────────────────────────
-function ModalInput({ label, type = "text", value, onChange, placeholder, error }: {
+function ModalInput({ label, type = "text", value, onChange, placeholder, error, maxLength, inputMode, onBlur }: {
   label: string; type?: string; value: string;
   onChange: (v: string) => void; placeholder?: string; error?: string;
+  maxLength?: number;
+  inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
+  onBlur?: () => void;
 }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -524,8 +527,10 @@ function ModalInput({ label, type = "text", value, onChange, placeholder, error 
       <input
         type={type} value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
+        maxLength={maxLength}
+        inputMode={inputMode}
         onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        onBlur={() => { setFocused(false); onBlur?.(); }}
         style={{
           width: "100%", padding: "11px 14px",
           border: `1.5px solid ${error ? C.error : focused ? C.primary : C.border}`,
@@ -745,7 +750,7 @@ function CreateTenantModal({ onClose, onCreated }: { onClose: () => void; onCrea
         <ModalInput label="Salon Name" value={form.salon_name} onChange={v => set("salon_name", v)} placeholder="e.g., Royal Glam Studio" error={errors.salon_name} />
         <ModalInput label="Owner Name" value={form.owner_name} onChange={v => set("owner_name", v)} placeholder="Full name" error={errors.owner_name} />
         <ModalInput label="Email Address" type="email" value={form.email} onChange={v => set("email", v)} placeholder="salon@example.com" error={errors.email} />
-        <ModalInput label="Phone Number" type="tel" value={form.phone} onChange={v => set("phone", v)} placeholder="+92 300 1234567" error={errors.phone} />
+        <ModalInput label="Phone Number" type="tel" maxLength={20} inputMode="tel" value={form.phone} onChange={v => set("phone", v)} placeholder="+92 300 1234567" error={errors.phone} onBlur={() => { const err = validatePhoneRequired(form.phone); setErrors(prev => ({ ...prev, phone: err || "" })); }} />
         <ModalInput label="Password" type="password" value={form.password} onChange={v => set("password", v)} placeholder="Min 6 characters" error={errors.password} />
         <div style={{ marginBottom: 4 }}>
           <label style={{

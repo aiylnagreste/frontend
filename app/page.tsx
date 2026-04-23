@@ -341,6 +341,8 @@ function RegisterModal({
                   </label>
                   <input
                     type={"type" in f ? f.type : "text"}
+                    inputMode={f.key === "phone" ? "tel" : undefined}
+                    maxLength={f.key === "phone" ? 20 : undefined}
                     style={{
                       width: "100%",
                       padding: "12px 16px",
@@ -357,7 +359,16 @@ function RegisterModal({
                     value={form[f.key]}
                     onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
                     onFocus={e => { e.currentTarget.style.borderColor = "#B5484B"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)"; }}
-                    onBlur={e => { e.currentTarget.style.borderColor = errors[f.key] ? "#F87171" : borderColor; e.currentTarget.style.boxShadow = "none"; }}
+                    onBlur={e => {
+                      if (f.key === "phone") {
+                        const err = validatePhoneRequired(form.phone);
+                        setErrors(prev => ({ ...prev, phone: err || "" }));
+                        e.currentTarget.style.borderColor = err ? "#F87171" : borderColor;
+                      } else {
+                        e.currentTarget.style.borderColor = errors[f.key] ? "#F87171" : borderColor;
+                      }
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
                   />
                   {errors[f.key] && <p style={{ fontSize: 11, color: "#EF4444", marginTop: 4 }}>{errors[f.key]}</p>}
                 </div>
