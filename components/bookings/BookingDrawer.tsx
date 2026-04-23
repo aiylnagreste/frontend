@@ -54,11 +54,12 @@ export function BookingDrawer({ open, onClose, editing, prefillBranch, editMode 
     enabled: open,
   });
 
-  const { data: services = [], isSuccess: servicesReady } = useQuery<Service[]>({
-    queryKey: QK.services(),
-    queryFn: fetchServices,
-    enabled: open,
-  });
+const { data: allServices = [], isSuccess: servicesReady } = useQuery<Service[]>({
+  queryKey: QK.services(),
+  queryFn: fetchServices,
+  enabled: open,
+});
+const services = allServices.filter(service => service.frozen === 0);
 
   const { data: timings } = useQuery<SalonTimings>({
     queryKey: QK.timings(),

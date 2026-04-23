@@ -266,26 +266,6 @@ export default function CrmAnalyticsBar({ branchId, branchName }: Props) {
                     {totalBookings}
                   </span>
                 </div>
-
-                {/* View Details Link */}
-                <div style={{ textAlign: "center", marginTop: "8px" }}>
-                  <button
-                    onClick={() => setShowBookingsModal(true)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      fontSize: "11px",
-                      color: "#b5484b",
-                      fontWeight: 500,
-                      cursor: "pointer",
-                      fontFamily: "'DM Sans', sans-serif",
-                      textDecoration: "underline",
-                      textUnderlineOffset: "3px",
-                    }}
-                  >
-                    View all {topServices.length} services →
-                  </button>
-                </div>
               </>
             )}
           </div>
@@ -381,26 +361,6 @@ export default function CrmAnalyticsBar({ branchId, branchName }: Props) {
                   }}>
                     {formatCurrency(totalRevenue, currency)}
                   </span>
-                </div>
-
-                {/* View Details Link */}
-                <div style={{ textAlign: "center", marginTop: "8px" }}>
-                  <button
-                    onClick={() => setShowRevenueModal(true)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      fontSize: "11px",
-                      color: "#b5484b",
-                      fontWeight: 500,
-                      cursor: "pointer",
-                      fontFamily: "'DM Sans', sans-serif",
-                      textDecoration: "underline",
-                      textUnderlineOffset: "3px",
-                    }}
-                  >
-                    View all {revenueByService.length} services →
-                  </button>
                 </div>
               </>
             )}
