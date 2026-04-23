@@ -169,186 +169,183 @@ export default function SuperIntegrationsPage() {
           </div>
 
           {/* Admin List */}
-          {/* Admin List */}
-<div style={{ maxHeight: "calc(100vh - 280px)", overflowY: "auto" }}>
-  {!filteredAdmins?.length ? (
-    <div style={{ padding: 60, textAlign: "center" }}>
-      <AlertCircle size={32} style={{ color: "#9CA3B4", marginBottom: 12 }} />
-      <p style={{ color: "#9CA3B4", fontSize: 13 }}>No salons found</p>
-    </div>
-  ) : (
-    filteredAdmins.map((admin: SalonIntegration, index: number) => {
-      const uniqueKey = admin.tenant_id || `admin-${index}`;
-      const isSelected = selectedAdmin?.tenant_id === admin.tenant_id;
-      const connectedCount = [
-        admin.has_whatsapp,
-        admin.has_instagram,
-        admin.has_facebook,
-      ].filter(Boolean).length;
-      const totalCount = [
-        admin.plan_features?.whatsapp,
-        admin.plan_features?.instagram,
-        admin.plan_features?.facebook,
-      ].filter(Boolean).length;
-      const allConfigured = connectedCount === totalCount && totalCount > 0;
-      const hasSomeConfigured = connectedCount > 0;
-
-      return (
-        <button
-          key={uniqueKey}
-          onClick={() => setSelectedAdmin(admin)}
-          style={{
-            width: "100%",
-            padding: "16px 20px",
-            textAlign: "left",
-            border: "none",
-            borderBottom: "1px solid #F0EEEA",
-            background: isSelected ? "rgba(181,72,75,0.08)" : "#fff",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            position: "relative",
-          }}
-          onMouseEnter={(e) => {
-            if (!isSelected) {
-              e.currentTarget.style.background = "#FAFAF8";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isSelected) {
-              e.currentTarget.style.background = "#fff";
-            }
-          }}
-        >
-          {/* Left border indicator for selected item */}
-          {isSelected && (
-            <div
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 3,
-                background: "linear-gradient(135deg, #b5484b, #6b3057)",
-                borderRadius: "0 2px 2px 0",
-              }}
-            />
-          )}
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div
-                style={{
-                  fontWeight: 600,
-                  color: isSelected ? "#b5484b" : "#1A1D23",
-                  fontSize: 14,
-                  marginBottom: 4,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {admin.owner_name || admin.salon_name}
+          <div style={{ maxHeight: "calc(100vh - 280px)", overflowY: "auto" }}>
+            {!filteredAdmins?.length ? (
+              <div style={{ padding: 60, textAlign: "center" }}>
+                <AlertCircle size={32} style={{ color: "#9CA3B4", marginBottom: 12 }} />
+                <p style={{ color: "#9CA3B4", fontSize: 13 }}>No salons found</p>
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: isSelected ? "#b5484b" : "#9CA3B4",
-                  fontFamily: "monospace",
-                  background: isSelected ? "rgba(181,72,75,0.08)" : "#F8F8F6",
-                  display: "inline-block",
-                  padding: "2px 8px",
-                  borderRadius: 4,
-                }}
-              >
-                {admin.tenant_id}
-              </div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {totalCount > 0 && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "3px 8px",
-                    borderRadius: 20,
-                    background: allConfigured ? "#DCFCE7" : hasSomeConfigured ? "#FEF3C7" : "#F3F4F6",
-                  }}
-                >
-                  {allConfigured ? (
-                    <CheckCircle size={10} color="#166534" />
-                  ) : hasSomeConfigured ? (
-                    <AlertCircle size={10} color="#92400E" />
-                  ) : (
-                    <XCircle size={10} color="#9CA3B4" />
-                  )}
-                  <span
+            ) : (
+              filteredAdmins.map((admin: SalonIntegration, index: number) => {
+                const uniqueKey = admin.tenant_id || `admin-${index}`;
+                const isSelected = selectedAdmin?.tenant_id === admin.tenant_id;
+                const connectedCount = [
+                  admin.has_whatsapp,
+                  admin.has_instagram,
+                  admin.has_facebook,
+                ].filter(Boolean).length;
+                const totalCount = [
+                  admin.plan_features?.whatsapp,
+                  admin.plan_features?.instagram,
+                  admin.plan_features?.facebook,
+                ].filter(Boolean).length;
+                const allConfigured = connectedCount === totalCount && totalCount > 0;
+                const hasSomeConfigured = connectedCount > 0;
+
+                return (
+                  <button
+                    key={uniqueKey}
+                    onClick={() => setSelectedAdmin(admin)}
                     style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      color: allConfigured ? "#166534" : hasSomeConfigured ? "#92400E" : "#9CA3B4",
+                      width: "100%",
+                      padding: "16px 20px",
+                      textAlign: "left",
+                      border: "none",
+                      borderBottom: "1px solid #F0EEEA",
+                      background: isSelected ? "rgba(181,72,75,0.08)" : "#fff",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      position: "relative",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.background = "#FAFAF8";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.background = "#fff";
+                      }
                     }}
                   >
-                    {connectedCount}/{totalCount}
-                  </span>
-                </div>
-              )}
-              <ChevronRight
-                size={16}
-                style={{ 
-                  color: isSelected ? "#b5484b" : "#C8C6C1", 
-                  flexShrink: 0,
-                  transition: "transform 0.2s, color 0.2s",
-                }}
-              />
-            </div>
-          </div>
+                    {isSelected && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: 3,
+                          background: "linear-gradient(135deg, #b5484b, #6b3057)",
+                          borderRadius: "0 2px 2px 0",
+                        }}
+                      />
+                    )}
 
-          {/* Channel icons */}
-          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-            {admin.plan_features?.whatsapp && (
-              <div style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: 4, 
-                opacity: admin.has_whatsapp ? 1 : 0.4,
-                transition: "opacity 0.2s",
-              }}>
-                <MessageCircle size={12} color={admin.has_whatsapp ? "#25D366" : "#9CA3B4"} />
-                <span style={{ fontSize: 10, color: admin.has_whatsapp ? "#166534" : "#9CA3B4" }}>WA</span>
-              </div>
-            )}
-            {admin.plan_features?.instagram && (
-              <div style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: 4, 
-                opacity: admin.has_instagram ? 1 : 0.4,
-                transition: "opacity 0.2s",
-              }}>
-                <Camera size={12} color={admin.has_instagram ? "#E4405F" : "#9CA3B4"} />
-                <span style={{ fontSize: 10, color: admin.has_instagram ? "#9D174D" : "#9CA3B4" }}>IG</span>
-              </div>
-            )}
-            {admin.plan_features?.facebook && (
-              <div style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: 4, 
-                opacity: admin.has_facebook ? 1 : 0.4,
-                transition: "opacity 0.2s",
-              }}>
-                <Share2 size={12} color={admin.has_facebook ? "#1877F2" : "#9CA3B4"} />
-                <span style={{ fontSize: 10, color: admin.has_facebook ? "#1E40AF" : "#9CA3B4" }}>FB</span>
-              </div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            color: isSelected ? "#b5484b" : "#1A1D23",
+                            fontSize: 14,
+                            marginBottom: 4,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {admin.owner_name || admin.salon_name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: isSelected ? "#b5484b" : "#9CA3B4",
+                            fontFamily: "monospace",
+                            background: isSelected ? "rgba(181,72,75,0.08)" : "#F8F8F6",
+                            display: "inline-block",
+                            padding: "2px 8px",
+                            borderRadius: 4,
+                          }}
+                        >
+                          {admin.tenant_id}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        {totalCount > 0 && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                              padding: "3px 8px",
+                              borderRadius: 20,
+                              background: allConfigured ? "#DCFCE7" : hasSomeConfigured ? "#FEF3C7" : "#F3F4F6",
+                            }}
+                          >
+                            {allConfigured ? (
+                              <CheckCircle size={10} color="#166534" />
+                            ) : hasSomeConfigured ? (
+                              <AlertCircle size={10} color="#92400E" />
+                            ) : (
+                              <XCircle size={10} color="#9CA3B4" />
+                            )}
+                            <span
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 600,
+                                color: allConfigured ? "#166534" : hasSomeConfigured ? "#92400E" : "#9CA3B4",
+                              }}
+                            >
+                              {connectedCount}/{totalCount}
+                            </span>
+                          </div>
+                        )}
+                        <ChevronRight
+                          size={16}
+                          style={{ 
+                            color: isSelected ? "#b5484b" : "#C8C6C1", 
+                            flexShrink: 0,
+                            transition: "transform 0.2s, color 0.2s",
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                      {admin.plan_features?.whatsapp && (
+                        <div style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: 4, 
+                          opacity: admin.has_whatsapp ? 1 : 0.4,
+                          transition: "opacity 0.2s",
+                        }}>
+                          <MessageCircle size={12} color={admin.has_whatsapp ? "#25D366" : "#9CA3B4"} />
+                          <span style={{ fontSize: 10, color: admin.has_whatsapp ? "#166534" : "#9CA3B4" }}>WA</span>
+                        </div>
+                      )}
+                      {admin.plan_features?.instagram && (
+                        <div style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: 4, 
+                          opacity: admin.has_instagram ? 1 : 0.4,
+                          transition: "opacity 0.2s",
+                        }}>
+                          <Camera size={12} color={admin.has_instagram ? "#E4405F" : "#9CA3B4"} />
+                          <span style={{ fontSize: 10, color: admin.has_instagram ? "#9D174D" : "#9CA3B4" }}>IG</span>
+                        </div>
+                      )}
+                      {admin.plan_features?.facebook && (
+                        <div style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: 4, 
+                          opacity: admin.has_facebook ? 1 : 0.4,
+                          transition: "opacity 0.2s",
+                        }}>
+                          <Share2 size={12} color={admin.has_facebook ? "#1877F2" : "#9CA3B4"} />
+                          <span style={{ fontSize: 10, color: admin.has_facebook ? "#1E40AF" : "#9CA3B4" }}>FB</span>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
-        </button>
-      );
-    })
-  )}
-</div>
-          </div>
+        </div>
 
         {/* Right Panel - Integration Config */}
         <div
@@ -416,6 +413,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
     mutationFn: (payload: Record<string, string>) => saveIntegrationConfig(admin.id, payload),
     onSuccess: () => {
       toast.success("Integration saved successfully");
+      // Invalidate both config and the list to refresh the badges
       qc.invalidateQueries({ queryKey: ["super-integrations", "config", admin.tenant_id] });
       qc.invalidateQueries({ queryKey: ["super-integrations", "admins"] });
     },
@@ -521,7 +519,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
             color="#25D366"
             channelName="whatsapp"
             webhookUrl={`${backendOrigin}/webhooks/${admin.tenant_id}/whatsapp`}
-            isConfigured={!!currentConfig.whatsapp_phone_number_id}
+            isConfigured={admin.has_whatsapp}   // ✅ use the same flag as salon admin
             fields={[
               {
                 key: "wa_phone_number_id",
@@ -558,7 +556,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
             color="#E4405F"
             channelName="instagram"
             webhookUrl={`${backendOrigin}/webhooks/${admin.tenant_id}/instagram`}
-            isConfigured={!!currentConfig.instagram_access_token}
+            isConfigured={admin.has_instagram}   // ✅ consistent
             fields={[
               {
                 key: "ig_page_access_token",
@@ -589,7 +587,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
             color="#1877F2"
             channelName="facebook"
             webhookUrl={`${backendOrigin}/webhooks/${admin.tenant_id}/facebook`}
-            isConfigured={!!currentConfig.facebook_access_token}
+            isConfigured={admin.has_facebook}   // ✅ consistent
             fields={[
               {
                 key: "fb_page_access_token",
