@@ -214,3 +214,39 @@ export interface Subscription {
   price_cents: number;
   billing_cycle: string;
 }
+
+// Analytics Client with service breakdown
+export interface AnalyticsClient {
+  customer_name: string;
+  phone: string | null;
+  services: Array<{
+    name: string;
+    count: number;
+    revenue: number;
+  }>;
+  bookings: Array<{
+    date: string;
+    time: string;
+    service: string;
+    branch: string;
+    staff_name: string | null;
+    price: number;
+  }>;
+  totalBookings: number;
+  totalSpent: number;
+  lastVisit: string;
+  firstVisit: string;
+  branches: string[];
+}
+
+export interface AnalyticsClientsResponse {
+  clients: AnalyticsClient[];
+  totalClients: number;
+  totalRevenue: number;
+  avgSpendPerClient: number;
+  newClients: number;
+  returningClients: number;
+  queryRange: { start: string | null; end: string | null; tz: string };
+  filtersApplied: { statuses: string[]; branch: string | null; period: string | null };
+  dataFreshAsOf: string;
+}

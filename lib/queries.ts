@@ -44,6 +44,8 @@ export const QK = {
   planFeatures: () => ["planFeatures"] as const,
   tenantStatus: () => ["tenantStatus"] as const,
   corsOrigin: () => ["corsOrigin"] as const,
+  analyticsClients: (params: Record<string, string | undefined>) => 
+    ["analyticsClients", params] as const,
 };
 
 // ─── Fetchers ───────────────────────────────────────────────────────────────
@@ -168,6 +170,81 @@ export async function fetchCurrentSubscription(): Promise<CurrentSubscription> {
   }
 }
 
+export const fetchAnalyticsClients = async (
+  params: Record<string, string | undefined>
+): Promise<AnalyticsClientsResponse> => {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== "") q.set(k, v);
+  }
+  
+  try {
+    const response = await api.get<AnalyticsClientsResponse>(
+      `${BASE}/analytics/clients?${q.toString()}`
+    );
+    // api.get already returns the parsed body, no need for .data
+    return response ?? {
+      clients: [],
+      totalClients: 0,
+      totalRevenue: 0,
+      avgSpendPerClient: 0,
+      newClients: 0,
+      returningClients: 0,
+      queryRange: { start: null, end: null, tz: "UTC" },
+      filtersApplied: { statuses: [], branch: null, period: null },
+      dataFreshAsOf: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("[fetchAnalyticsClients]", error);
+    return {
+      clients: [],
+      totalClients: 0,
+      totalRevenue: 0,
+      avgSpendPerClient: 0,
+      newClients: 0,
+      returningClients: 0,
+      queryRange: { start: null, end: null, tz: "UTC" },
+      filtersApplied: { statuses: [], branch: null, period: null },
+      dataFreshAsOf: new Date().toISOString(),
+    };
+  }
+};
+
+
+export interface AnalyticsClient {
+  customer_name: string;
+  phone: string | null;
+  services: Array<{
+    name: string;
+    count: number;
+    revenue: number;
+  }>;
+  bookings: Array<{
+    date: string;
+    time: string;
+    service: string;
+    branch: string;
+    staff_name: string | null;
+    price: number;
+  }>;
+  totalBookings: number;
+  totalSpent: number;
+  lastVisit: string;
+  firstVisit: string;
+  branches: string[];
+}
+
+export interface AnalyticsClientsResponse {
+  clients: AnalyticsClient[];
+  totalClients: number;
+  totalRevenue: number;
+  avgSpendPerClient: number;
+  newClients: number;
+  returningClients: number;
+  queryRange: { start: string | null; end: string | null; tz: string };
+  filtersApplied: { statuses: string[]; branch: string | null; period: string | null };
+  dataFreshAsOf: string;
+}
 // In lib/queries.ts - Add or update this interface
 export interface CurrentSubscription {
   id: number | null;
@@ -281,3 +358,6 @@ export const saveIntegrationConfig = (
 
 export const deleteIntegrationChannel = (salonId: number, channel: string) =>
   api.delete(`${SA}/integrations/${salonId}/${channel}`);
+
+
+
