@@ -19,15 +19,23 @@ export function validateName(value: string): string | null {
 }
 
 /**
- * Phone: digits and "+" only (spaces and dashes allowed for formatting).
+ * Phone: E.164-compatible.
+ * - Strip spaces, dashes, parens, dots, tabs.
+ * - Accept optional single leading '+'.
+ * - Require 8–15 digits after stripping.
+ * - Reject if any letter remains.
  */
 export function validatePhone(value: string): string | null {
   const trimmed = value.trim();
   if (!trimmed) return null; // phone is often optional
-  if (/[A-Za-z]/.test(trimmed)) return "Phone must not contain letters";
-  if (!/^\+?[\d\s\-()]+$/.test(trimmed))
-    return "Phone may only contain digits and '+'";
   if (SQL_INJECTION_RE.test(trimmed)) return "Phone contains invalid characters";
+  if (/[A-Za-z]/.test(trimmed)) return "Phone must not contain letters";
+  const stripped = trimmed.replace(/[\s\-().\t]/g, "");
+  const m = stripped.match(/^(\+?)([0-9]+)$/);
+  if (!m) return "Phone may only contain digits and an optional leading '+'";
+  const digits = m[2];
+  if (digits.length < 8 || digits.length > 15)
+    return "Enter a valid phone number (8–15 digits)";
   return null;
 }
 

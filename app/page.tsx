@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Check, X, ChevronDown, ChevronUp, MessageCircle, Share2, Users, Phone, Moon, Sun } from "lucide-react";
 import type { PublicPlan } from "@/lib/types";
+import { validatePhoneRequired } from "@/lib/validation";
 
 // ── Design tokens (light/dark theme) ─────────────────────────────────────────
 const lightTheme = {
@@ -109,8 +110,8 @@ function RegisterModal({
     else if (!/^[A-Za-z\s]+$/.test(form.owner_name.trim())) e.owner_name = "Letters only";
     if (!form.salon_name.trim()) e.salon_name = "Required";
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Valid email required";
-    if (!form.phone.trim()) e.phone = "Required";
-    else if (!/^[\+\d\s\-]+$/.test(form.phone.trim())) e.phone = "Numbers and + only";
+    const phoneErr = validatePhoneRequired(form.phone);
+    if (phoneErr) e.phone = phoneErr;
     return e;
   }
 

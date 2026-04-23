@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { PublicPlan } from "@/lib/types";
 import { Check, MessageCircle, Share2, Users, Phone, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { validatePhoneRequired } from "@/lib/validation";
 
 const T = {
   primary: "#0D9488",
@@ -121,13 +122,9 @@ function validateDetails() {
     e.email = "Valid email is required";
   }
   
-  // Phone validation: numbers, +, spaces, and dashes
-  const phoneRegex = /^[\+\d\s\-]+$/;
-  if (!form.phone.trim()) {
-    e.phone = "Phone is required";
-  } else if (!phoneRegex.test(form.phone.trim())) {
-    e.phone = "Phone number can only contain numbers, +, spaces, and dashes";
-  }
+  // Phone validation: shared E.164-compatible helper (8–15 digits, optional leading '+')
+  const phoneErr = validatePhoneRequired(form.phone);
+  if (phoneErr) e.phone = phoneErr;
   
   return e;
 }
