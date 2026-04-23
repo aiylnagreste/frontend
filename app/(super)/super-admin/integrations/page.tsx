@@ -389,7 +389,7 @@ export default function SuperIntegrationsPage() {
               </p>
             </div>
           ) : (
-            <IntegrationPanel key={selectedAdmin.id} admin={selectedAdmin} />
+            <IntegrationPanel key={selectedAdmin.salon_id} admin={selectedAdmin} />
           )}
         </div>
       </div>
@@ -405,12 +405,12 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
 
   const { data: config, isLoading } = useQuery({
     queryKey: ["super-integrations", "config", admin.tenant_id],
-    queryFn: () => fetchIntegrationConfig(admin.id),
-    enabled: !!admin.id,
+    queryFn: () => fetchIntegrationConfig(admin.salon_id),
+    enabled: !!admin.salon_id,
   });
 
   const saveMutation = useMutation({
-    mutationFn: (payload: Record<string, string>) => saveIntegrationConfig(admin.id, payload),
+    mutationFn: (payload: Record<string, string>) => saveIntegrationConfig(admin.salon_id, payload),
     onSuccess: () => {
       toast.success("Integration saved successfully");
       qc.invalidateQueries({ queryKey: ["super-integrations", "config", admin.tenant_id] });
@@ -420,7 +420,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (channel: string) => deleteIntegrationChannel(admin.id, channel),
+    mutationFn: (channel: string) => deleteIntegrationChannel(admin.salon_id, channel),
     onSuccess: (_, channel) => {
       toast.success(`${channel} integration removed`);
       qc.invalidateQueries({ queryKey: ["super-integrations", "config", admin.tenant_id] });

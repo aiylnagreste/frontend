@@ -225,7 +225,7 @@ export async function fetchPublicPlans(): Promise<PublicPlan[]> {
 // ── Super Admin: Integrations ───────────────────────────────────────────────
 
 export interface SalonIntegration {
-  id: number;
+  salon_id: number;
   tenant_id: string;
   salon_name: string;
   owner_name: string;
