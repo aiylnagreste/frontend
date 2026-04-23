@@ -252,6 +252,10 @@ export interface WebhookConfigDetail {
   whatsapp_access_token: string | null;
   instagram_access_token: string | null;
   facebook_access_token: string | null;
+
+  whatsapp_verify_token: string | null;
+  instagram_verify_token: string | null;
+  facebook_verify_token: string | null;
 }
 
 export const fetchIntegrationsSalons = () =>

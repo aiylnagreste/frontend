@@ -442,6 +442,9 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
     whatsapp_access_token: null,
     instagram_access_token: null,
     facebook_access_token: null,
+    whatsapp_verify_token:  null,
+    instagram_verify_token:  null,
+    facebook_verify_token:  null,
   };
 
   const currentConfig = config || defaultConfig;
@@ -536,7 +539,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
               {
                 key: "wa_verify_token",
                 label: "Verify Token",
-                value: null,
+                value: currentConfig.whatsapp_verify_token,
                 placeholder: "Enter Verify Token (must match Meta console)",
               },
             ]}
@@ -567,7 +570,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
               {
                 key: "ig_verify_token",
                 label: "Verify Token",
-                value: null,
+                value: currentConfig.instagram_verify_token,
                 placeholder: "Enter Verify Token (must match Meta console)",
               },
             ]}
@@ -598,7 +601,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
               {
                 key: "fb_verify_token",
                 label: "Verify Token",
-                value: null,
+                value: currentConfig.facebook_verify_token,
                 placeholder: "Enter Verify Token (must match Meta console)",
               },
             ]}
