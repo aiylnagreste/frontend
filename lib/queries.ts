@@ -273,7 +273,10 @@ export const saveIntegrationConfig = (
   for (const [k, v] of Object.entries(payload)) {
     if (v && v.trim()) clean[k] = v.trim();
   }
-  return api.put(`${SA}/integrations/${salonId}`, clean);
+  return api.put<{ success: boolean; validation?: Record<string, { ok: boolean; error?: string }> }>(
+    `${SA}/integrations/${salonId}`,
+    clean
+  );
 };
 
 export const deleteIntegrationChannel = (salonId: number, channel: string) =>

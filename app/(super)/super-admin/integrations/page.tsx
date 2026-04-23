@@ -411,8 +411,22 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
 
   const saveMutation = useMutation({
     mutationFn: (payload: Record<string, string>) => saveIntegrationConfig(admin.salon_id, payload),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Integration saved successfully");
+      // Surface per-channel Graph API validation failures as a second toast.
+      const validation = data?.validation || {};
+      const channelLabels: Record<string, string> = {
+        whatsapp: "WhatsApp",
+        instagram: "Instagram",
+        facebook: "Facebook",
+      };
+      for (const [channel, result] of Object.entries(validation)) {
+        if (result && result.ok === false) {
+          const label = channelLabels[channel] || channel;
+          const msg = result.error || "unknown error";
+          toast.error(`${label} credentials invalid: ${msg}`);
+        }
+      }
       qc.invalidateQueries({ queryKey: ["super-integrations", "config", admin.tenant_id] });
       qc.invalidateQueries({ queryKey: ["super-integrations", "admins"] });
     },

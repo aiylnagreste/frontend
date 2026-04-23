@@ -10,10 +10,20 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Lock, ExternalLink, Copy, Check, Trash2 } from "lucide-react";
 
-function ConnectionBadge({ hasToken, verified }: { hasToken: boolean; verified: boolean }) {
-  if (hasToken && verified) return <Badge status="active" label="Connected" />;
-  if (hasToken && !verified) return <Badge status="warning" label="Awaiting verification" />;
-  return <Badge status="inactive" label="Not configured" />;
+function ConnectionBadge({
+  hasToken,
+  verified,
+  credentialsValid,
+}: {
+  hasToken: boolean;
+  verified: boolean;
+  credentialsValid?: boolean;
+}) {
+  if (!hasToken) return <Badge status="inactive" label="Not configured" />;
+  if (credentialsValid === true) return <Badge status="active" label="Connected" />;
+  if (verified) return <Badge status="active" label="Connected" />;
+  if (credentialsValid === false) return <Badge status="warning" label="Invalid credentials" />;
+  return <Badge status="warning" label="Awaiting verification" />;
 }
 
 interface IntegrationsTabProps {
@@ -60,7 +70,10 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
 
   const saveMutation = useMutation({
     mutationFn: () =>
-      api.put("/salon-admin/api/webhook-config", {
+      api.put<{
+        ok: boolean;
+        validation?: Record<string, { ok: boolean; error?: string }>;
+      }>("/salon-admin/api/webhook-config", {
         wa_phone_number_id: wa.phone_number_id || undefined,
         wa_access_token: wa.access_token || undefined,
         wa_verify_token: wa.verify_token || undefined,
@@ -69,8 +82,22 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
         fb_page_access_token: fb.page_access_token || undefined,
         fb_verify_token: fb.verify_token || undefined,
       }),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Integrations saved");
+      // Surface per-channel Graph API validation failures as a second toast.
+      const validation = data?.validation || {};
+      const channelLabels: Record<string, string> = {
+        whatsapp: "WhatsApp",
+        instagram: "Instagram",
+        facebook: "Facebook",
+      };
+      for (const [channel, result] of Object.entries(validation)) {
+        if (result && result.ok === false) {
+          const label = channelLabels[channel] || channel;
+          const msg = result.error || "unknown error";
+          toast.error(`${label} credentials invalid: ${msg}`);
+        }
+      }
       setWa((prev) => ({ ...prev, access_token: "", verify_token: "" }));
       setIg(EMPTY_IG);
       setFb(EMPTY_FB);
@@ -154,7 +181,7 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
           <IntegrationCard
             icon="💬"
             title="WhatsApp"
-            connectionBadge={<ConnectionBadge hasToken={!!config?.has_whatsapp} verified={!!config?.wa_verified} />}
+            connectionBadge={<ConnectionBadge hasToken={!!config?.has_whatsapp} verified={!!config?.wa_verified} credentialsValid={config?.wa_credentials_valid} />}
             webhookUrl={`${backendOrigin}/webhooks/${tenantId}/whatsapp`}
             isSaved={!!config?.has_whatsapp}
             isEditing={editingWa}
@@ -193,7 +220,7 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
             <IntegrationCard
               icon="📸"
               title="Instagram"
-              connectionBadge={<ConnectionBadge hasToken={!!config?.has_instagram} verified={!!config?.ig_verified} />}
+              connectionBadge={<ConnectionBadge hasToken={!!config?.has_instagram} verified={!!config?.ig_verified} credentialsValid={config?.ig_credentials_valid} />}
               webhookUrl={`${backendOrigin}/webhooks/${tenantId}/instagram`}
               isSaved={!!config?.has_instagram}
               isEditing={editingIg}
@@ -224,7 +251,7 @@ export function IntegrationsTab({ tenantId, planFeatures }: IntegrationsTabProps
             <IntegrationCard
               icon="👤"
               title="Facebook Messenger"
-              connectionBadge={<ConnectionBadge hasToken={!!config?.has_facebook} verified={!!config?.fb_verified} />}
+              connectionBadge={<ConnectionBadge hasToken={!!config?.has_facebook} verified={!!config?.fb_verified} credentialsValid={config?.fb_credentials_valid} />}
               webhookUrl={`${backendOrigin}/webhooks/${tenantId}/facebook`}
               isSaved={!!config?.has_facebook}
               isEditing={editingFb}

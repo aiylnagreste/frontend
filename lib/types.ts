@@ -114,6 +114,9 @@ export interface WebhookConfig {
   wa_verified: boolean;
   ig_verified: boolean;
   fb_verified: boolean;
+  wa_credentials_valid?: boolean;
+  ig_credentials_valid?: boolean;
+  fb_credentials_valid?: boolean;
   wa_phone_number_id: string;
   webhook_urls: {
     whatsapp: string;
