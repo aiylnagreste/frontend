@@ -413,7 +413,6 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
     mutationFn: (payload: Record<string, string>) => saveIntegrationConfig(admin.id, payload),
     onSuccess: () => {
       toast.success("Integration saved successfully");
-      // Invalidate both config and the list to refresh the badges
       qc.invalidateQueries({ queryKey: ["super-integrations", "config", admin.tenant_id] });
       qc.invalidateQueries({ queryKey: ["super-integrations", "admins"] });
     },
@@ -519,7 +518,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
             color="#25D366"
             channelName="whatsapp"
             webhookUrl={`${backendOrigin}/webhooks/${admin.tenant_id}/whatsapp`}
-            isConfigured={admin.has_whatsapp}   // ✅ use the same flag as salon admin
+            isConfigured={admin.has_whatsapp}
             fields={[
               {
                 key: "wa_phone_number_id",
@@ -556,7 +555,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
             color="#E4405F"
             channelName="instagram"
             webhookUrl={`${backendOrigin}/webhooks/${admin.tenant_id}/instagram`}
-            isConfigured={admin.has_instagram}   // ✅ consistent
+            isConfigured={admin.has_instagram}
             fields={[
               {
                 key: "ig_page_access_token",
@@ -587,7 +586,7 @@ function IntegrationPanel({ admin }: { admin: SalonIntegration }) {
             color="#1877F2"
             channelName="facebook"
             webhookUrl={`${backendOrigin}/webhooks/${admin.tenant_id}/facebook`}
-            isConfigured={admin.has_facebook}   // ✅ consistent
+            isConfigured={admin.has_facebook}
             fields={[
               {
                 key: "fb_page_access_token",

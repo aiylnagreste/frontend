@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Link from "next/link";
 import {
   LayoutDashboard, Layers, CreditCard,
   ShieldHalf, LogOut, ChevronRight, Settings
@@ -46,11 +45,9 @@ export function SuperSidebar() {
 
   return (
     <aside style={styles.sidebar}>
-      {/* Background glows matching the target aesthetic */}
       <div style={styles.glow1} />
       <div style={styles.glow2} />
 
-      {/* Brand Block */}
       <div style={styles.brand}>
         <div style={styles.brandIcon}>
           <span style={{ fontSize: "18px" }}>✨</span>
@@ -61,7 +58,6 @@ export function SuperSidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav style={styles.nav}>
         {NAV.map((group) => (
           <div key={group.section}>
@@ -72,7 +68,11 @@ export function SuperSidebar() {
               const Icon = item.icon;
 
               return (
-                <Link key={item.href} href={item.href} style={{ textDecoration: "none", width: "100%" }}>
+                <a
+                  key={item.href}
+                  href={item.href}
+                  style={{ textDecoration: "none", width: "100%" }}
+                >
                   <div
                     style={{
                       ...styles.navItem,
@@ -93,28 +93,22 @@ export function SuperSidebar() {
                       }
                     }}
                   >
-                    {/* Icon Slot matching target dimensions */}
                     <span style={styles.iconSlot}>
                       <Icon size={16} style={{ width: "100%", height: "100%" }} />
                     </span>
-                    
                     <span style={{ flex: 1, textAlign: "left" }}>{item.label}</span>
-
-                    {/* Active Indicator Chevron */}
                     {active && (
                       <ChevronRight size={13} style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }} />
                     )}
                   </div>
-                </Link>
+                </a>
               );
             })}
           </div>
         ))}
       </nav>
 
-      {/* Footer */}
       <div style={styles.footer}>
-        {/* User Pill styled to match theme */}
         <div style={styles.userPill}>
           <div style={styles.userAvatar}>SA</div>
           <div style={{ minWidth: 0, flex: 1 }}>
@@ -123,7 +117,6 @@ export function SuperSidebar() {
           </div>
         </div>
 
-        {/* Logout Button */}
         <a href="/super-admin/logout" style={{ textDecoration: "none", width: "100%" }}>
           <button
             style={styles.logoutBtn}
@@ -145,7 +138,7 @@ export function SuperSidebar() {
   );
 }
 
-/* ── Styles Object (Matching Target Sidebar.tsx) ── */
+/* ── Styles remain the same ── */
 const styles: Record<string, React.CSSProperties> = {
   sidebar: {
     width: "252px",
