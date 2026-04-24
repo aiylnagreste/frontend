@@ -7,6 +7,7 @@ import type {
   Client,
   DashboardStats,
   Deal,
+  Invoice,
   Plan,
   PlanFeatures,
   PublicPlan,
@@ -44,8 +45,9 @@ export const QK = {
   planFeatures: () => ["planFeatures"] as const,
   tenantStatus: () => ["tenantStatus"] as const,
   corsOrigin: () => ["corsOrigin"] as const,
-  analyticsClients: (params: Record<string, string | undefined>) => 
+  analyticsClients: (params: Record<string, string | undefined>) =>
     ["analyticsClients", params] as const,
+  invoices: (params?: Record<string, string | undefined>) => ["invoices", params ?? {}] as const,
 };
 
 // ─── Fetchers ───────────────────────────────────────────────────────────────
@@ -110,6 +112,13 @@ export async function fetchCorsOrigin(): Promise<string | null> {
 export async function saveCorsOrigin(cors_origin: string | null): Promise<void> {
   await api.put(`${BASE}/cors-origin`, { cors_origin });
 }
+
+export const fetchInvoices = (params?: Record<string, string | undefined>) => {
+  const q = new URLSearchParams();
+  if (params) for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
+  const qs = q.toString();
+  return api.get<Invoice[]>(`${BASE}/invoices${qs ? `?${qs}` : ""}`);
+};
 
 // In lib/queries.ts - Replace the fetchCurrentSubscription function
 export async function fetchCurrentSubscription(): Promise<CurrentSubscription> {

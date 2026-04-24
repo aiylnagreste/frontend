@@ -12,7 +12,8 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { formatDate, formatTime } from "@/lib/utils";
 import { BookingDrawer } from "@/components/bookings/BookingDrawer";
-import { Pencil, Check, Archive, X, Calendar, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Check, Archive, X, Calendar, Filter, ChevronLeft, ChevronRight, Receipt } from "lucide-react";
+import { InvoiceModal } from "@/components/bookings/InvoiceModal";
 
 interface Props {
   branchId?: number;
@@ -98,6 +99,8 @@ export default function BookingsTable({ branchId, branchName }: Props) {
   const [statusFilter, setStatusFilter] = useState("");
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [invoiceBooking, setInvoiceBooking] = useState<Booking | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -147,6 +150,7 @@ export default function BookingsTable({ branchId, branchName }: Props) {
     qc.invalidateQueries({ queryKey: ["bookings"] });
     qc.invalidateQueries({ queryKey: ["stats"] });
     qc.invalidateQueries({ queryKey: ["analytics"] });
+    qc.invalidateQueries({ queryKey: ["invoices"] });
 
     const timeframes = ["day", "week", "month", "year"];
     timeframes.forEach(timeframe => {
@@ -160,10 +164,10 @@ export default function BookingsTable({ branchId, branchName }: Props) {
     });
   }
 
-  const completeMutation = useMutation({
+  const arriveMutation = useMutation({
     mutationFn: (id: number) =>
-      api.patch(`/salon-admin/api/bookings/${id}/status`, { status: "completed" }),
-    onSuccess: () => { toast.success("Marked as completed"); invalidate(); },
+      api.patch(`/salon-admin/api/bookings/${id}/status`, { status: "arrived" }),
+    onSuccess: () => { toast.success("Marked as arrived"); invalidate(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -379,6 +383,7 @@ export default function BookingsTable({ branchId, branchName }: Props) {
             >
               <option value="">All Statuses</option>
               <option value="confirmed">Confirmed</option>
+              <option value="arrived">Arrived</option>
               <option value="completed">Completed</option>
               <option value="canceled">Cancelled</option>
               <option value="no_show">Missed</option>
@@ -492,8 +497,9 @@ export default function BookingsTable({ branchId, branchName }: Props) {
                             borderBottom: "1px solid #F0EEED",
                             background:
                               b.status === "completed" ? "#F8FDF8" :
-                              b.status === "canceled" ? "#FFFDF8" :
-                              b.status === "no_show" ? "#FFF8F8" : "transparent",
+                              b.status === "arrived"   ? "#FFFBEB" :
+                              b.status === "canceled"  ? "#FFFDF8" :
+                              b.status === "no_show"   ? "#FFF8F8" : "transparent",
                             transition: "background 0.15s",
                           }}
                           onMouseEnter={(e) => {
@@ -560,12 +566,22 @@ export default function BookingsTable({ branchId, branchName }: Props) {
                               {b.status === "confirmed" && (
                                 <TableAction
                                   icon={<Check size={11} strokeWidth={2.5} />}
-                                  label="Done"
+                                  label="Arrived"
+                                  bg="#FEF3C7"
+                                  color="#92400E"
+                                  hoverBg="#FDE68A"
+                                  onClick={() => arriveMutation.mutate(b.id)}
+                                  disabled={arriveMutation.isPending}
+                                />
+                              )}
+                              {b.status === "arrived" && (
+                                <TableAction
+                                  icon={<Receipt size={11} strokeWidth={2} />}
+                                  label="Generate Invoice"
                                   bg="#DCFCE7"
                                   color="#15803D"
                                   hoverBg="#BBF7D0"
-                                  onClick={() => completeMutation.mutate(b.id)}
-                                  disabled={completeMutation.isPending}
+                                  onClick={() => { setInvoiceBooking(b); setInvoiceOpen(true); }}
                                 />
                               )}
                               <TableAction
@@ -598,6 +614,13 @@ export default function BookingsTable({ branchId, branchName }: Props) {
         onClose={closeDrawer}
         editing={editingBooking}
         editMode="limited"
+        onSuccess={invalidate}
+      />
+
+      <InvoiceModal
+        open={invoiceOpen}
+        booking={invoiceBooking}
+        onClose={() => { setInvoiceOpen(false); setInvoiceBooking(null); }}
         onSuccess={invalidate}
       />
     </>

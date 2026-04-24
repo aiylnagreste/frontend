@@ -44,7 +44,7 @@ export interface Deal {
   off: number;
 }
 
-export type BookingStatus = "confirmed" | "completed" | "canceled" | "no_show" | "archived";
+export type BookingStatus = "confirmed" | "arrived" | "completed" | "canceled" | "no_show" | "archived";
 
 export interface Booking {
   id: number;
@@ -250,4 +250,36 @@ export interface AnalyticsClientsResponse {
   queryRange: { start: string | null; end: string | null; tz: string };
   filtersApplied: { statuses: string[]; branch: string | null; period: string | null };
   dataFreshAsOf: string;
+}
+
+export type PaymentType = "cash" | "card" | "bank_to_bank";
+
+export interface Invoice {
+  id: number;
+  booking_id: number;
+  customer_name: string;
+  phone: string | null;
+  service: string;
+  branch: string | null;
+  staff_id: number | null;
+  staff_name: string | null;
+  service_price: number;
+  extra_services_price: number;
+  tips: number;
+  deal_ids_json: string;       // JSON stringified number[]
+  deals_off_pct: number;       // 0-100
+  discount_amount: number;
+  total: number;
+  payment_type: PaymentType;
+  created_at: string;
+  booking_date?: string;       // joined from bookings (optional)
+  booking_time?: string;
+}
+
+export interface CreateInvoicePayload {
+  booking_id: number;
+  extra_services_price: number;
+  tips: number;
+  deal_ids: number[];
+  payment_type: PaymentType;
 }

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<string, { bg: string; color: string; dot: string }> = {
   confirmed:  { bg: "#dcfce7", color: "#15803d", dot: "#22c55e" },
+  arrived:    { bg: "#fef3c7", color: "#92400e", dot: "#f59e0b" },
   completed:  { bg: "#dbeafe", color: "#1e40af", dot: "#3b82f6" },
   canceled:   { bg: "#fee2e2", color: "#b91c1c", dot: "#ef4444" },
   no_show:    { bg: "#f1f5f9", color: "#475569", dot: "#94a3b8" },
