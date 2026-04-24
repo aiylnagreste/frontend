@@ -306,9 +306,9 @@ export default function ReportsPage() {
               <EmptyState icon="📊" title="No data for this period" />
             ) : (
               <div onClick={() => setShowTopServicesModal(true)} style={{ cursor: "pointer", position: "relative" }}>
-                <ResponsiveContainer width="100%" height={280}>
+                <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
-                    <Pie data={topServices} dataKey="count" nameKey="name" cx="50%" cy="45%" innerRadius={45} outerRadius={95} paddingAngle={2} labelLine={false}>
+                    <Pie data={topServices} dataKey="count" nameKey="name" cx="50%" cy="45%" innerRadius={50} outerRadius={90} paddingAngle={2} labelLine={false}>
                       {topServices.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                     </Pie>
                     <Tooltip
@@ -333,9 +333,9 @@ export default function ReportsPage() {
               <EmptyState icon="💰" title="No revenue data" />
             ) : (
               <div onClick={() => setShowRevenueModal(true)} style={{ cursor: "pointer", position: "relative" }}>
-                <ResponsiveContainer width="100%" height={240}>
+                <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
-                    <Pie data={revenueByService} dataKey="revenue" nameKey="name" cx="50%" cy="45%" innerRadius={50} outerRadius={80} paddingAngle={3} strokeWidth={0}>
+                    <Pie data={revenueByService} dataKey="revenue" nameKey="name" cx="50%" cy="45%" innerRadius={50} outerRadius={90} paddingAngle={3} strokeWidth={0}>
                       {revenueByService.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                     </Pie>
                     <Tooltip formatter={(v: unknown, name: unknown) => [formatCurrency(v as number, currency), name as string]} contentStyle={tooltipStyle} />
@@ -360,9 +360,9 @@ export default function ReportsPage() {
             ) : (
               <div onClick={() => setShowStatusModal(true)} style={{ cursor: "pointer" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-                  <ResponsiveContainer width={180} height={180}>
+                  <ResponsiveContainer width={200} height={200}>
                     <PieChart>
-                      <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3} strokeWidth={0}>
+                      <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={48} outerRadius={78} paddingAngle={3} strokeWidth={0}>
                         {statusData.map((s, i) => <Cell key={i} fill={s.color} />)}
                       </Pie>
                       <Tooltip formatter={(v: unknown, name: unknown) => [String(v), name as string]} contentStyle={tooltipStyle} />
@@ -505,14 +505,6 @@ export default function ReportsPage() {
             <>
               <div style={{ overflowX: "auto" }}>
                 <table style={clientTableStyle}>
-                  <colgroup>
-                    <col style={{ width: "180px" }} />
-                    <col style={{ width: "auto" }} />
-                    <col style={{ width: "90px" }} />
-                    <col style={{ width: "130px" }} />
-                    <col style={{ width: "120px" }} />
-                    <col style={{ width: "32px" }} />
-                  </colgroup>
                   <thead>
                     <tr>
                       <th style={clientThStyle}>Client</th>
@@ -642,7 +634,7 @@ export default function ReportsPage() {
                 <tr style={{ borderTop: "2px solid #E6E4DF" }}>
                   <td style={modalTfootLeft}>Total</td>
                   <td style={modalTfootRight}>{totalBookings}</td>
-                  <td style={{ padding: "14px 0 0 0" }} />
+                  <td style={modalTfootRight} />
                 </tr>
               </tfoot>
             </table>
@@ -684,7 +676,7 @@ export default function ReportsPage() {
                 <tr style={{ borderTop: "2px solid #E6E4DF" }}>
                   <td style={modalTfootLeft}>Total</td>
                   <td style={modalTfootRight}>{formatCurrency(totalRevenue, currency)}</td>
-                  <td style={{ padding: "14px 0 0 0" }} />
+                  <td style={modalTfootRight} />
                 </tr>
               </tfoot>
             </table>
@@ -726,7 +718,7 @@ export default function ReportsPage() {
                 <tr style={{ borderTop: "2px solid #E6E4DF" }}>
                   <td style={modalTfootLeft}>Total</td>
                   <td style={modalTfootRight}>{statusTotal}</td>
-                  <td style={{ padding: "14px 0 0 0" }} />
+                  <td style={modalTfootRight} />
                 </tr>
               </tfoot>
             </table>
@@ -744,12 +736,6 @@ export default function ReportsPage() {
           </div>
           <div style={{ maxHeight: "500px", overflowY: "auto" }}>
             <table style={modalTableStyle}>
-              <colgroup>
-                <col style={{ width: "200px" }} />
-                <col style={{ width: "auto" }} />
-                <col style={{ width: "80px" }} />
-                <col style={{ width: "120px" }} />
-              </colgroup>
               <thead>
                 <tr>
                   <th style={modalThLeft}>Client</th>
@@ -921,23 +907,23 @@ const modalSummaryLabel: React.CSSProperties = { fontSize: "11px", color: "#5F65
 const modalSummaryValue: React.CSSProperties = { fontSize: "22px", fontWeight: 700, color: "#b5484b", fontFamily: "'Space Grotesk', sans-serif" };
 const modalTableStyle: React.CSSProperties = { width: "100%", borderCollapse: "collapse" };
 const modalThLeft: React.CSSProperties = {
-  textAlign: "left", padding: "12px 16px 8px 0", color: "#9CA3B4",
+  textAlign: "left", padding: "12px 8px 8px 0", color: "#9CA3B4",
   fontWeight: 600, fontSize: "11px", fontFamily: "'DM Sans', sans-serif", borderBottom: "1px solid #E6E4DF",
 };
 const modalThRight: React.CSSProperties = {
-  textAlign: "right", padding: "12px 0 8px 16px", color: "#9CA3B4",
+  textAlign: "right", padding: "12px 0 8px 8px", color: "#9CA3B4",
   fontWeight: 600, fontSize: "11px", fontFamily: "'DM Sans', sans-serif", borderBottom: "1px solid #E6E4DF",
 };
 const modalTdLeft: React.CSSProperties = {
-  padding: "12px 16px 12px 0", fontSize: "13px",
+  padding: "12px 8px 12px 0", fontSize: "13px",
   fontFamily: "'DM Sans', sans-serif", verticalAlign: "middle",
 };
 const modalTdRight: React.CSSProperties = {
-  padding: "12px 0 12px 16px", textAlign: "right", fontWeight: 600,
+  padding: "12px 0 12px 8px", textAlign: "right", fontWeight: 600,
   color: "#1A1D23", fontFamily: "'Space Grotesk', sans-serif", fontSize: "13px", verticalAlign: "middle",
 };
-const modalTfootLeft: React.CSSProperties = { padding: "14px 16px 0 0", fontWeight: 700, color: "#1A1D23", fontFamily: "'Space Grotesk', sans-serif", fontSize: "13px" };
-const modalTfootRight: React.CSSProperties = { padding: "14px 0 0 16px", textAlign: "right", fontWeight: 700, color: "#b5484b", fontFamily: "'Space Grotesk', sans-serif", fontSize: "14px" };
+const modalTfootLeft: React.CSSProperties = { padding: "14px 8px 0 0", fontWeight: 700, color: "#1A1D23", fontFamily: "'Space Grotesk', sans-serif", fontSize: "13px" };
+const modalTfootRight: React.CSSProperties = { padding: "14px 0 0 8px", textAlign: "right", fontWeight: 700, color: "#b5484b", fontFamily: "'Space Grotesk', sans-serif", fontSize: "14px" };
 const modalColorDot = (color: string): React.CSSProperties => ({ width: "10px", height: "10px", borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block" });
 const modalServiceName: React.CSSProperties = { color: "#1A1D23", fontWeight: 500 };
 const clientTableStyle: React.CSSProperties = { width: "100%", borderCollapse: "collapse" };
