@@ -29,6 +29,7 @@ interface InvoiceModalProps {
 type FormState = {
   extraServices: string;
   tips: string;
+  salesTaxPct: string;
   selectedDealIds: number[];
   paymentType: PaymentType;
 };
@@ -38,6 +39,7 @@ type PageSize = "A4" | "A5";
 const EMPTY_FORM: FormState = {
   extraServices: "0",
   tips: "0",
+  salesTaxPct: "0",
   selectedDealIds: [],
   paymentType: "cash",
 };
@@ -117,9 +119,12 @@ export function InvoiceModal({
 
   const extrasNum = Number(form.extraServices) || 0;
   const tipsNum = Number(form.tips) || 0;
+  const salesTaxPctNum = Math.min(100, Math.max(0, Number(form.salesTaxPct) || 0));
+  const subtotal = Math.max(0, (servicePrice - discountAmount) + extrasNum);
+  const salesTaxAmount = subtotal * (salesTaxPctNum / 100);
   const total = useMemo(
-    () => Math.max(0, (servicePrice - discountAmount) + extrasNum + tipsNum),
-    [servicePrice, discountAmount, extrasNum, tipsNum]
+    () => Math.max(0, subtotal + salesTaxAmount + tipsNum),
+    [subtotal, salesTaxAmount, tipsNum]
   );
 
   const createMutation = useMutation<Invoice, Error, CreateInvoicePayload>({
@@ -388,6 +393,22 @@ export function InvoiceModal({
             />
           </Field>
 
+          {/* Sales Tax */}
+          <Field label="Sales Tax (%)" error={errors.salesTaxPct}>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={form.salesTaxPct}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, salesTaxPct: e.target.value }))
+              }
+              style={inputStyle}
+              placeholder="0"
+            />
+          </Field>
+
           {/* Payment type radios */}
           <div>
             <label style={labelStyle}>Payment type</label>
@@ -457,6 +478,9 @@ export function InvoiceModal({
             )}
             {extrasNum > 0 && <TotalsRow label="Extra services" value={extrasNum} />}
             {tipsNum > 0 && <TotalsRow label="Tips" value={tipsNum} />}
+            {salesTaxPctNum > 0 && (
+              <TotalsRow label={`Sales Tax (${salesTaxPctNum}%)`} value={salesTaxAmount} />
+            )}
             <TotalsRow label="Total" value={total} bold />
           </div>
 
@@ -598,6 +622,16 @@ function InvoicePrintView({
           <div style={{ fontSize: "13px", color: "var(--color-ink)" }}>
             {invoice.branch || "—"}
           </div>
+          {invoice.branch_address && (
+            <div style={{ fontSize: "11px", color: "var(--color-sub)", marginTop: "2px" }}>
+              {invoice.branch_address}
+            </div>
+          )}
+          {invoice.branch_phone && (
+            <div style={{ fontSize: "11px", color: "var(--color-sub)", marginTop: "1px" }}>
+              {invoice.branch_phone}
+            </div>
+          )}
           {invoice.staff_name && (
             <>
               <div style={{ ...printLabelStyle, marginTop: "6px" }}>Staff</div>
@@ -663,6 +697,16 @@ function InvoicePrintView({
               <td style={printTdRight}>
                 {currency}
                 {tips.toFixed(2)}
+              </td>
+            </tr>
+          )}
+          {(invoice.sales_tax_pct ?? 0) > 0 && (
+            <tr>
+              <td style={printTdLeft}>
+                Sales Tax ({invoice.sales_tax_pct}%)
+              </td>
+              <td style={printTdRight}>
+                {currency}{(invoice.sales_tax_amount ?? 0).toFixed(2)}
               </td>
             </tr>
           )}
