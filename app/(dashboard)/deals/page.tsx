@@ -324,6 +324,25 @@ function DealCard({
             </span>
           </div>
         )}
+        {d.off > 0 && (
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+            padding: "2px 8px",
+            borderRadius: "20px",
+            background: "linear-gradient(135deg, rgba(181,72,75,0.1), rgba(107,48,87,0.07))",
+            border: "1px solid rgba(181,72,75,0.2)",
+            fontSize: "11px",
+            fontWeight: 700,
+            color: "#b5484b",
+            fontFamily: "'DM Sans', sans-serif",
+            letterSpacing: "0.02em",
+            marginTop: "4px",
+          }}>
+            {d.off}% OFF
+          </div>
+        )}
       </div>
 
       {/* Actions */}

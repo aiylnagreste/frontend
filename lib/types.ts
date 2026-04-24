@@ -41,6 +41,7 @@ export interface Deal {
   title: string;
   description: string;
   active: 0 | 1;
+  off: number;
 }
 
 export type BookingStatus = "confirmed" | "completed" | "canceled" | "no_show" | "archived";

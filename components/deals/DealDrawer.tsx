@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { ModalShell } from "@/components/ui/ModalShell";
 import type { Deal } from "@/lib/types";
-import { Tag, FileText } from "lucide-react";
+import { Tag, FileText, Percent } from "lucide-react";
 
 interface DealDrawerProps {
   open: boolean;
@@ -22,6 +22,7 @@ export function DealDrawer({ open, onClose, editing }: DealDrawerProps) {
     title: "",
     description: "",
     active: true,
+    off: 0,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,12 +34,14 @@ export function DealDrawer({ open, onClose, editing }: DealDrawerProps) {
           title: editing.title || "",
           description: editing.description || "",
           active: editing.active === 1,
+          off: editing.off ?? 0,
         });
       } else {
         setForm({
           title: "",
           description: "",
           active: true,
+          off: 0,
         });
       }
       setErrors({});
@@ -143,6 +146,32 @@ export function DealDrawer({ open, onClose, editing }: DealDrawerProps) {
           </div>
           <span style={{ fontSize: "11px", color: "#9CA3B4", marginTop: "4px", display: "block" }}>
             This will be shown to customers on the booking page
+          </span>
+        </div>
+
+        {/* Discount % */}
+        <div>
+          <label style={labelStyle}>
+            Discount %
+          </label>
+          <div style={{ position: "relative" }}>
+            <div style={iconBox}>
+              <Percent size={15} color="#9CA3B4" strokeWidth={1.8} />
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={form.off}
+              onChange={(e) => setForm({ ...form, off: Math.min(100, Math.max(0, Number(e.target.value) || 0)) })}
+              placeholder="0"
+              style={{ ...inputStyle, paddingLeft: "40px" }}
+              onFocus={(e) => { e.target.style.borderColor = "#b5484b"; e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "#E6E4DF"; e.target.style.boxShadow = "none"; }}
+            />
+          </div>
+          <span style={{ fontSize: "11px", color: "#9CA3B4", marginTop: "4px", display: "block" }}>
+            Enter 0 for no discount
           </span>
         </div>
 
