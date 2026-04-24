@@ -277,6 +277,10 @@ export interface Invoice {
   created_at: string;
   booking_date?: string;       // joined from bookings (optional)
   booking_time?: string;
+  branch_address?: string | null;   // from GET /invoices/:id JOIN on branches
+  branch_phone?: string | null;     // from GET /invoices/:id JOIN on branches
+  sales_tax_pct?: number;           // frontend-only, not stored in DB
+  sales_tax_amount?: number;        // frontend-only, computed from sales_tax_pct
 }
 
 export interface CreateInvoicePayload {
