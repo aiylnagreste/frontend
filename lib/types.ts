@@ -232,6 +232,9 @@ export interface AnalyticsClient {
     branch: string;
     staff_name: string | null;
     price: number;
+    /** Present when source=invoices — used by Reports click-to-open invoice modal */
+    invoice_id?: number;
+    booking_id?: number;
   }>;
   totalBookings: number;
   totalSpent: number;
@@ -282,4 +285,16 @@ export interface CreateInvoicePayload {
   tips: number;
   deal_ids: number[];
   payment_type: PaymentType;
+}
+
+export interface StaffIncomeRow {
+  staff_id: number;
+  staff_name: string;
+  tips_total: number;
+  invoice_count: number;
+}
+
+export interface StaffIncomeResponse {
+  month: string; // YYYY-MM
+  rows: StaffIncomeRow[];
 }

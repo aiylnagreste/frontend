@@ -1,6 +1,7 @@
 // components/dashboard/UpcomingList.tsx
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { fetchBookings, QK } from "@/lib/queries";
 import type { Booking } from "@/lib/types";
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDate, formatTime } from "@/lib/utils";
-import { CalendarRange, MapPin, Clock, Scissors } from "lucide-react";
+import { CalendarRange, MapPin, Clock, Scissors, ChevronRight } from "lucide-react";
 
 function getDateRange() {
   const today = new Date();
@@ -38,15 +39,19 @@ export default function UpcomingList() {
   });
 
   const { tomorrowStr, endStr } = getDateRange();
-  const upcoming = all
+  const inRange = all
     .filter(
       (b) =>
         b.date >= tomorrowStr &&
         b.date <= endStr &&
-        (b.status === "confirmed" || b.status === "completed"),
+        (b.status === "confirmed" ||
+          b.status === "arrived" ||
+          b.status === "completed"),
     )
-    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
-    .slice(0, 15);
+    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+
+  const totalUpcoming = inRange.length;
+  const upcoming = inRange.slice(0, 10);
 
   return (
     <Card>
@@ -89,7 +94,7 @@ export default function UpcomingList() {
             <EmptyState icon="📆" title="No upcoming bookings" />
           </div>
         ) : (
-          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+          <div>
             {upcoming.map((b, idx) => (
               <div
                 key={b.id}
@@ -200,6 +205,30 @@ export default function UpcomingList() {
                 </div>
               </div>
             ))}
+
+            {totalUpcoming > 10 && (
+              <Link
+                href="/bookings/upcoming"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "10px 16px",
+                  margin: "8px 12px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--color-border)",
+                  background: "#fff",
+                  color: "var(--color-rose)",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                View All ({totalUpcoming}) <ChevronRight size={12} />
+              </Link>
+            )}
           </div>
         )}
       </CardContent>

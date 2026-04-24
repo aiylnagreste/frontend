@@ -1,17 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchBookings, fetchStaff, fetchBranches, QK } from "@/lib/queries";
-import type { Booking, Branch } from "@/lib/types";
+import { fetchBookings, fetchBranches, fetchGeneral, fetchStaffIncome, QK } from "@/lib/queries";
+import type { Booking, Branch, StaffIncomeResponse } from "@/lib/types";
 import { useState } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from "recharts";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ModalShell } from "@/components/ui/ModalShell";
-import { CHART_COLORS } from "@/lib/utils";
+import { CHART_COLORS, formatCurrency } from "@/lib/utils";
 import { StaffDrawer } from "@/components/settings/StaffDrawer";
 import { Plus, Maximize2 } from "lucide-react";
 
@@ -56,6 +56,27 @@ export default function StaffPage() {
     queryFn: () => fetchBookings(),
     staleTime: 0,
   });
+
+  const { data: general } = useQuery({
+    queryKey: QK.general(),
+    queryFn: fetchGeneral,
+    staleTime: 10 * 60_000,
+  });
+  const currency = general?.currency ?? "Rs.";
+
+  const { data: staffIncome } = useQuery<StaffIncomeResponse>({
+    queryKey: QK.staffIncome(),
+    queryFn: () => fetchStaffIncome(),
+    staleTime: 60_000,
+  });
+
+  const incomeByStaffName = (staffIncome?.rows ?? []).reduce<Record<string, number>>(
+    (acc, r) => {
+      acc[r.staff_name] = Number(r.tips_total) || 0;
+      return acc;
+    },
+    {},
+  );
 
   const filteredBranches = branchFilter
     ? branches.filter((b) => b.name === branchFilter)
@@ -433,62 +454,50 @@ export default function StaffPage() {
                     
                     {chartData.length > 0 && (
                       <div>
-                        <div 
-  style={{ 
-    background: "#F9F8F6", 
-    padding: "12px", 
-    borderRadius: 8, 
-    border: "1px solid #E6E4DF", 
-    cursor: "pointer", 
-    position: "relative",
-    width: "100%",
-    overflowX: "auto"
-  }}
-  onClick={() => setCompletedModalData({ branchName: branch.name, data: chartData, total: totalCompleted })}
->
-  <div style={{ 
-    minWidth: `${Math.max(250, chartData.length * 35 + 100)}px`,
-    height: `${Math.max(150, chartData.length * 40)}px`
-  }}>
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart 
-        data={chartData} 
-        layout="vertical" 
-        margin={{ left: 10, right: 20, top: 10, bottom: 10 }}
-      >
-        <XAxis 
-          type="number" 
-          tick={{ fontSize: 11, fill: "#5F6577" }} 
-          allowDecimals={false} 
-          axisLine={false} 
-          tickLine={false} 
-        />
-        <YAxis 
-          type="category" 
-          dataKey="name" 
-          width={chartData.length > 3 ? 130 : 110}
-          tick={{ fontSize: chartData.length > 4 ? 10 : 11, fill: "#1A1D23", fontWeight: 500 }} 
-          axisLine={false} 
-          tickLine={false} 
-        />
-        <Tooltip 
-          formatter={(v: unknown) => [String(v ?? 0), "Completed"]} 
-          contentStyle={tooltipStyle} 
-          cursor={{ fill: "rgba(0,0,0,0.04)" }} 
-        />
-        <Bar 
-          dataKey="count" 
-          fill={CHART_COLORS[branchIndex % CHART_COLORS.length]} 
-          radius={[0, 4, 4, 0]} 
-          barSize={chartData.length > 5 ? 16 : (chartData.length > 3 ? 18 : 20)} 
-        />
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-  <div style={expandIconOverlay}>
-    <Maximize2 size={12} color="#fff" />
-  </div>
-</div>
+                        <div
+                          style={{
+                            background: "#F9F8F6",
+                            padding: "12px",
+                            borderRadius: 8,
+                            border: "1px solid #E6E4DF",
+                            cursor: "pointer",
+                            position: "relative",
+                            width: "100%",
+                          }}
+                          onClick={() => setCompletedModalData({ branchName: branch.name, data: chartData, total: totalCompleted })}
+                        >
+                          <ResponsiveContainer width="100%" height={240}>
+                            <PieChart>
+                              <Pie
+                                data={chartData}
+                                dataKey="count"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={40}
+                                outerRadius={80}
+                                paddingAngle={2}
+                                labelLine={false}
+                              >
+                                {chartData.map((_, i) => (
+                                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                formatter={(v: unknown) => [String(v ?? 0), "Completed"]}
+                                contentStyle={tooltipStyle}
+                              />
+                              <Legend
+                                verticalAlign="bottom"
+                                iconSize={10}
+                                wrapperStyle={{ fontSize: 11, color: "#5F6577" }}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div style={expandIconOverlay}>
+                            <Maximize2 size={12} color="#fff" />
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -497,17 +506,37 @@ export default function StaffPage() {
                         <div style={{ fontSize: "10px", fontWeight: 600, color: "#5F6577", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                           Most Requested
                         </div>
-                        <div 
+                        <div
                           style={{ background: "#F9F8F6", padding: "12px", borderRadius: 8, border: "1px solid #E6E4DF", cursor: "pointer", position: "relative" }}
                           onClick={() => setRequestedModalData({ branchName: branch.name, data: requestedChartData, total: totalRequested })}
                         >
-                          <ResponsiveContainer width="100%" height={Math.max(80, requestedChartData.length * 30)}>
-                            <BarChart data={requestedChartData} layout="vertical" margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
-                              <XAxis type="number" tick={{ fontSize: 11, fill: "#5F6577" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                              <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12, fill: "#1A1D23", fontWeight: 500 }} axisLine={false} tickLine={false} />
-                              <Tooltip formatter={(v: unknown) => [String(v ?? 0), "Requests"]} contentStyle={tooltipStyle} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                              <Bar dataKey="count" fill={CHART_COLORS[(branchIndex + 2) % CHART_COLORS.length]} radius={[0, 4, 4, 0]} barSize={18} />
-                            </BarChart>
+                          <ResponsiveContainer width="100%" height={220}>
+                            <PieChart>
+                              <Pie
+                                data={requestedChartData}
+                                dataKey="count"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={35}
+                                outerRadius={70}
+                                paddingAngle={2}
+                                labelLine={false}
+                              >
+                                {requestedChartData.map((_, i) => (
+                                  <Cell key={i} fill={CHART_COLORS[(i + 2) % CHART_COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                formatter={(v: unknown) => [String(v ?? 0), "Requests"]}
+                                contentStyle={tooltipStyle}
+                              />
+                              <Legend
+                                verticalAlign="bottom"
+                                iconSize={10}
+                                wrapperStyle={{ fontSize: 11, color: "#5F6577" }}
+                              />
+                            </PieChart>
                           </ResponsiveContainer>
                           <div style={expandIconOverlay}>
                             <Maximize2 size={12} color="#fff" />
@@ -532,13 +561,32 @@ export default function StaffPage() {
                             onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)"}
                             onMouseLeave={(e) => e.currentTarget.style.boxShadow = "none"}
                           >
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", gap: "8px", flexWrap: "wrap" }}>
                               <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: "13px", color: "#1A1D23" }}>{staffName}</span>
-                              {completedCount > 0 && (
-                                <span style={{ fontSize: "11px", color: "#5F6577", background: "#F4F3F0", border: "1px solid #E6E4DF", borderRadius: "20px", padding: "3px 10px", fontWeight: 500 }}>
-                                  {completedCount} completed
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span
+                                  title="Monthly income from tips"
+                                  style={{
+                                    fontSize: "11px",
+                                    color: "#92400E",
+                                    background: "#FEF3C7",
+                                    border: "1px solid #FDE68A",
+                                    borderRadius: "20px",
+                                    padding: "3px 10px",
+                                    fontWeight: 600,
+                                    fontFamily: "'DM Sans', sans-serif",
+                                  }}
+                                >
+                                  {incomeByStaffName[staffName] != null
+                                    ? `${formatCurrency(incomeByStaffName[staffName], currency)} tips`
+                                    : "— tips"}
                                 </span>
-                              )}
+                                {completedCount > 0 && (
+                                  <span style={{ fontSize: "11px", color: "#5F6577", background: "#F4F3F0", border: "1px solid #E6E4DF", borderRadius: "20px", padding: "3px 10px", fontWeight: 500 }}>
+                                    {completedCount} completed
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                               {[...bks]

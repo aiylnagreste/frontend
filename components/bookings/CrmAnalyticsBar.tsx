@@ -5,15 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchAnalytics, fetchGeneral, QK } from "@/lib/queries";
 import type { AnalyticsResponse } from "@/lib/types";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
   Tooltip,
   ResponsiveContainer,
   Cell,
   PieChart,
   Pie,
+  Legend,
 } from "recharts";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -56,9 +53,9 @@ export default function CrmAnalyticsBar({ branchId, branchName }: Props) {
   });
 
   const { data: countData, isLoading: countLoading } = useQuery<AnalyticsResponse>({
-    queryKey: QK.analytics({ period: timeframe, branch: branchName ?? "", status: "confirmed,completed" }),
+    queryKey: QK.analytics({ period: timeframe, branch: branchName ?? "", status: "confirmed,completed,arrived" }),
     queryFn: () =>
-      fetchAnalytics({ period: timeframe, branch: branchName ?? "", status: "confirmed,completed" }),
+      fetchAnalytics({ period: timeframe, branch: branchName ?? "", status: "confirmed,completed,arrived" }),
     staleTime: 60_000,
   });
 
@@ -172,54 +169,47 @@ export default function CrmAnalyticsBar({ branchId, branchName }: Props) {
             ) : (
               <>
                 {/* Clickable Chart */}
-                <div 
+                <div
                   onClick={() => setShowBookingsModal(true)}
                   style={{ cursor: "pointer", position: "relative" }}
                 >
-                  <div style={{ 
-                    height: `${Math.min(180, Math.max(140, topServices.length * 24))}px`
-                  }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
+                  <ResponsiveContainer width="100%" height={180}>
+                    <PieChart>
+                      <Pie
                         data={topServices}
-                        layout="vertical"
-                        margin={{ left: 0, right: 16, top: 0, bottom: 0 }}
+                        dataKey="count"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={75}
+                        paddingAngle={2}
+                        labelLine={false}
                       >
-                        <XAxis 
-                          type="number" 
-                          tick={{ fontSize: 10, fill: "#5F6577" }} 
-                          axisLine={false} 
-                          tickLine={false}
-                          tickFormatter={(value) => value === 0 ? '' : Math.round(value).toString()}
-                          allowDecimals={false}
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          width={110}
-                          tick={{ fontSize: 10, fill: "#1A1D23" }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <Tooltip
-                          formatter={(v: unknown) => [String(v ?? 0), "Bookings"]}
-                          contentStyle={{
-                            fontSize: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #E6E4DF",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                            fontFamily: "'DM Sans', sans-serif",
-                          }}
-                          cursor={{ fill: "rgba(181,72,75,0.04)" }}
-                        />
-                        <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={16}>
-                          {topServices.map((_, i) => (
-                            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
+                        {topServices.map((_, i) => (
+                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+  formatter={(v: unknown, _: unknown, props: any) => [
+    `${String(v ?? 0)} Bookings`,
+    props?.name ?? "",
+  ]}
+  contentStyle={{
+    fontSize: "12px",
+    borderRadius: "8px",
+    border: "1px solid #E6E4DF",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    fontFamily: "'DM Sans', sans-serif",
+  }}
+/>
+                      {/* <Legend
+                        verticalAlign="bottom"
+                        iconSize={9}
+                        wrapperStyle={{ fontSize: 10, color: "#5F6577" }}
+                      /> */}
+                    </PieChart>
+                  </ResponsiveContainer>
                   
                   {/* Expand icon overlay */}
                   <div style={{
@@ -295,8 +285,8 @@ export default function CrmAnalyticsBar({ branchId, branchName }: Props) {
                         nameKey="name"
                         cx="50%"
                         cy="50%"
-                        innerRadius={35}
-                        outerRadius={55}
+                       innerRadius={40}
+                        outerRadius={75}
                         paddingAngle={2}
                         strokeWidth={0}
                       >
@@ -337,7 +327,7 @@ export default function CrmAnalyticsBar({ branchId, branchName }: Props) {
 
                 {/* Simple Total Display */}
                 <div style={{
-                  marginTop: "12px",
+                  marginTop: "50px",
                   padding: "10px 14px",
                   background: "#F8F8F6",
                   borderRadius: "8px",

@@ -3,8 +3,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchBookings, QK } from "@/lib/queries";
-import type { Booking } from "@/lib/types";
+import { fetchBookings, fetchInvoiceByBookingId, QK } from "@/lib/queries";
+import type { Booking, Invoice } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -12,12 +12,15 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { formatDate, formatTime } from "@/lib/utils";
 import { BookingDrawer } from "@/components/bookings/BookingDrawer";
-import { Pencil, Check, Archive, X, Calendar, Filter, ChevronLeft, ChevronRight, Receipt } from "lucide-react";
+import { Pencil, Check, Archive, X, Calendar, Filter, ChevronLeft, ChevronRight, Receipt, Printer } from "lucide-react";
 import { InvoiceModal } from "@/components/bookings/InvoiceModal";
 
 interface Props {
   branchId?: number;
   branchName?: string;
+  /** Optional override — when provided, skip the internal fetch and render these rows instead.
+   * Used by /bookings/upcoming to pre-filter to next-7-days. */
+  bookings?: Booking[];
 }
 
 // Uncontrolled page input — syncs DOM directly to avoid re-render blur issues
@@ -94,13 +97,15 @@ function PageInput({
   );
 }
 
-export default function BookingsTable({ branchId, branchName }: Props) {
+export default function BookingsTable({ branchId, branchName, bookings: bookingsProp }: Props) {
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [invoiceBooking, setInvoiceBooking] = useState<Booking | null>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
+  const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -110,11 +115,17 @@ export default function BookingsTable({ branchId, branchName }: Props) {
   if (dateFilter) params.date = dateFilter;
   if (statusFilter) params.status = statusFilter;
 
-  const { data: allBookings = [], isLoading } = useQuery<Booking[]>({
+  const overrideProvided = bookingsProp !== undefined;
+
+  const { data: queriedBookings = [], isLoading: queryLoading } = useQuery<Booking[]>({
     queryKey: QK.bookings(params),
     queryFn: () => fetchBookings(params),
     staleTime: 30_000,
+    enabled: !overrideProvided,
   });
+
+  const allBookings = overrideProvided ? bookingsProp! : queriedBookings;
+  const isLoading = overrideProvided ? false : queryLoading;
 
   const bookings = branchName
     ? allBookings.filter((b) => b.branch === branchName)
@@ -584,6 +595,30 @@ export default function BookingsTable({ branchId, branchName }: Props) {
                                   onClick={() => { setInvoiceBooking(b); setInvoiceOpen(true); }}
                                 />
                               )}
+                              {b.status === "completed" && (
+                                <TableAction
+                                  icon={<Printer size={11} strokeWidth={2} />}
+                                  label="Print Invoice"
+                                  bg="#EEF2FF"
+                                  color="#4338CA"
+                                  hoverBg="#E0E7FF"
+                                  onClick={async () => {
+                                    try {
+                                      const inv = await fetchInvoiceByBookingId(b.id);
+                                      if (!inv) {
+                                        toast.error("No invoice found for this booking");
+                                        return;
+                                      }
+                                      setViewInvoice(inv);
+                                      setViewInvoiceOpen(true);
+                                    } catch (err) {
+                                      toast.error(
+                                        err instanceof Error ? err.message : "Failed to load invoice"
+                                      );
+                                    }
+                                  }}
+                                />
+                              )}
                               <TableAction
                                 icon={<Archive size={11} strokeWidth={2} />}
                                 label="Archive"
@@ -622,6 +657,14 @@ export default function BookingsTable({ branchId, branchName }: Props) {
         booking={invoiceBooking}
         onClose={() => { setInvoiceOpen(false); setInvoiceBooking(null); }}
         onSuccess={invalidate}
+      />
+
+      <InvoiceModal
+        open={viewInvoiceOpen}
+        booking={null}
+        existingInvoice={viewInvoice}
+        onClose={() => { setViewInvoiceOpen(false); setViewInvoice(null); }}
+        onSuccess={() => {}}
       />
     </>
   );

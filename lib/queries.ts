@@ -15,6 +15,7 @@ import type {
   SalonTimings,
   Service,
   Staff,
+  StaffIncomeResponse,
   Subscription,
   Tenant,
   TenantStatus,
@@ -48,6 +49,9 @@ export const QK = {
   analyticsClients: (params: Record<string, string | undefined>) =>
     ["analyticsClients", params] as const,
   invoices: (params?: Record<string, string | undefined>) => ["invoices", params ?? {}] as const,
+  invoiceById: (id: number) => ["invoiceById", id] as const,
+  invoiceByBookingId: (bookingId: number) => ["invoiceByBookingId", bookingId] as const,
+  staffIncome: (month?: string) => ["staffIncome", month ?? "current"] as const,
 };
 
 // ─── Fetchers ───────────────────────────────────────────────────────────────
@@ -119,6 +123,19 @@ export const fetchInvoices = (params?: Record<string, string | undefined>) => {
   const qs = q.toString();
   return api.get<Invoice[]>(`${BASE}/invoices${qs ? `?${qs}` : ""}`);
 };
+
+export const fetchInvoiceById = (id: number) =>
+  api.get<Invoice>(`${BASE}/invoices/${id}`);
+
+export const fetchInvoiceByBookingId = async (bookingId: number): Promise<Invoice | null> => {
+  const list = await api.get<Invoice[]>(`${BASE}/invoices`);
+  return list.find((i) => i.booking_id === bookingId) ?? null;
+};
+
+export const fetchStaffIncome = (month?: string) =>
+  api.get<StaffIncomeResponse>(
+    `${BASE}/staff/income${month ? `?month=${encodeURIComponent(month)}` : ""}`
+  );
 
 // In lib/queries.ts - Replace the fetchCurrentSubscription function
 export async function fetchCurrentSubscription(): Promise<CurrentSubscription> {
@@ -235,6 +252,9 @@ export interface AnalyticsClient {
     branch: string;
     staff_name: string | null;
     price: number;
+    /** Present when source=invoices — used by Reports click-to-open invoice modal */
+    invoice_id?: number;
+    booking_id?: number;
   }>;
   totalBookings: number;
   totalSpent: number;
