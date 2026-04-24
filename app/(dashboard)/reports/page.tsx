@@ -507,12 +507,12 @@ export default function ReportsPage() {
                 <table style={clientTableStyle}>
                   <thead>
                     <tr>
-                      <th style={clientThStyle}>Client</th>
+                      <th style={{ ...clientThStyle, width: "160px" }}>Client</th>
                       <th style={clientThStyle}>Services</th>
-                      <th style={{ ...clientThStyle, textAlign: "right" }}>Bookings</th>
-                      <th style={{ ...clientThStyle, textAlign: "right" }}>Spent</th>
-                      <th style={{ ...clientThStyle, textAlign: "right" }}>Last Visit</th>
-                      <th style={clientThStyle}></th>
+                      <th style={{ ...clientThStyle, textAlign: "right", width: "90px" }}>Bookings</th>
+                      <th style={{ ...clientThStyle, textAlign: "right", width: "110px" }}>Spent</th>
+                      <th style={{ ...clientThStyle, textAlign: "right", width: "110px" }}>Last Visit</th>
+                      <th style={{ ...clientThStyle, width: "32px" }}></th>
                     </tr>
                   </thead>
                   <tbody>
