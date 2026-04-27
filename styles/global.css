@@ -1,0 +1,309 @@
+/* frontend/styles/global.css
+   Shared cross-component patterns. Import in any module that needs them.
+   Usage: import shared from "@/styles/global.css"; className={shared.overlay}
+*/
+
+/* ── Overlay / Backdrop ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 19, 24, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 9999;
+}
+
+.overlay--centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Brand Gradient Button ── */
+.brand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.brand-btn:hover {
+  opacity: 0.88;
+}
+
+.brand-btn--lg {
+  padding: 12px 24px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+.brand-btn--full {
+  width: 100%;
+}
+
+/* ── Flex Utilities ── */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Form Shared ── */
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5F6577;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1A1D23;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.form-input:focus {
+  border-color: #b5484b;
+  box-shadow: 0 0 0 3px rgba(181, 72, 75, 0.1);
+}
+.form-input--error {
+  border-color: #DC2626;
+}
+
+.form-select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1A1D23;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.form-select:focus {
+  border-color: #b5484b;
+  box-shadow: 0 0 0 3px rgba(181, 72, 75, 0.1);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1A1D23;
+  background: #fff;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.form-textarea:focus {
+  border-color: #b5484b;
+  box-shadow: 0 0 0 3px rgba(181, 72, 75, 0.1);
+}
+
+.form-error {
+  font-size: 11px;
+  color: #DC2626;
+  margin-top: 4px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+/* ── Close / Icon Button ── */
+.icon-btn {
+  background: transparent;
+  border: 1px solid #E6E4DF;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5F6577;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.icon-btn:hover {
+  background: #F8F8F6;
+  border-color: #D1D5DB;
+  color: #1A1D23;
+}
+
+/* ── Panel Shell (Drawer + Modal shared) ── */
+.panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid #E6E4DF;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.panel__title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  color: #1A1D23;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.panel__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px;
+  background: #fff;
+}
+
+/* ── Page Shell ── */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1A1D23;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.page__subtitle {
+  font-size: 13px;
+  color: #5F6577;
+  margin-top: 2px;
+}
+
+/* ── Section heading ── */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #5F6577;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: #E6E4DF;
+  margin: 20px 0;
+}
+
+/* ── Auth page layout (login, register, forgot-password) ── */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-canvas);
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid #E6E4DF;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.auth-logo__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.auth-logo__name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1D23;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.auth-heading {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.auth-heading__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1A1D23;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.auth-heading__sub {
+  font-size: 13px;
+  color: #5F6577;
+  margin: 0;
+}

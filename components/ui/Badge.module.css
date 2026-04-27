@@ -1,0 +1,24 @@
+/* components/ui/Badge.module.css */
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+  text-transform: capitalize;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.01em;
+  background: var(--_badge-bg);
+  color: var(--_badge-color);
+}
+
+.badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--_badge-dot);
+  flex-shrink: 0;
+}

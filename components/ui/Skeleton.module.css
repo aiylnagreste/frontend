@@ -1,0 +1,23 @@
+/* components/ui/Skeleton.module.css */
+
+.skeleton {
+  background: linear-gradient(90deg, #f0eeed 25%, #e6e4df 50%, #f0eeed 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: shimmer 1.4s infinite linear;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.kpiSkeleton {
+  background: #fff;
+  border: 1px solid #E6E4DF;
+  border-radius: 10px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

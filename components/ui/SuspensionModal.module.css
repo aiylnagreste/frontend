@@ -1,0 +1,73 @@
+/* components/ui/SuspensionModal.module.css */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17, 19, 24, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 16px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.iconWrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(181, 72, 75, 0.12), rgba(107, 48, 87, 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px auto;
+  font-size: 24px;
+}
+
+.title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1D23;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.body {
+  font-size: 14px;
+  color: #5F6577;
+  text-align: center;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(181, 72, 75, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(181, 72, 75, 0.35);
+}
