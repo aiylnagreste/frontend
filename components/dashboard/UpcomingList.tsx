@@ -9,8 +9,9 @@ import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatDate, formatTime } from "@/lib/utils";
+import { formatTime } from "@/lib/utils";
 import { CalendarRange, MapPin, Clock, Scissors, ChevronRight } from "lucide-react";
+import styles from "./UpcomingList.module.css";
 
 function getDateRange() {
   const today = new Date();
@@ -56,29 +57,15 @@ export default function UpcomingList() {
   return (
     <Card>
       <CardHeader>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "8px",
-            background: "linear-gradient(135deg, rgba(181,72,75,0.12), rgba(107,48,87,0.08))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
+        <div className={styles.cardHeaderInner}>
+          <div className={styles.iconWrap}>
             <CalendarRange size={16} color="#b5484b" strokeWidth={2} />
           </div>
           <div>
-            <span style={{
-              fontWeight: 700,
-              fontSize: "14px",
-              color: "#1A1D23",
-              fontFamily: "'Space Grotesk', sans-serif",
-              letterSpacing: "-0.01em",
-            }}>
+            <span className={styles.cardTitle}>
               Upcoming
             </span>
-            <span style={{ fontSize: "11px", color: "#9CA3B4", display: "block", marginTop: "1px" }}>
+            <span className={styles.cardSubtitle}>
               Next 7 days
             </span>
           </div>
@@ -86,146 +73,65 @@ export default function UpcomingList() {
       </CardHeader>
       <CardContent style={{ padding: 0 }}>
         {isLoading ? (
-          <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div className={styles.skeletonWrap}>
             {[1, 2, 3].map((i) => <Skeleton key={i} style={{ height: "56px" }} />)}
           </div>
         ) : upcoming.length === 0 ? (
-          <div style={{ padding: "32px 24px" }}>
+          <div className={styles.emptyWrap}>
             <EmptyState icon="📆" title="No upcoming bookings" />
           </div>
         ) : (
-          <div>
-            {upcoming.map((b, idx) => (
-              <div
-                key={b.id}
-                style={{
-                  padding: "14px 20px",
-                  borderBottom: idx < upcoming.length - 1 ? "1px solid #F0EEED" : "none",
-                  display: "flex",
-                  gap: "14px",
-                  transition: "background 0.15s",
-                  cursor: "default",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#FDFCFC";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                {/* Date column */}
-                <div style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "10px",
-                  background: isTomorrow(b.date) ? "linear-gradient(135deg, rgba(181,72,75,0.12), rgba(107,48,87,0.08))" : "#F8F8F6",
-                  border: isTomorrow(b.date) ? "1px solid rgba(181,72,75,0.2)" : "1px solid #E6E4DF",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}>
-                  <span style={{
-                    fontSize: "10px",
-                    fontWeight: 600,
-                    color: isTomorrow(b.date) ? "#b5484b" : "#9CA3B4",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                    lineHeight: 1,
-                  }}>
-                    {new Date(b.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" })}
-                  </span>
-                  <span style={{
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    color: "#1A1D23",
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    lineHeight: 1.2,
-                    marginTop: "2px",
-                  }}>
-                    {new Date(b.date + "T00:00:00").getDate()}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
-                    <span style={{
-                      fontWeight: 600,
-                      fontSize: "13px",
-                      color: "#1A1D23",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}>
-                      {b.customer_name}
+          <div className={styles.list}>
+            {upcoming.map((b, idx) => {
+              const tomorrow = isTomorrow(b.date);
+              return (
+                <div
+                  key={b.id}
+                  className={`${styles.item} ${idx < upcoming.length - 1 ? styles["item--bordered"] : ""}`}
+                >
+                  {/* Date column */}
+                  <div className={`${styles.dateBox} ${tomorrow ? styles["dateBox--tomorrow"] : ""}`}>
+                    <span className={`${styles.dateBox__weekday} ${tomorrow ? styles["dateBox__weekday--tomorrow"] : ""}`}>
+                      {new Date(b.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" })}
                     </span>
-                    <Badge status={b.status} />
+                    <span className={styles.dateBox__day}>
+                      {new Date(b.date + "T00:00:00").getDate()}
+                    </span>
                   </div>
 
-                  <div style={{
-                    fontSize: "12px",
-                    color: "#5F6577",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}>
-                    <Scissors size={11} color="#9CA3B4" strokeWidth={1.8} style={{ flexShrink: 0 }} />
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{b.service}</span>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <span style={{
-                      fontSize: "11px",
-                      color: "#9CA3B4",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}>
-                      <Clock size={10} color="#9CA3B4" strokeWidth={1.8} />
-                      {formatTime(b.time)}
-                    </span>
-                    {b.branch && (
-                      <span style={{
-                        fontSize: "11px",
-                        color: "#9CA3B4",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}>
-                        <MapPin size={10} color="#9CA3B4" strokeWidth={1.8} />
-                        {b.branch}
+                  {/* Content */}
+                  <div className={styles.content}>
+                    <div className={styles.contentTop}>
+                      <span className={styles.customerName}>
+                        {b.customer_name}
                       </span>
-                    )}
+                      <Badge status={b.status} />
+                    </div>
+
+                    <div className={styles.serviceRow}>
+                      <Scissors size={11} color="#9CA3B4" strokeWidth={1.8} style={{ flexShrink: 0 }} />
+                      <span className={styles.serviceText}>{b.service}</span>
+                    </div>
+
+                    <div className={styles.metaRow}>
+                      <span className={styles.metaItem}>
+                        <Clock size={10} color="#9CA3B4" strokeWidth={1.8} />
+                        {formatTime(b.time)}
+                      </span>
+                      {b.branch && (
+                        <span className={styles.metaItem}>
+                          <MapPin size={10} color="#9CA3B4" strokeWidth={1.8} />
+                          {b.branch}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {totalUpcoming > 10 && (
-              <Link
-                href="/bookings/upcoming"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  padding: "10px 16px",
-                  margin: "8px 12px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--color-border)",
-                  background: "#fff",
-                  color: "var(--color-rose)",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
-              >
+              <Link href="/bookings/upcoming" className={styles.viewAll}>
                 View All ({totalUpcoming}) <ChevronRight size={12} />
               </Link>
             )}

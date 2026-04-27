@@ -24,6 +24,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { InvoiceModal } from "@/components/bookings/InvoiceModal";
+import styles from "./TodayAppointmentsTable.module.css";
 
 function getTodayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -47,7 +48,7 @@ export default function TodayAppointmentsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
-const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
+  const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
 
   function invalidateAfterMutation() {
     qc.invalidateQueries({ queryKey: ["bookings"] });
@@ -95,46 +96,26 @@ const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
 
   const branchEntries = Object.entries(byBranch);
 
+  function getRowClass(status: string) {
+    if (status === "completed") return `${styles.row} ${styles["row--completed"]}`;
+    if (status === "no_show") return `${styles.row} ${styles["row--noShow"]}`;
+    if (status === "arrived") return `${styles.row} ${styles["row--arrived"]}`;
+    return styles.row;
+  }
+
   return (
-    <div style={{
-      background: "#fff",
-      border: "1px solid #E6E4DF",
-      borderRadius: "10px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-      overflow: "hidden",
-    }}>
+    <div className={styles.container}>
       {/* Header */}
-      <div style={{
-        padding: "16px 20px",
-        borderBottom: "1px solid #E6E4DF",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "8px",
-            background: "linear-gradient(135deg, rgba(181,72,75,0.12), rgba(107,48,87,0.08))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
+      <div className={styles.header}>
+        <div className={styles.headerLeft}>
+          <div className={styles.iconWrap}>
             <CalendarCheck size={16} color="#b5484b" strokeWidth={2} />
           </div>
           <div>
-            <h3 style={{
-              fontSize: "14px",
-              fontWeight: 700,
-              margin: 0,
-              fontFamily: "'Space Grotesk', sans-serif",
-              color: "#1A1D23",
-              letterSpacing: "-0.01em",
-            }}>
+            <h3 className={styles.heading}>
               Today&apos;s Appointments
             </h3>
-            <span style={{ fontSize: "11px", color: "#9CA3B4" }}>
+            <span className={styles.subheading}>
               {totalItems} scheduled
             </span>
           </div>
@@ -143,7 +124,7 @@ const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
 
       {/* Body */}
       {isLoading ? (
-        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div className={styles.skeletonWrap}>
           {[1, 2, 3].map((i) => <Skeleton key={i} style={{ height: "48px" }} />)}
         </div>
       ) : branchEntries.length === 0 ? (
@@ -155,11 +136,11 @@ const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
       ) : (
         <>
           {/* Single table wrapping all branches — fixes column alignment */}
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+          <table className={styles.table}>
             <thead>
               <tr>
                 {["Client", "Service", "Time", "Status", "Actions"].map((h) => (
-                  <th key={h} style={tableHeaderStyle}>{h}</th>
+                  <th key={h} className={styles.th}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -169,22 +150,12 @@ const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
                 {/* Branch separator */}
                 <tbody key={`sep-${branch}`}>
                   <tr>
-                    <td colSpan={5} style={{
-                      padding: "8px 20px",
-                      background: "#F8F8F6",
-                      borderTop: "1px solid #E6E4DF",
-                      borderBottom: "1px solid #E6E4DF",
-                    }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "#b5484b",
-                          fontFamily: "'Space Grotesk', sans-serif",
-                        }}>
+                    <td colSpan={5} className={styles.branchSepCell}>
+                      <div className={styles.branchSepInner}>
+                        <span className={styles.branchName}>
                           {branch}
                         </span>
-                        <span style={{ fontSize: "11px", color: "#9CA3B4", fontWeight: 500 }}>
+                        <span className={styles.branchCount}>
                           {rows.length} booking{rows.length !== 1 ? "s" : ""}
                         </span>
                       </div>
@@ -195,67 +166,33 @@ const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
                 {/* Branch rows */}
                 <tbody key={`rows-${branch}`}>
                   {rows.map((b) => (
-                    <tr
-                      key={b.id}
-                      style={{
-                        borderBottom: "1px solid #F0EEED",
-                        background:
-                          b.status === "completed" ? "#F8FDF8"
-                          : b.status === "no_show" ? "#FFF8F8"
-                          : b.status === "arrived" ? "#F0F9FF"
-                          : "transparent",
-                        transition: "background 0.15s",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (b.status === "confirmed") e.currentTarget.style.background = "#FDFCFC";
-                      }}
-                      onMouseLeave={(e) => {
-                        if (b.status === "completed") e.currentTarget.style.background = "#F8FDF8";
-                        else if (b.status === "no_show") e.currentTarget.style.background = "#FFF8F8";
-                        else if (b.status === "arrived") e.currentTarget.style.background = "#F0F9FF";
-                        else e.currentTarget.style.background = "transparent";
-                      }}
-                    >
-                      <td style={cellStyle}>
-                        <div style={{ fontWeight: 600, color: "#1A1D23", fontSize: "13px" }}>
+                    <tr key={b.id} className={getRowClass(b.status)}>
+                      <td className={styles.td}>
+                        <div className={styles.clientName}>
                           {b.customer_name}
                         </div>
-                        <div style={{ fontSize: "11px", color: "#9CA3B4", marginTop: "1px" }}>
+                        <div className={styles.clientPhone}>
                           {b.phone || "—"}
                         </div>
                       </td>
-                      <td style={{ ...cellStyle, color: "#5F6577", fontSize: "13px" }}>
+                      <td className={`${styles.td} ${styles.serviceText}`}>
                         {b.service}
                       </td>
-                      <td style={cellStyle}>
-                        <span style={{
-                          fontFamily: "'Space Grotesk', monospace",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "#1A1D23",
-                          background: "#F8F8F6",
-                          padding: "3px 8px",
-                          borderRadius: "5px",
-                          whiteSpace: "nowrap",
-                        }}>
+                      <td className={styles.td}>
+                        <span className={styles.timeTag}>
                           {formatTime(b.time)}
                         </span>
                         {b.endTime && (
-                          <span style={{
-                            fontFamily: "'Space Grotesk', monospace",
-                            fontSize: "11px",
-                            color: "#9CA3B4",
-                            marginLeft: "4px",
-                          }}>
+                          <span className={styles.timeEnd}>
                             → {formatTime(b.endTime)}
                           </span>
                         )}
                       </td>
-                      <td style={cellStyle}>
+                      <td className={styles.td}>
                         <Badge status={b.status === "no_show" ? "Missed" : b.status} />
                       </td>
-                      <td style={cellStyle}>
-                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      <td className={styles.td}>
+                        <div className={styles.actionsWrap}>
                           {b.status === "confirmed" && (
                             <>
                               <TableAction
@@ -282,10 +219,9 @@ const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
                             <TableAction
                               icon={<Receipt size={11} strokeWidth={2.5} />}
                               label="Generate Invoice"
-                              
                               bg="#DCFCE7"
-                                color="#15803D"
-                                hoverBg="#BBF7D0"
+                              color="#15803D"
+                              hoverBg="#BBF7D0"
                               onClick={() => {
                                 setInvoiceBooking(b);
                                 setInvoiceOpen(true);
@@ -293,28 +229,27 @@ const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
                             />
                           )}
                           {b.status === "completed" && (
-                              <TableAction
-                                icon={<Printer size={11} strokeWidth={2} />}
-                                label="Print Invoice"
-                                bg="#EDE9FE"
+                            <TableAction
+                              icon={<Printer size={11} strokeWidth={2} />}
+                              label="Print Invoice"
+                              bg="#EDE9FE"
                               color="#6D28D9"
-                              
                               hoverBg="#DDD6FE"
-                                onClick={async () => {
-                                  try {
-                                    const inv = await fetchInvoiceByBookingId(b.id);
-                                    if (!inv) {
-                                      toast.error("No invoice found for this booking");
-                                      return;
-                                    }
-                                    setViewInvoice(inv);
-                                    setViewInvoiceOpen(true);
-                                  } catch (err) {
-                                    toast.error(err instanceof Error ? err.message : "Failed to load invoice");
+                              onClick={async () => {
+                                try {
+                                  const inv = await fetchInvoiceByBookingId(b.id);
+                                  if (!inv) {
+                                    toast.error("No invoice found for this booking");
+                                    return;
                                   }
-                                }}
-                              />
-                            )}
+                                  setViewInvoice(inv);
+                                  setViewInvoiceOpen(true);
+                                } catch (err) {
+                                  toast.error(err instanceof Error ? err.message : "Failed to load invoice");
+                                }
+                              }}
+                            />
+                          )}
                           {(b.status === "no_show" ||
                             b.status === "confirmed" ||
                             b.status === "arrived" ||
@@ -340,78 +275,41 @@ const [viewInvoiceOpen, setViewInvoiceOpen] = useState(false);
 
           {/* Pagination footer */}
           {totalItems > 0 && (
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "10px 20px",
-              borderTop: "1px solid #E6E4DF",
-              background: "#F8F8F6",
-              flexWrap: "wrap",
-              gap: "8px",
-            }}>
-              <div style={{ fontSize: "12px", color: "#5F6577", fontWeight: 500 }}>
+            <div className={styles.pagination}>
+              <div className={styles.paginationInfo}>
                 {startIndex + 1}–{Math.min(endIndex, totalItems)} of {totalItems}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ fontSize: "11px", color: "#5F6577" }}>Show</span>
+              <div className={styles.paginationControls}>
+                <div className={styles.pageSizeWrap}>
+                  <span className={styles.pageSizeLabel}>Show</span>
                   <select
                     value={pageSize}
                     onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                    style={{
-                      padding: "4px 22px 4px 8px",
-                      border: "1px solid #E6E4DF",
-                      borderRadius: "6px",
-                      fontSize: "11px",
-                      background: "#fff",
-                      color: "#1A1D23",
-                      cursor: "pointer",
-                      fontFamily: "'DM Sans', sans-serif",
-                      outline: "none",
-                      appearance: "none",
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%235F6577' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 6px center",
-                    }}
+                    className={styles.pageSizeSelect}
                   >
                     {PAGE_SIZES.map((n) => (
                       <option key={n} value={n}>{n}</option>
                     ))}
                   </select>
                 </div>
-                <div style={{ display: "flex", gap: "4px" }}>
+                <div className={styles.navBtns}>
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    style={{
-                      ...navBtnStyle,
-                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                      opacity: currentPage === 1 ? 0.5 : 1,
-                    }}
+                    className={styles.navBtn}
                   >
                     <ChevronLeft size={12} />
-                    <span style={{ fontSize: "11px" }}>Prev</span>
+                    <span className={styles.navBtnText}>Prev</span>
                   </button>
-                  <div style={{
-                    fontSize: "11px",
-                    color: "#5F6577",
-                    padding: "4px 10px",
-                    display: "flex",
-                    alignItems: "center",
-                  }}>
+                  <div className={styles.pageIndicator}>
                     {currentPage} / {totalPages}
                   </div>
                   <button
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages || totalPages === 0}
-                    style={{
-                      ...navBtnStyle,
-                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                      opacity: currentPage === totalPages ? 0.5 : 1,
-                    }}
+                    className={styles.navBtn}
                   >
-                    <span style={{ fontSize: "11px" }}>Next</span>
+                    <span className={styles.navBtnText}>Next</span>
                     <ChevronRight size={12} />
                   </button>
                 </div>
@@ -448,65 +346,20 @@ function TableAction({
   onClick: () => void;
   disabled?: boolean;
 }) {
-  const [hovered, setHovered] = useState(false);
+  // CSS variable bridge for dynamic colors
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "4px",
-        background: disabled ? bg : hovered ? hoverBg : bg,
-        color,
-        border: "none",
-        borderRadius: "6px",
-        padding: "5px 10px",
-        fontSize: "11px",
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        whiteSpace: "nowrap",
-        fontFamily: "'DM Sans', sans-serif",
-        transition: "background 0.15s",
-      }}
+        "--_btn-bg": bg,
+        "--_btn-hover-bg": hoverBg,
+        "--_btn-color": color,
+      } as React.CSSProperties}
+      className={styles.tableAction}
     >
       {icon}
       {label}
     </button>
   );
 }
-
-const tableHeaderStyle: React.CSSProperties = {
-  padding: "10px 16px",
-  textAlign: "left",
-  fontSize: "11px",
-  fontWeight: 600,
-  color: "#5F6577",
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-  background: "#F8F8F6",
-  borderBottom: "1px solid #E6E4DF",
-  whiteSpace: "nowrap",
-  fontFamily: "'DM Sans', sans-serif",
-};
-
-const cellStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  verticalAlign: "middle",
-};
-
-const navBtnStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "3px",
-  padding: "4px 10px",
-  border: "1px solid #E6E4DF",
-  borderRadius: "6px",
-  background: "#fff",
-  color: "#5F6577",
-  fontFamily: "'DM Sans', sans-serif",
-  transition: "all 0.15s",
-};
