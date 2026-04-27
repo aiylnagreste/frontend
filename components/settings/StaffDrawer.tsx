@@ -9,6 +9,7 @@ import { QK, fetchBranches, fetchRoles } from "@/lib/queries";
 import { ModalShell } from "@/components/ui/ModalShell";
 import type { Staff, Branch, Role } from "@/lib/types";
 import { validateName, validatePhone } from "@/lib/validation";
+import fd from "@/components/ui/FormDrawer.module.css";
 
 interface StaffDrawerProps {
   open: boolean;
@@ -105,59 +106,27 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
 
   const hasError = (field: string) => !!errors[field];
 
-  const focusInput = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>, field: string) => {
-    if (!hasError(field)) {
-      e.target.style.borderColor = "#b5484b";
-      e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)";
-    }
-  };
-
-  const blurInput = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>, field: string) => {
-    if (!hasError(field)) {
-      e.target.style.borderColor = "#E6E4DF";
-      e.target.style.boxShadow = "none";
-    }
-  };
-
-  const errorInputStyle = (field: string): React.CSSProperties => ({
-    borderColor: hasError(field) ? "#DC2626" : undefined,
-    boxShadow: hasError(field) ? "0 0 0 3px rgba(220,38,38,0.1)" : undefined,
-  });
-
-  const selectStyle = (field: string): React.CSSProperties => ({
-    ...inputStyle,
-    ...errorInputStyle(field),
-    cursor: "pointer",
-    appearance: "none",
-    backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%235F6577' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "right 14px center",
-    paddingRight: "36px",
-  });
-
   return (
     <ModalShell open={open} onClose={onClose} title={editing ? "Edit Staff Member" : "New Staff Member"} width={480}>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <form onSubmit={handleSubmit} className={fd["form--gap20"]}>
         {/* Name & Phone row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+        <div className={fd.row2}>
           <div>
-            <label style={labelStyle}>
-              Full Name <span style={{ color: "#b5484b" }}>*</span>
+            <label className={fd.label}>
+              Full Name <span className={fd.required}>*</span>
             </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="John Doe"
-              style={{ ...inputStyle, ...errorInputStyle("name") }}
-              onFocus={(e) => focusInput(e, "name")}
-              onBlur={(e) => blurInput(e, "name")}
+              className={`${fd.input} ${hasError("name") ? fd["input--error"] : ""}`}
               autoFocus
             />
-            {errors.name && <span style={errorStyle}>{errors.name}</span>}
+            {errors.name && <span className={fd.errorMsg}>{errors.name}</span>}
           </div>
           <div>
-            <label style={labelStyle}>Phone</label>
+            <label className={fd.label}>Phone</label>
             <input
               type="tel"
               inputMode="tel"
@@ -165,160 +134,81 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="+92 300 1234567"
-              style={{ ...inputStyle, ...errorInputStyle("phone") }}
-              onFocus={(e) => focusInput(e, "phone")}
-              onBlur={(e) => {
+              className={`${fd.input} ${hasError("phone") ? fd["input--error"] : ""}`}
+              onBlur={() => {
                 const err = validatePhone(form.phone);
                 setErrors(prev => ({ ...prev, phone: err || "" }));
-                blurInput(e, "phone");
               }}
             />
-            {errors.phone && <span style={errorStyle}>{errors.phone}</span>}
+            {errors.phone && <span className={fd.errorMsg}>{errors.phone}</span>}
           </div>
         </div>
 
         {/* Role & Branch row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+        <div className={fd.row2}>
           <div>
-            <label style={labelStyle}>
-              Role <span style={{ color: "#b5484b" }}>*</span>
+            <label className={fd.label}>
+              Role <span className={fd.required}>*</span>
             </label>
             <select
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
-              style={selectStyle("role")}
-              onFocus={(e) => focusInput(e, "role")}
-              onBlur={(e) => blurInput(e, "role")}
+              className={`${fd.select} ${hasError("role") ? fd["select--error"] : ""}`}
             >
               <option value="">Select role</option>
               {roles.map((r) => (
                 <option key={r.id} value={r.name}>{r.name}</option>
               ))}
             </select>
-            {errors.role && <span style={errorStyle}>{errors.role}</span>}
+            {errors.role && <span className={fd.errorMsg}>{errors.role}</span>}
           </div>
           <div>
-            <label style={labelStyle}>
-              Branch <span style={{ color: "#b5484b" }}>*</span>
+            <label className={fd.label}>
+              Branch <span className={fd.required}>*</span>
             </label>
             <select
               value={form.branch_id}
               onChange={(e) => setForm({ ...form, branch_id: e.target.value })}
-              style={selectStyle("branch_id")}
-              onFocus={(e) => { e.target.style.borderColor = "#b5484b"; e.target.style.boxShadow = "0 0 0 3px rgba(181,72,75,0.1)"; }}
-              onBlur={(e) => { e.target.style.borderColor = "#E6E4DF"; e.target.style.boxShadow = "none"; }}
+              className={`${fd.select} ${hasError("branch_id") ? fd["select--error"] : ""}`}
             >
               <option value="">Select branch</option>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
             </select>
-            {errors.branch_id && <span style={errorStyle}>{errors.branch_id}</span>}
+            {errors.branch_id && <span className={fd.errorMsg}>{errors.branch_id}</span>}
           </div>
         </div>
 
         {/* Status */}
         <div>
-          <label style={labelStyle}>Status</label>
-          <div style={{ display: "flex", gap: "10px" }}>
+          <label className={fd.label}>Status</label>
+          <div className={fd.statusToggle}>
             <button
               type="button"
               onClick={() => setForm({ ...form, status: "active" })}
-              style={{
-                flex: 1,
-                padding: "9px 16px",
-                borderRadius: "8px",
-                border: form.status === "active" ? "1.5px solid #22c55e" : "1.5px solid #E6E4DF",
-                backgroundColor: form.status === "active" ? "#F0FDF4" : "#fff",
-                color: form.status === "active" ? "#15803d" : "#5F6577",
-                fontWeight: 600,
-                fontSize: "12px",
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                transition: "all 0.15s",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-              }}
+              className={`${fd.statusBtn} ${form.status === "active" ? fd["statusBtn--active"] : ""}`}
             >
-              <span style={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: form.status === "active" ? "#22c55e" : "#D1D5DB",
-              }} />
+              <span className={`${fd.statusDot} ${form.status === "active" ? fd["statusDot--active"] : ""}`} />
               Active
             </button>
             <button
               type="button"
               onClick={() => setForm({ ...form, status: "inactive" })}
-              style={{
-                flex: 1,
-                padding: "9px 16px",
-                borderRadius: "8px",
-                border: form.status === "inactive" ? "1.5px solid #9CA3B4" : "1.5px solid #E6E4DF",
-                backgroundColor: form.status === "inactive" ? "#F8F8F6" : "#fff",
-                color: form.status === "inactive" ? "#475569" : "#5F6577",
-                fontWeight: 600,
-                fontSize: "12px",
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                transition: "all 0.15s",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-              }}
+              className={`${fd.statusBtn} ${form.status === "inactive" ? fd["statusBtn--inactive"] : ""}`}
             >
-              <span style={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: form.status === "inactive" ? "#9CA3B4" : "#D1D5DB",
-              }} />
+              <span className={`${fd.statusDot} ${form.status === "inactive" ? fd["statusDot--inactive"] : ""}`} />
               Inactive
             </button>
           </div>
         </div>
 
         {/* Actions */}
-        <div style={{
-          display: "flex",
-          gap: "10px",
-          justifyContent: "flex-end",
-          borderTop: "1px solid #E6E4DF",
-          paddingTop: "20px",
-          marginTop: "4px",
-        }}>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              ...secondaryBtn,
-              transition: "background 0.15s, color 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#F8F8F6";
-              e.currentTarget.style.color = "#1A1D23";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "#5F6577";
-            }}
-          >
+        <div className={fd.actions}>
+          <button type="button" onClick={onClose} className={fd.secondaryBtn}>
             Cancel
           </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{
-              ...primaryBtn,
-              opacity: isSubmitting ? 0.7 : 1,
-              cursor: isSubmitting ? "not-allowed" : "pointer",
-              transition: "opacity 0.2s",
-            }}
-          >
+          <button type="submit" disabled={isSubmitting} className={fd.primaryBtn}>
             {isSubmitting ? "Saving…" : editing ? "Update Staff" : "Add Staff"}
           </button>
         </div>
@@ -326,59 +216,3 @@ export function StaffDrawer({ open, onClose, editing }: StaffDrawerProps) {
     </ModalShell>
   );
 }
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "12px",
-  fontWeight: 600,
-  color: "#5F6577",
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-  marginBottom: "8px",
-  fontFamily: "'DM Sans', sans-serif",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "10px 14px",
-  border: "1.5px solid #E6E4DF",
-  borderRadius: "8px",
-  fontSize: "14px",
-  outline: "none",
-  backgroundColor: "#fff",
-  color: "#1A1D23",
-  fontFamily: "'DM Sans', sans-serif",
-  transition: "border-color 0.2s, box-shadow 0.2s",
-  boxSizing: "border-box",
-};
-
-const errorStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "12px",
-  color: "#DC2626",
-  marginTop: "5px",
-  fontWeight: 500,
-};
-
-const primaryBtn: React.CSSProperties = {
-  padding: "10px 24px",
-  background: "linear-gradient(135deg, #b5484b, #6b3057)",
-  color: "#fff",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "13px",
-  fontWeight: 600,
-  fontFamily: "'DM Sans', sans-serif",
-};
-
-const secondaryBtn: React.CSSProperties = {
-  padding: "10px 20px",
-  backgroundColor: "transparent",
-  border: "1px solid #E6E4DF",
-  borderRadius: "8px",
-  fontSize: "13px",
-  fontWeight: 500,
-  color: "#5F6577",
-  cursor: "pointer",
-  fontFamily: "'DM Sans', sans-serif",
-};

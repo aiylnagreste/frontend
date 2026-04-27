@@ -1,0 +1,332 @@
+/* components/ui/FormDrawer.module.css
+   Shared styles for all form drawers (ModalShell-based forms).
+   Import alongside component-specific module CSS.
+*/
+
+/* ── Form container ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.form--gap20 {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Label ── */
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5F6577;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.required {
+  color: #b5484b;
+}
+
+/* ── Input ── */
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background-color: #fff;
+  color: #1A1D23;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.input:focus {
+  border-color: #b5484b;
+  box-shadow: 0 0 0 3px rgba(181, 72, 75, 0.1);
+}
+.input--error {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* ── Textarea ── */
+.textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background-color: #fff;
+  color: #1A1D23;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  resize: vertical;
+  line-height: 1.6;
+}
+.textarea:focus {
+  border-color: #b5484b;
+  box-shadow: 0 0 0 3px rgba(181, 72, 75, 0.1);
+}
+.textarea--error {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* ── Select ── */
+.select {
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  border: 1.5px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background-color: #fff;
+  color: #1A1D23;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%235F6577' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.select:focus {
+  border-color: #b5484b;
+  box-shadow: 0 0 0 3px rgba(181, 72, 75, 0.1);
+}
+.select--error {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* ── Icon-prefixed input wrapper ── */
+.inputWithIcon {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.inputIcon--top {
+  top: 14px;
+  transform: none;
+}
+
+.input--padded {
+  padding-left: 40px;
+}
+
+/* ── Error message ── */
+.errorMsg {
+  display: block;
+  font-size: 12px;
+  color: #DC2626;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* ── Help text ── */
+.helpText {
+  font-size: 11px;
+  color: #9CA3B4;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ── Grid row ── */
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Status toggle ── */
+.statusToggle {
+  display: flex;
+  gap: 10px;
+}
+
+.statusBtn {
+  flex: 1;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #E6E4DF;
+  background: #fff;
+  color: #5F6577;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.statusBtn--active {
+  border-color: #22c55e;
+  background: #F0FDF4;
+  color: #15803d;
+}
+
+.statusBtn--inactive {
+  border-color: #9CA3B4;
+  background: #F8F8F6;
+  color: #475569;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #D1D5DB;
+}
+
+.statusDot--active {
+  background: #22c55e;
+}
+
+.statusDot--inactive {
+  background: #9CA3B4;
+}
+
+/* ── Duration presets ── */
+.durationPresets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.durationPresetBtn {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid #E6E4DF;
+  background: #fff;
+  color: #5F6577;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.durationPresetBtn--active {
+  border: none;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  color: #fff;
+}
+
+/* ── Actions footer ── */
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-top: 1px solid #E6E4DF;
+  padding-top: 20px;
+  margin-top: 4px;
+}
+
+.primaryBtn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.primaryBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5F6577;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s, color 0.15s;
+}
+.secondaryBtn:hover {
+  background: #F8F8F6;
+  color: #1A1D23;
+}
+
+/* ── Warning / limit alert ── */
+.warningAlert {
+  background: #FFFBEB;
+  border: 1px solid #FDE047;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #92400E;
+}
+
+/* ── Limit reached state ── */
+.limitWrap {
+  text-align: center;
+  padding: 20px;
+}
+
+.limitIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #FEF2F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.limitTitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A1D23;
+  margin-bottom: 8px;
+}
+
+.limitText {
+  font-size: 13px;
+  color: #5F6577;
+  margin-bottom: 16px;
+}
+
+.limitActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}

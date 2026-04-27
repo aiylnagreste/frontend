@@ -1,0 +1,359 @@
+/* components/settings/IntegrationsTab.module.css */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.intro {
+  font-size: 13px;
+  color: #5F6577;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.loading {
+  color: #9CA3B4;
+  padding: 24px;
+  font-size: 13px;
+}
+
+.noPlanBox {
+  padding: 20px 24px;
+  background: #F8F8F6;
+  border: 1px solid #E6E4DF;
+  border-radius: 10px;
+  color: #5F6577;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.saveRow {
+  display: flex;
+  margin-top: 4px;
+}
+
+.saveRow--single {
+  justify-content: flex-start;
+}
+
+.saveRow--multi {
+  justify-content: flex-end;
+}
+
+.saveBtn {
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: opacity 0.2s;
+}
+
+.saveBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* IntegrationCard */
+.card {
+  background: #fff;
+  border: 1px solid #E6E4DF;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 14px 20px;
+  background: #FDFDFC;
+  border-bottom: 1px solid #E6E4DF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cardIcon {
+  font-size: 18px;
+}
+
+.cardTitle {
+  font-weight: 700;
+  margin: 0;
+  font-size: 14px;
+  color: #1A1D23;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.cardBody {
+  padding: 20px;
+}
+
+/* WebhookUrlBox */
+.webhookBox {
+  background: #F8F8F6;
+  border: 1px solid #E6E4DF;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.webhookLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.webhookLabelText {
+  font-size: 11px;
+  font-weight: 600;
+  color: #5F6577;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.webhookUrlRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #E6E4DF;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.webhookUrl {
+  font-size: 11px;
+  color: #b5484b;
+  word-break: break-all;
+  flex: 1;
+  font-family: monospace;
+  line-height: 1.5;
+}
+
+.copyBtn {
+  padding: 4px 12px;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.2s;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+}
+
+.copyBtn--copied {
+  background: #16a34a;
+}
+
+.webhookHint {
+  font-size: 11px;
+  color: #9CA3B4;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* CredentialSection — saved state */
+.savedBox {
+  padding: 14px 16px;
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 8px;
+}
+
+.savedHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.savedTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.savedFields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.savedRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.savedKey {
+  font-size: 12px;
+  color: #166534;
+  font-weight: 500;
+}
+
+.savedVal {
+  font-size: 11px;
+  font-family: monospace;
+  color: #15803d;
+  background: #DCFCE7;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.savedActions {
+  display: flex;
+  gap: 8px;
+}
+
+.editBtn {
+  padding: 6px 14px;
+  background: #fff;
+  color: #15803d;
+  border: 1px solid #86EFAC;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+}
+
+.editBtn:hover {
+  background: #F0FDF4;
+}
+
+.deleteBtn {
+  padding: 6px 14px;
+  background: #fff;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: #FEF2F2;
+}
+
+.deleteBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* CredentialSection — edit state */
+.editFields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editNotice {
+  padding: 10px 14px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #92400E;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.cancelBtn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  background: transparent;
+  color: #5F6577;
+  border: 1px solid #E6E4DF;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+}
+
+.cancelBtn:hover {
+  background: #F8F8F6;
+}
+
+/* Field */
+.field {
+  /* wrapper */
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+  color: #5F6577;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+  color: #1A1D23;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fieldInput:focus {
+  border-color: #b5484b;
+  box-shadow: 0 0 0 3px rgba(181, 72, 75, 0.1);
+}
+
+.fieldHint {
+  font-size: 11px;
+  color: #9CA3B4;
+  margin-top: 4px;
+  line-height: 1.5;
+}

@@ -1,0 +1,498 @@
+/* components/settings/PlanUpgradeTab.module.css */
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Loading */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #5F6577;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+  color: #b5484b;
+}
+
+/* Current plan card */
+.currentPlanCard {
+  background: linear-gradient(135deg, rgba(181, 72, 75, 0.05), rgba(107, 48, 87, 0.05));
+  border: 2px solid rgba(181, 72, 75, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.currentPlanHeader {
+  padding: 20px 24px;
+  background: #FDFDFC;
+  border-bottom: 1px solid #E6E4DF;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.currentPlanIcon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.currentPlanContent {
+  flex: 1;
+}
+
+.currentPlanBadge {
+  display: inline-block;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.currentPlanName {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1D23;
+  margin: 0 0 4px 0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.currentPlanPrice {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1A1D23;
+}
+
+.priceCycle {
+  font-size: 14px;
+  font-weight: 400;
+  color: #5F6577;
+}
+
+.currentPlanDetails {
+  padding: 20px 24px;
+  border-bottom: 1px solid #E6E4DF;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 6px 0;
+  color: #5F6577;
+}
+
+.remainingDays {
+  color: #b5484b;
+  font-weight: 600;
+}
+
+.activeStatus {
+  color: #22C55E;
+  font-weight: 600;
+}
+
+.inactiveStatus {
+  color: #EF4444;
+  font-weight: 600;
+}
+
+.featureGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 20px 24px;
+}
+
+.featureBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.featureBadge--active {
+  background: #22C55E15;
+  color: #22C55E;
+  border: 1px solid #22C55E30;
+}
+
+.featureBadge--inactive {
+  background: #F4F3F0;
+  color: #9CA3B4;
+  border: 1px solid #E6E4DF;
+}
+
+.servicesCount {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #F4F3F0;
+  color: #5F6577;
+}
+
+/* Plans section */
+.plansSection {
+  background: #fff;
+  border: 1px solid #E6E4DF;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.plansHeader {
+  padding: 20px 24px;
+  background: #FDFDFC;
+  border-bottom: 1px solid #E6E4DF;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1A1D23;
+  margin: 0 0 4px 0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.sectionDescription {
+  font-size: 13px;
+  color: #5F6577;
+  margin: 0;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1px;
+  background: #E6E4DF;
+}
+
+/* Plan card */
+.planCard {
+  background: #fff;
+  padding: 24px;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.planCard--current {
+  background: linear-gradient(135deg, #fff, rgba(181, 72, 75, 0.02));
+  box-shadow: inset 0 0 0 2px #b5484b;
+}
+
+.planCard--selected {
+  background: linear-gradient(135deg, #fff, rgba(181, 72, 75, 0.05));
+  box-shadow: inset 0 0 0 2px #b5484b;
+}
+
+.popularBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.activeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #22C55E15;
+  color: #22C55E;
+  border: 1px solid #22C55E30;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.planHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.planIconWrapper {
+  width: 40px;
+  height: 40px;
+  background: #F4F3F0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b5484b;
+}
+
+.planName {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A1D23;
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.planDescription {
+  font-size: 12px;
+  color: #5F6577;
+  margin: 4px 0 0 0;
+  line-height: 1.5;
+}
+
+.planPriceContainer {
+  margin-bottom: 20px;
+}
+
+.planPrice {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1A1D23;
+}
+
+.planFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.planFeatureItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.planFeatureCheck--active {
+  color: #22C55E;
+}
+
+.planFeatureCheck--inactive {
+  color: #9CA3B4;
+}
+
+.planFeatureText--active {
+  color: #5F6577;
+}
+
+.planFeatureText--inactive {
+  text-decoration: line-through;
+  color: #9CA3B4;
+}
+
+/* Buttons */
+.currentButton {
+  width: 100%;
+  padding: 12px;
+  background: #F4F3F0;
+  color: #5F6577;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.currentButtonSubtext {
+  font-size: 11px;
+  font-weight: 400;
+  color: #b5484b;
+  margin-left: 4px;
+}
+
+.upgradeButton {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 0.2s;
+}
+
+.upgradeButton:hover {
+  transform: translateY(-1px);
+}
+
+.upgradeButton--downgrade {
+  background: #F4F3F0;
+  color: #5F6577;
+}
+
+.upgradeButton--downgrade:hover {
+  transform: none;
+}
+
+.buttonSpinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  overflow: hidden;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E6E4DF;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #5F6577;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.changeSummary {
+  background: #F9F8F6;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.changeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.changePrice {
+  font-weight: 600;
+  color: #1A1D23;
+}
+
+.arrowIcon {
+  text-align: center;
+  font-size: 18px;
+  color: #b5484b;
+  margin: 4px 0;
+}
+
+.infoBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #EFF6FF;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1E40AF;
+  margin-top: 16px;
+}
+
+.warningBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #FFFBEB;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #D97706;
+  margin-top: 16px;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #E6E4DF;
+}
+
+.cancelButton {
+  flex: 1;
+  padding: 10px;
+  background: #fff;
+  border: 1.5px solid #E6E4DF;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #5F6577;
+}
+
+.confirmButton {
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, #b5484b, #6b3057);
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+}
+
+/* Detail row inline icon alignment */
+.detailRowIcon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
