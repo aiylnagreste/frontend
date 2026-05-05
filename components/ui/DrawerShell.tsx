@@ -40,6 +40,7 @@ export function DrawerShell({ open, onClose, title, children, width = 520 }: Dra
       <div className={styles.overlay} onClick={onClose} />
 
       {/* Drawer */}
+      {/* inline: caller-provided runtime panel width (unbounded number) — sets a CSS variable consumed by .drawer in DrawerShell.module.css */}
       <div
         className={styles.drawer}
         style={{ "--_panel-width": `${width}px` } as React.CSSProperties}

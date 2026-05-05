@@ -40,6 +40,7 @@ export function ModalShell({ open, onClose, title, children, width = 480 }: Moda
       <div className={styles.overlay} onClick={onClose} />
 
       {/* Modal Card - Centered, no animation */}
+      {/* inline: caller-provided runtime panel width (unbounded number) — sets a CSS variable consumed by .modal in ModalShell.module.css */}
       <div
         className={styles.modal}
         style={{ "--_panel-width": `${width}px` } as React.CSSProperties}

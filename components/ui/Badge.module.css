@@ -11,14 +11,53 @@
   align-items: center;
   gap: 5px;
   letter-spacing: 0.01em;
-  background: var(--_badge-bg);
-  color: var(--_badge-color);
+  /* default tone (matches the prior fallback object) */
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .badge__dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--_badge-dot);
+  background: #94a3b8;
   flex-shrink: 0;
 }
+
+/* Status modifiers — colors preserved verbatim from prior STATUS_STYLES map
+   to keep pixel-equivalent appearance. */
+.badge--confirmed { background: #dcfce7; color: #15803d; }
+.badge--confirmed .badge__dot { background: #22c55e; }
+
+.badge--arrived { background: #fef3c7; color: #92400e; }
+.badge--arrived .badge__dot { background: #f59e0b; }
+
+.badge--completed { background: #dbeafe; color: #1e40af; }
+.badge--completed .badge__dot { background: #3b82f6; }
+
+.badge--canceled { background: #fee2e2; color: #b91c1c; }
+.badge--canceled .badge__dot { background: #ef4444; }
+
+.badge--no_show { background: #f1f5f9; color: #475569; }
+.badge--no_show .badge__dot { background: #94a3b8; }
+
+.badge--archived { background: #f1f5f9; color: #64748b; }
+.badge--archived .badge__dot { background: #94a3b8; }
+
+.badge--active { background: #dcfce7; color: #15803d; }
+.badge--active .badge__dot { background: #22c55e; }
+
+.badge--inactive { background: #fee2e2; color: #b91c1c; }
+.badge--inactive .badge__dot { background: #ef4444; }
+
+.badge--suspended { background: #fef3c7; color: #92400e; }
+.badge--suspended .badge__dot { background: #f59e0b; }
+
+.badge--pending { background: #fef3c7; color: #92400e; }
+.badge--pending .badge__dot { background: #f59e0b; }
+
+.badge--frozen { background: #f1f5f9; color: #475569; }
+.badge--frozen .badge__dot { background: #94a3b8; }
+
+.badge--warning { background: #fef3c7; color: #92400e; }
+.badge--warning .badge__dot { background: #f59e0b; }
